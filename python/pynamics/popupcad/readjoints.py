@@ -25,13 +25,14 @@ from pynamics.output import Output
 #t0 = time.time()
 
 #directory = 'C:\\Users\\danaukes\\popupCAD_files\\designs'
-directory = 'C:\\Users\\danaukes\\desktop'
+#directory = 'C:\\Users\\danaukes\\desktop'
+directory = 'C:\\Users\\daukes\\desktop'
 #directory = 'C:\\Users\\danaukes\\dropbox'
 #directory = 'C:\\Users\\danb0b\\dropbox'
 #filename = 'doublepend.cad.joints'
 #filename = '225654992.cad.joints'
 #filename = 'closed chain.cad.joints'
-filename = '143567728.cad.joints'
+filename = '149953728.cad.joints'
 #filename = 'twolayer.cad.joints'
 #filename = 'triple_pendulum3.cad.joints'
 #filename = 'broken.cad.joints'
@@ -83,8 +84,8 @@ from math import pi
 
 for line,(body1,body2) in unused:
     joint_props_dict = dict([(item,prop) for (item,bodies),prop in zip(connections,joint_props)])
-    k,b,q0 = joint_props_dict[line]                
-    points = numpy.c_[line.exteriorpoints(),[0,0]]/popupcad.internal_argument_scaling
+    k,b,q0,lim_neg,lim_pos = joint_props_dict[line]                
+    points = numpy.c_[line.exteriorpoints(),[0,0]]/popupcad.SI_length_scaling
     axis = points[1] - points[0]
     l = (axis.dot(axis))**.5
     axis = axis/l

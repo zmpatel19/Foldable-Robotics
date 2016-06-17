@@ -37,10 +37,9 @@ def gen_mesh_item(body):
     all_triangles = []
     
     for layer in body.layers():
-        z = body.layerdef.zvalue[layer]
+        z = body.layerdef.z_values[layer]
         for geom in body.geoms[layer]:
-            cdt = geom.toCDT3()
-            cdt.Triangulate()
+            cdt = geom.triangles_inner()
             triangles = [[(point.x,point.y,z) for point in triangle.points_] for triangle in cdt.GetTriangles()]        
             points = list(set([point for triangle in triangles for point in triangle]))
             all_points.extend(points)
@@ -80,12 +79,16 @@ w.show()
 
 ii = 0
 
+import os
+if not os.path.exists('render/'):
+    os.mkdir('render')
 ee = numpy.array(rundata.ee)
 def update(t,w):
     global ii
     if ii<len(ee):
         for jj,mi in enumerate(meshitems):
             tr = ee[ii,jj]
+            tr =qg.QMatrix4x4(*tr.flatten().tolist())
             mi.setTransform(tr)
         ii+=1
         w.grabFrameBuffer().save('render/{0:04d}.png'.format(ii))

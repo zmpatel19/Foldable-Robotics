@@ -1,1 +1,4 @@
 python/pynamics/__pycache__/*
+*__pycache__*
+python/pynamics/popupcad/render*
+python/pynamics/popupcad/rundata

@@ -15,7 +15,7 @@ from pynamics.vector import Vector
 class ReadJoints(object):
     def __init__(self,rigidbodies,ee,t_step):
         self.rigidbodies = rigidbodies
-        self.ee = ee
+        self.ee = [[item.matrix().tolist() for item in item2] for item2 in ee]
         self.t_step = t_step
         
 def vector_from_fixed(fixed_matrix,fixed_vector,new_matrix,frame):
@@ -35,7 +35,7 @@ def find_constraints(unused_connections):
     for line, bodies in unused_connections:
         points = line.exteriorpoints()
         points = numpy.c_[points,[0,0]]
-        points = points/popupcad.internal_argument_scaling
+        points = points/popupcad.SI_length_scaling
         
         v1 = bodies[0].vector_from_fixed(points[0])
         v2 = bodies[0].vector_from_fixed(points[1])
@@ -61,26 +61,28 @@ class RigidBody(object):
         
     @classmethod
     def build(cls,body):
-        frame = Frame(body.get_basename())
+        frame = Frame(str(body.id))
         new = cls(body,frame)
         return new
 
     def gen_info(rigidbody):
-        lam = rigidbody.body.toLaminate()
-        layers = lam[:]
-        layer = layers[0].unary_union(layers)
-        areas = numpy.array([shape.area for shape in layer.geoms])/popupcad.internal_argument_scaling**2
-        centroids = numpy.array([shape.centroid.coords[0] for shape in layer.geoms])/popupcad.internal_argument_scaling
+        volume_total,mass_total,center_of_mass,I = rigidbody.body.mass_properties()
+#        layers = lam[:]
+#        layer = layers[0].unary_union(layers)
+#        areas = numpy.array([shape.area for shape in layer.geoms])
+#        centroids = numpy.array([shape.centroid.coords[0] for shape in layer.geoms])
         
-        area = sum(areas)
-        centroid = (areas*centroids).sum(0)/area
-        return area,centroid
+#        area = sum(areas)
+#        centroid = (areas*centroids).sum(0)/area
+        center_of_mass /= popupcad.SI_length_scaling
+        volume /=popupcad.SI_length_scaling**3
+        return volume_total,center_of_mass
     def vector_from_fixed(self,new_matrix):
         fixed_matrix,fixed_vector = self.get_fixed()
         vec = vector_from_fixed(fixed_matrix,fixed_vector,new_matrix,self.frame)
         return vec
     def __lt__(self,other):
-        return self.body.get_basename()<other.body.get_basename()
+        return self.body.id<other.body.id
 
 
 class AnimationParameters(object):
@@ -99,8 +101,8 @@ def build_frames(rigidbodies,N_rb,connections,accounting,O,joint_props):
                 connections_rev = dict([(bodies,line) for line,bodies in connections])
                 line = connections_rev[tuple(sorted([parent,child]))]
                 joint_props_dict = dict([(item,prop) for (item,bodies),prop in zip(connections,joint_props)])
-                k,b,q0 = joint_props_dict[line]                
-                points = numpy.c_[line.exteriorpoints(),[0,0]]/popupcad.internal_argument_scaling
+                k,b,q0,lim_neg,lim_pos = joint_props_dict[line]                
+                points = numpy.c_[line.exteriorpoints(),[0,0]]/popupcad.SI_length_scaling
                 axis = points[1] - points[0]
                 l = (axis.dot(axis))**.5
                 axis = axis/l
@@ -149,16 +151,16 @@ def characterize_tree(connections,rigidbodies,N_rb):
     
 def child_velocities(parent,referencepoint,reference_coord,N_rb,accounting,connections):
     parent.set_fixed(reference_coord,referencepoint)
-    area,centroid = parent.gen_info()
-    centroid = numpy.r_[centroid,[0]]
-    newvec = parent.vector_from_fixed(centroid)
+    volume_total,center_of_mass = parent.gen_info()
+#    centroid = numpy.r_[centroid,[0]]
+    newvec = parent.vector_from_fixed(center_of_mass)
     p = Particle(accounting,newvec,1)
     parent.set_particle(p)
     for child in parent.frame.children:
         child = child.rigidbody
         connections_rev = dict([(bodies,line) for line,bodies in connections])
         line = connections_rev[tuple(sorted([parent,child]))]
-        points = numpy.c_[line.exteriorpoints(),[0,0]]/popupcad.internal_argument_scaling
+        points = numpy.c_[line.exteriorpoints(),[0,0]]/popupcad.SI_length_scaling
         newvec = parent.vector_from_fixed(points[0])
         child_velocities(child,newvec,points[0],N_rb,accounting,connections)
         
