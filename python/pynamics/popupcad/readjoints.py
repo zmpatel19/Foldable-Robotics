@@ -32,7 +32,7 @@ directory = 'C:\\Users\\daukes\\desktop'
 #filename = 'doublepend.cad.joints'
 #filename = '225654992.cad.joints'
 #filename = 'closed chain.cad.joints'
-filename = '149953728.cad.joints'
+filename = '257464192.cad.joints'
 #filename = 'twolayer.cad.joints'
 #filename = 'triple_pendulum3.cad.joints'
 #filename = 'broken.cad.joints'
@@ -82,32 +82,32 @@ from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable
 from math import pi
 
-for line,(body1,body2) in unused:
-    joint_props_dict = dict([(item,prop) for (item,bodies),prop in zip(connections,joint_props)])
-    k,b,q0,lim_neg,lim_pos = joint_props_dict[line]                
-    points = numpy.c_[line.exteriorpoints(),[0,0]]/popupcad.SI_length_scaling
-    axis = points[1] - points[0]
-    l = (axis.dot(axis))**.5
-    axis = axis/l
-    fixedaxis = axis[0]*body1.frame.x+axis[1]*body1.frame.y+axis[2]*body1.frame.z
-    x,x_d,x_dd = Differentiable(sys)
-    redundant_frame = Frame()
-    redundant_frame.rotate_fixed_axis_directed(body1.frame,axis,x,sys)
-    w = body1.frame.getw_(redundant_frame)
-    t_damper = -b*w
-    spring_stretch = (x-(q0*pi/180))*fixedaxis
-    sys.addforce(t_damper,w)
-    sys.add_spring_force(k,spring_stretch,w)
-    constraints.append(redundant_frame.x.dot(body2.frame.x)-1)
-    constraints.append(redundant_frame.y.dot(body2.frame.y)-1)
-    constraints.append(redundant_frame.z.dot(body2.frame.z)-1)
-
-zero = sympy.Matrix(constraints)
-constraints_d2 = [sys.derivative(item) for item in constraints]
-constraints_d3 = sympy.Matrix(constraints_d2)
-if len(constraints)>0:
-    J = constraints_d3.jacobian(sys.get_q(1))
-    fJ = sympy.lambdify(sys.state_variables(),J)
+#for line,(body1,body2) in unused:
+#    joint_props_dict = dict([(item,prop) for (item,bodies),prop in zip(connections,joint_props)])
+#    k,b,q0,lim_neg,lim_pos = joint_props_dict[line]                
+#    points = numpy.c_[line.exteriorpoints(),[0,0]]/popupcad.SI_length_scaling
+#    axis = points[1] - points[0]
+#    l = (axis.dot(axis))**.5
+#    axis = axis/l
+#    fixedaxis = axis[0]*body1.frame.x+axis[1]*body1.frame.y+axis[2]*body1.frame.z
+#    x,x_d,x_dd = Differentiable(sys)
+#    redundant_frame = Frame()
+#    redundant_frame.rotate_fixed_axis_directed(body1.frame,axis,x,sys)
+#    w = body1.frame.getw_(redundant_frame)
+#    t_damper = -b*w
+#    spring_stretch = (x-(q0*pi/180))*fixedaxis
+#    sys.addforce(t_damper,w)
+#    sys.add_spring_force(k,spring_stretch,w)
+#    constraints.append(redundant_frame.x.dot(body2.frame.x)-1)
+#    constraints.append(redundant_frame.y.dot(body2.frame.y)-1)
+#    constraints.append(redundant_frame.z.dot(body2.frame.z)-1)
+#
+#zero = sympy.Matrix(constraints)
+#constraints_d2 = [sys.derivative(item) for item in constraints]
+#constraints_d3 = sympy.Matrix(constraints_d2)
+#if len(constraints)>0:
+#    J = constraints_d3.jacobian(sys.get_q(1))
+#    fJ = sympy.lambdify(sys.state_variables(),J)
 
 
 
@@ -184,9 +184,9 @@ T = support.build_transformss(R,y)
 bodies = [item.body for item in rigidbodies]    
 
 if __name__=='__main__':
-    import matplotlib.pyplot as plt
-    support.plot(t,x,y)
-    plt.figure()
+#    import matplotlib.pyplot as plt
+#    support.plot(t,x,y)
+#    plt.figure()
 #    if len(constraints)>0:
 #        vout = vout.reshape((vout.shape[0],-1))
 #        plt.plot(t,vout[:,:3])        
@@ -210,7 +210,8 @@ pynamics.toc()
 #f = pynamics.funkify.cythonify(ma[-1],variables)
 #out = f(*[1 for item in variables])
 ##c = sympy.lambdify(variables,a)
-plt.figure(2)
-plt.xlabel('time(s)')
-plt.ylabel('rotation(rad)')
-plt.legend(['q1','q2','q3'])
+#plt.figure(2)
+#plt.xlabel('time(s)')
+#plt.ylabel('rotation(rad)')
+#plt.legend(['q1','q2','q3'])
+#plt.show()

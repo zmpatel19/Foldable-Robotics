@@ -75,7 +75,7 @@ class RigidBody(object):
 #        area = sum(areas)
 #        centroid = (areas*centroids).sum(0)/area
         center_of_mass /= popupcad.SI_length_scaling
-        volume /=popupcad.SI_length_scaling**3
+        volume_total /=popupcad.SI_length_scaling**3
         return volume_total,center_of_mass
     def vector_from_fixed(self,new_matrix):
         fixed_matrix,fixed_vector = self.get_fixed()
@@ -160,7 +160,7 @@ def child_velocities(parent,referencepoint,reference_coord,N_rb,accounting,conne
         child = child.rigidbody
         connections_rev = dict([(bodies,line) for line,bodies in connections])
         line = connections_rev[tuple(sorted([parent,child]))]
-        points = numpy.c_[line.exteriorpoints(),[0,0]]/popupcad.SI_length_scaling
+        points = numpy.c_[line.exteriorpoints(),[0,0]]
         newvec = parent.vector_from_fixed(points[0])
         child_velocities(child,newvec,points[0],N_rb,accounting,connections)
         
@@ -178,18 +178,18 @@ def plot(t,x,y):
     
 def build_transformss(Rx,y):
     from pyqtgraph import Transform3D
-    import PySide.QtGui as qg
+    import PyQt4.QtGui as qg
     transformss = []
     for ii,aa in enumerate(Rx):
         cc = []
         for jj,bb in enumerate(aa):
             bb=bb.T
             T1 = numpy.eye(4)
-            T1[:3,3] = -y[0,jj]*1000
+            T1[:3,3] = -y[0,jj]
             T2 = numpy.eye(4)
             T2[:3,:3] = bb
             T3 = numpy.eye(4)
-            T3[:3,3] = y[ii,jj]*1000
+            T3[:3,3] = y[ii,jj]
             T = T3.dot(T2.dot(T1))
             tr = Transform3D()
             for kk in range(4):
