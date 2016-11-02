@@ -144,6 +144,15 @@ class System(object):
     def add_constant(self,constant,value):
         self.constants[constant]=value
 
+
+    def createsecondorderfunction_old(system,var_dd):
+        statevariables = system.get_q(0)+system.get_q(1)
+        functions = [sympy.lambdify(statevariables,rhs) for rhs in var_dd]
+        indeces = [statevariables.index(element) for element in system.get_q(1)]
+        def func1(state,time):
+            return numpy.r_[[state[ii] for ii in indeces],[f(*state) for f in functions]].tolist()
+        return func1
+
     def createsecondorderfunction(system,f,ma):
         statevariables = system.get_q(0)+system.get_q(1)
         var_dd = system.solvedynamics(f,ma,auto_z=True)

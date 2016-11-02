@@ -6,48 +6,56 @@ Email: danaukes<at>gmail.com
 Please see LICENSE for full license.
 """
 
+
 from sympy import pi
 import sympy
-import danamics
-from danamics import *
+import pynamics
+pynamics.script_mode = True
+from pynamics import *
 import numpy
 import scipy
 import scipy.integrate
 #from tictoc import *
 import matplotlib.pyplot as plt
+from pynamics.system import System
+from pynamics.variable_types import Differentiable,Constant,Variable
+from pynamics.frame import Frame
+from pynamics.body import Body
+from pynamics.dyadic import Dyadic
+from pynamics.output import Output
 
 #===============================================================================
-system=dynsystem()
+system=System()
 
 
-constant('lA',.04,system)
-constant('lB',.04,system)
-constant('g',9.81,system)
-constant('mA',.0145,system)
-constant('mB',.0145,system)
-constant('zero',0,system)
+lA = Constant('lA',.04,system)
+Constant('lB',.04,system)
+Constant('g',9.81,system)
+Constant('mA',.0145,system)
+Constant('mB',.0145,system)
+Constant('zero',0,system)
 
-constant('Ixx_A',8.6e-007,system)
-constant('Iyy_A',2.2e-006,system)
-constant('Izz_A',2.2e-006,system)
-constant('Ixx_B',8.6e-007,system)
-constant('Iyy_B',2.2e-006,system)
-constant('Izz_B',2.2e-006,system)
+Constant('Ixx_A',8.6e-007,system)
+Constant('Iyy_A',2.2e-006,system)
+Constant('Izz_A',2.2e-006,system)
+Constant('Ixx_B',8.6e-007,system)
+Constant('Iyy_B',2.2e-006,system)
+Constant('Izz_B',2.2e-006,system)
 
-constant('b',0.00001,system)
-constant('k',0.1,system)
+Constant('b',0.00001,system)
+Constant('k',0.1,system)
         
 #accelerationvariable('xA')
 #accelerationvariable('yA')
-accelerationvariable('qA',system)
-accelerationvariable('xB',system)
-accelerationvariable('yB',system)
-accelerationvariable('qB',system)
+qA,qA_d,qA_dd = Differentiable(system,'qA')
+xB,xB_d,xB_dd = Differentiable(system,'xB')
+yB,yB_d,yB_dd = Differentiable(system,'yB')
+qB,qB_d,qB_dd = Differentiable(system,'qB')
 
-sym_undifferentiable('fNAx')
-sym_undifferentiable('fNAy')
-sym_undifferentiable('fABx')
-sym_undifferentiable('fABy')
+fNAx = Variable('fNAx')
+fNAy = Variable('fNAy')
+fABx = Variable('fABx')
+fABy = Variable('fABy')
 
 initialvalues = {}
 #initialvalues[xA]=.02
@@ -63,17 +71,18 @@ initialvalues[yB_d]=0
 initialvalues[qB]=0*pi/180
 initialvalues[qB_d]=0*pi/180
 
-frame('N',system)
-frame('A',system)
-frame('B',system)
+N=Frame('N')
+A=Frame('A')
+B=Frame('B')
 
-N.setnewtonian()
-A.RotateBodyZ(N,qA)
-B.RotateBodyZ(A,qB)
+system.set_newtonian(N)
+A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
+B.rotate_fixed_axis_directed(A,[0,0,1],qB,system)
 
 #A.setpathtonewtonian(['A','N'])
 #B.setpathtonewtonian(['B','A','N'])
 
+zero = sympy.Number(0)
 pNA=zero*N.x+zero*N.y+zero*N.z
 
 #pAcm=xA*N.x*yA*N.y
@@ -91,25 +100,28 @@ pBA=pBcm - lB/2*B.x
 #vAN = vectorderivative(pAN,N)
 #aAN = vectorderivative(vAN,N)
 
-vAB = vectorderivative(pAB,N,system)
-aAB = vectorderivative(vAB,N,system)
+vAB = pAB.time_derivative(N,system)
+aAB = vAB.time_derivative(N,system)
 
-vBA = vectorderivative(pBA,N,system)
-aBA = vectorderivative(vBA,N,system)
+vBA = pBA.time_derivative(N,system)
+aBA = vBA.time_derivative(N,system)
 
 #constraint1 = pNA-pAN
 #constraint1_d = vectorderivative(constraint1,N)
 #constraint1_dd = vectorderivative(constraint1_d,N)
 #
 constraint2 = pAB-pBA
-constraint2_d = vectorderivative(constraint2,N,system)
-constraint2_dd = vectorderivative(constraint2_d,N,system)
+constraint2_d = constraint2.time_derivative(N,system)
+constraint2_dd = constraint2_d.time_derivative(N,system)
 
-wNA = angularvelocityN(N,A,system)
-wAB = angularvelocityN(A,B,system)
+wNA = N.getw_(A)
+wAB = A.getw_(B)
 
-body('BodyA',A,pAcm,mA,I_generic(A,Ixx_A,Iyy_A,Izz_A),system)
-body('BodyB',B,pBcm,mB,I_generic(B,Ixx_B,Iyy_B,Izz_B),system)
+IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
+IB = Dyadic.build(A,Ixx_B,Iyy_B,Izz_B)
+
+Body('BodyA',A,pAcm,mA,IA,system)
+Body('BodyB',B,pBcm,mB,IB,system)
 
 system.addforce(-b*wNA,wNA)
 system.addforce(-b*wAB,wAB)
@@ -125,30 +137,33 @@ system.addforce(-fABx*N.x+-fABy*N.y,vAB)
 
 system.addforcegravity(-g*N.y)
 
-x1 = dot(BodyA.pCM,N.x)
-y1 = dot(BodyA.pCM,N.y)
-x2 = dot(BodyB.pCM,N.x)
-y2 = dot(BodyB.pCM,N.y)
+x1 = BodyA.pCM.dot(N.x)
+y1 = BodyA.pCM.dot(N.y)
+x2 = BodyB.pCM.dot(N.x)
+y2 = BodyB.pCM.dot(N.y)
 KE = system.KE
 PE = system.getPEGravity(pNA)
     
-statevariables = system.q+system.q_d
+statevariables = system.get_q(0)+system.get_q(1)
 ini = [item.subs(initialvalues) for item in statevariables]
 t = scipy.arange(0,10,.01)
-outputs = outputclass([x1,y1,x2,y2,KE,PE],system.constants)
+outputs = Output([x1,y1,x2,y2,KE,PE],system)
 
 #tic()
 print('solving dynamics...')
 
-junk,junk,eq = system.getdynamics()
+f,ma = system.getdynamics()
 #eq_con = [dot(constraint1_dd,N.x),dot(constraint1_dd,N.y),dot(constraint2_dd,N.x),dot(constraint2_dd,N.y)]
-eq_con = [dot(constraint2_dd,B.x),dot(constraint2_dd,B.y)]
-var_dd,forces = solveconstraineddynamics(list(eq.values()),eq_con,system.q_dd,[fABx,fABy])
+print('solving constraints...')
+eq_con = [constraint2_dd.dot(B.x),constraint2_dd.dot(B.y)]
+var_dd,forces = system.solveconstraineddynamics(list(numpy.array(f) - numpy.array(ma)),eq_con,system.get_q(2),[fABx,fABy])
 
 #toc()
-print('integrating...')
+print('creating second order function...')
+var_dd 
 var_dd=var_dd.subs(system.constants)
-func1 = createsecondorderfunction(var_dd,statevariables,system.q_d,func_format = 'odeint')
+func1 = system.createsecondorderfunction_old(var_dd)
+print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=1e-8,atol=1e-8)
 #toc()
 print('calculating outputs..')
