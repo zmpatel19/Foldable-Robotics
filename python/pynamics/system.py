@@ -407,6 +407,7 @@ class System(object):
             return x[:m_q].flatten().tolist()
 #            return [0]*len(state)
         return func
+        
     def createsecondorderfunction6(system,f,ma,fJ,zero,zero_d):
         from numpy import r_, c_
         q_state = system.get_q(0)+system.get_q(1)
@@ -508,10 +509,9 @@ class System(object):
         if not eq:
             A_full = A
             b_full = b
-        
+
         else:
             n = len(eq)
-        
             A_full = sympy.zeros(m+n)   
             A_full[:m,:m] = A
             A_full[m:,:m] = J
@@ -528,7 +528,6 @@ class System(object):
         fb = sympy.lambdify(q_state+c_sym,b_full)
     
         def func(state,time,*args):
-    #        print(args)
             a = list(state)+c_val
             Ai = fA(*a)
             bi = fb(*a)
@@ -560,28 +559,10 @@ class System(object):
         b2 = -C2x_b2.subs(zip(x.T.tolist()[0],[0 for item in x]))
         b = b1.col_join(b2)
         return AA,b,x    
+        
     @classmethod
     def solveconstraineddynamics(cls,eq_dyn,eq_con,q_dyn,q_con,method='LU'):
         AA,b,x = cls.assembleconstrained(eq_dyn,eq_con,q_dyn,q_con,method=method)
-    #    AC1x_b1 = sympy.Matrix(eq_dyn)
-    #    C2x_b2 = sympy.Matrix(eq_con)
-    #    print 'Ax-b'
-    #    
-    #    q_dyn = sympy.Matrix(q_dyn)
-    #    q_con = sympy.Matrix(q_con)
-    #    x = q_dyn.col_join(q_con)
-    #    print 'x,l'
-    #    
-    #    MASS = AC1x_b1.jacobian(q_dyn)
-    #    C1 = AC1x_b1.jacobian(q_con)
-    #    C2 = C2x_b2.jacobian(x)
-    #    AA = sympy.Matrix.col_join(sympy.Matrix.row_join(MASS,C1),C2)
-    #    print 'A,C1,C2'
-    #    
-    #    b1 = -AC1x_b1.subs(zip(x.T.tolist()[0],[0 for item in x]))
-    #    b2 = -C2x_b2.subs(zip(x.T.tolist()[0],[0 for item in x]))
-    #    b = b1.col_join(b2)
-        
         AA_inv = AA.inv(method = method)
         xx = AA_inv*b
         x_dyn = xx[0:len(q_dyn),:]
@@ -595,6 +576,7 @@ class System(object):
             else:
                 result += expression.diff(a)*self.derivatives[a]
         return result
+        
     def state_variables(self):
         return self.get_q(0)+self.get_q(1)
     def state_variables_d(self):

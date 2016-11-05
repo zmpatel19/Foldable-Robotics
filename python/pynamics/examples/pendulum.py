@@ -60,11 +60,11 @@ vAB=pAB.time_derivative(N,system)
 ParticleA = Particle(system,pAB,mA,'ParticleA')
 
 system.addforce(-b*vAB,vAB)
-
 system.addforcegravity(-g*N.y)
 
 x1 = ParticleA.pCM.dot(N.x)
 y1 = ParticleA.pCM.dot(N.y)
+
 KE = system.KE
 PE = system.getPEGravity(pNA) - system.getPESprings()
     
