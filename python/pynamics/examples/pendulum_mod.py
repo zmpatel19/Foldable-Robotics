@@ -84,63 +84,18 @@ print('creating second order function...')
 v = pAB-pNA
 u = (v.dot(v))**.5
 
-eq = [(v.dot(v)) - lA**2]
-b=der(der(eq[0],system),system)
-b = sympy.Matrix([b])
-q2 = sympy.Matrix(system.get_q(2))
-J = b.jacobian(q2)
-c = (b-J*q2).expand()
+eq1 = [(v.dot(v)) - lA**2]
+eq1_dd=der(der(eq1[0],system),system)
+eq = [eq1_dd]
 
 #system.addforce(-f*u,vAB)
 
 statevariables = system.get_q(0)+system.get_q(1)
 augmented = [f]
 
-def createsecondorderfunction2(system,f,ma,J,c):
-    q_state = system.get_q(0)+system.get_q(1)
-#    q_state_d = system.get_q(1) + system.get_q(2)
-    f = sympy.Matrix(f)
-    ma = sympy.Matrix(ma)
-    q = system.get_q(0)
-    q_d = system.get_q(1)
-    q_dd = system.get_q(2)
-
-    Ax_b = ma-f
-    x = sympy.Matrix(q_dd)
-    A = Ax_b.jacobian(x)
-    b = -Ax_b.subs(dict(list([(item,0) for item in x])))
-    
-    m = len(q_d)
-    n = J.shape[0]
-    A_full = sympy.zeros(m+n)   
-    A_full[:m,:m] = A
-    A_full[m,:m] = J
-    A_full[:m,m] = J.T
-
-    b_full = sympy.zeros(m+n,1)
-    b_full[:m,0]=b
-    b_full[m:,0]=-c
-    
-    c_sym = list(system.constants.keys())
-    c_val = [system.constants[key] for key in c_sym]
-
-    fA = sympy.lambdify(q_state+c_sym,A_full)
-    fb = sympy.lambdify(q_state+c_sym,b_full)
-
-    def func(state,time):
-        a = list(state)+c_val
-        Ai = fA(*a)
-        bi = fb(*a)
-        x1 = state[m:]
-        x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
-        x3 = numpy.r_[x1,x2[:m]]
-        x4 = x3.flatten().tolist()
-        return x4
-    return func
-
-func1 = createsecondorderfunction2(system,f,ma,J,c)
+func1 = system.create_state_space_constrained(f,ma,eq)
 print('integrating...')
-states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
+states=scipy.integrate.odeint(func1,ini,t,args=(),rtol=1e-12,atol=1e-12,hmin=1e-14)
 pynamics.toc()
 print('calculating outputs..')
 output = Output([x1,y1,KE-PE,x,y],system)

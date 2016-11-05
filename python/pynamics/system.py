@@ -478,6 +478,66 @@ class System(object):
             
         return func
 
+
+    def create_state_space_constrained(system,f,ma,eq = None,eq_active = None):
+        eq = eq or []
+        
+        q = system.get_q(0)
+        q_d = system.get_q(1)
+        q_dd = system.get_q(2)
+    
+        if not eq:
+            J = sympy.Matrix([])
+            c = sympy.Matrix
+        else:
+            eq2 = sympy.Matrix([eq])
+            J = eq2.jacobian(q_dd)
+            c = (eq2-J*sympy.Matrix(q_dd)).expand()
+            
+        q_state = system.get_q(0)+system.get_q(1)
+        f = sympy.Matrix(f)
+        ma = sympy.Matrix(ma)
+    
+        Ax_b = ma-f
+        x = sympy.Matrix(q_dd)
+        A = Ax_b.jacobian(x)
+        b = -Ax_b.subs(dict(list([(item,0) for item in x])))
+        
+        m = len(q_d)
+    
+        if not eq:
+            A_full = A
+            b_full = b
+        
+        else:
+            n = len(eq)
+        
+            A_full = sympy.zeros(m+n)   
+            A_full[:m,:m] = A
+            A_full[m:,:m] = J
+            A_full[:m,m:] = J.T
+        
+            b_full = sympy.zeros(m+n,1)
+            b_full[:m,0]=b
+            b_full[m:,0]=-c
+            
+        c_sym = list(system.constants.keys())
+        c_val = [system.constants[key] for key in c_sym]
+    
+        fA = sympy.lambdify(q_state+c_sym,A_full)
+        fb = sympy.lambdify(q_state+c_sym,b_full)
+    
+        def func(state,time,*args):
+    #        print(args)
+            a = list(state)+c_val
+            Ai = fA(*a)
+            bi = fb(*a)
+            x1 = state[m:]
+            x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
+            x3 = numpy.r_[x1,x2[:m]]
+            x4 = x3.flatten().tolist()
+            return x4
+        return func
     
     @staticmethod
     def assembleconstrained(eq_dyn,eq_con,q_dyn,q_con,method='LU'):
