@@ -71,6 +71,12 @@ class System(object):
     def addKE(self,KE):
         self.KE+=KE
 
+    def add_derivative(self,expression,variable):
+        self.derivatives[expression]=variable
+
+    def add_constant(self,constant,value):
+        self.constants[constant]=value
+
     def getPEGravity(self,point):
         PE = pynamics.ZERO
         for body in self.bodies+self.particles:
@@ -96,421 +102,99 @@ class System(object):
         q_d = self.get_q(1)
         generalizedforce=self.generalize(self.forces,q_d)
         generalizedeffectiveforce=self.generalize(self.effectiveforces,q_d)
-#        return 
-#        zero = {}
-#        for speed in self.get_q(1):
-#            zero[speed] = generalizedeffectiveforce[speed] - generalizedforce[speed]
         return generalizedforce,generalizedeffectiveforce
 
-    def solvedynamics(self,f,ma,method = 'LU',auto_z= False):
-        f = sympy.Matrix(f)
-        ma = sympy.Matrix(ma)
-        Ax_b = ma-f
-        x = sympy.Matrix(self.get_q(2))
-        A = Ax_b.jacobian(x)
-#        replacement = dict([(str(item.func),sympy.Symbol(str(item.func))) for item in self.get_q(0)+self.get_q(1)])
-#        fAx_b = sympy.lambdify(self.get_q(2),Ax_b,modules = ['math','mpmath','numpy',replacement])
-#        b = -fAx_b(*(0*x))
-#        b = (A*x-Ax_b).expand()
-        b = -Ax_b.subs(dict([(item,0) for item in self.get_q(2)]))
-        if auto_z:
-            def func1(x):
-                if x!=pynamics.ZERO:
-                    return self.generatez(x)
-                else:
-                    return x
-            AA = A.applyfunc(func1)
-            AA_inv = AA.inv(method = method)
-            keys = self.replacements.keys()
-            fAA_inv = sympy.lambdify(keys,AA_inv)
-            A_inv = fAA_inv(*[self.replacements[key] for key in keys])
-#            A_inv = AA_inv.subs(self.replacements)
-        else:
-            A_inv = A.inv(method=method)
-        return A_inv*b 
-        
     def generalize(self,list1,q_d):
         generalized=[]
         for speed in q_d:
             new = pynamics.ZERO
-#            generalized[speed]=pynamics.ZERO
             for expression,velocity in list1:
                 new+=expression.dot(velocity.diff_partial_local(speed,self))
             generalized.append(new)
         return generalized
         
-    def add_derivative(self,expression,variable):
-        self.derivatives[expression]=variable
-    def add_constant(self,constant,value):
-        self.constants[constant]=value
-
-    def createsecondorderfunction(system,f,ma):
-        statevariables = system.get_q(0)+system.get_q(1)
-        var_dd = system.solvedynamics(f,ma,auto_z=True)
-        var_dd=var_dd.subs(system.constants)
-        functions = [sympy.lambdify(statevariables,rhs) for rhs in var_dd]
-        indeces = [statevariables.index(element) for element in system.get_q(1)]
-        def func1(state,time):
-            return numpy.r_[[state[ii] for ii in indeces],[f(*state) for f in functions]].tolist()
-        return func1
-
-    def createsecondorderfunction2(system,f,ma):
+    def state_space_pre_invert(system,f,ma,inv_method = 'LU',auto_z= False):
+        '''pre-invert A matrix'''
+        
         q_state = system.get_q(0)+system.get_q(1)
-        q_state_d = system.get_q(1) + system.get_q(2)
+
+#        q_d = system.get_q(1)
+        q_dd = system.get_q(2)
+        
         f = sympy.Matrix(f)
         ma = sympy.Matrix(ma)
-        q = system.get_q(0)
-        q_d = system.get_q(1)
-        q_dd = system.get_q(2)
-    
-        Ax_b = ma-f
-        x = sympy.Matrix(q_dd)
-        A = Ax_b.jacobian(x)
-        b = -Ax_b.subs(dict(list([(item,0) for item in x])))
         
-        m = len(q_d)
-        A_full = sympy.zeros(2*m)   
-        A_full[:m,:m] = sympy.eye(m)
-        A_full[m:,m:] = A
-        b_full = sympy.zeros(2*m,1)
-        b_full[:m,0]=q_d
-        b_full[m:,0]=b
-        
-        c_sym = list(system.constants.keys())
-        c_val = [system.constants[key] for key in c_sym]
-    
-        fA = sympy.lambdify(q_state+c_sym,A_full)
-        fb = sympy.lambdify(q_state+c_sym,b_full)
-    
-        @static_vars(ii=0)
-        def func(state,time):
-            a = list(state)+c_val
-            Ai = fA(*a)
-            bi = fb(*a)
-            if func.ii%1000==0:
-                print(time)
-            func.ii+=1
-            x = numpy.array(scipy.linalg.inv(Ai).dot(bi))
-            return x.flatten().tolist()
-        return func
-
-    def createsecondorderfunction3(system,f,ma):
-        q_state = system.get_q(0)+system.get_q(1)
-        q_state_d = system.get_q(1) + system.get_q(2)
-    #    q = system.get_q(0)+system.get_q(1)
-        f = sympy.Matrix(f)
-#        f = f.subs(system.constants)
-    #    f_f = sympy.lambdify(q,f)
-        ma = sympy.Matrix(ma)
-    #    ma = ma.subs(system.constants)
-    #    f_ma = sympy.lambdify(q,f)
-        q = system.get_q(0)
-        q_d = system.get_q(1)
-        q_dd = system.get_q(2)
-    
         Ax_b = ma-f
         Ax_b = Ax_b.subs(system.constants)
-        x = sympy.Matrix(q_dd)
-        A = Ax_b.jacobian(x)
-        b = -Ax_b.subs(dict(list([(item,0) for item in x])))
+        A = Ax_b.jacobian(q_dd)
+        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+
+        if auto_z:
+            def func1(x):
+                if x!=pynamics.ZERO:
+                    return system.generatez(x)
+                else:
+                    return x
+            AA = A.applyfunc(func1)
+            AA_inv = AA.inv(method = inv_method)
+            keys = system.replacements.keys()
+
+            fAA_inv = sympy.lambdify(keys,AA_inv)
+            A_inv = fAA_inv(*[system.replacements[key] for key in keys])
+
+        else:
+            A_inv = A.inv(method=inv_method)
+        var_dd = A_inv*b 
         
-        m = len(q_d)
-        A_full = sympy.zeros(2*m)   
-        A_full[:m,:m] = sympy.eye(m)
-        A_full[m:,m:] = A
-        b_full = sympy.zeros(2*m,1)
-        b_full[:m,0]=q_d
-        b_full[m:,0]=b
+        functions = [sympy.lambdify(q_state,rhs) for rhs in var_dd]
+        indeces = [q_state.index(element) for element in system.get_q(1)]
         
-#        c_sym = list(system.constants.keys())
-#        c_val = [system.constants[key] for key in c_sym]
-    
-        fA = sympy.lambdify(q_state,A_full)
-        fb = sympy.lambdify(q_state,b_full)
-    
-    
-        def func(state,time):
-            a = state
-            x = numpy.array(scipy.linalg.inv(fA(*a))*fb(*a))
-            return x.flatten().tolist()
-        return func
-        
-    def createsecondorderfunction4(system,f,ma,fJ):
-        q_state = system.get_q(0)+system.get_q(1)
-        q_state_d = system.get_q(1) + system.get_q(2)
-    #    q = system.get_q(0)+system.get_q(1)
-        f = sympy.Matrix(f)
-    #    f = f.subs(system.constants)
-    #    f_f = sympy.lambdify(q,f)
-        ma = sympy.Matrix(ma)
-    #    ma = ma.subs(system.constants)
-    #    f_ma = sympy.lambdify(q,f)
-        q = system.get_q(0)
-        q_d = system.get_q(1)
-        q_dd = system.get_q(2)
-    
-        Ax_b = ma-f
-    #    Ax_b = Ax_b.subs(system.constants)
-        x = sympy.Matrix(q_dd)
-        A = Ax_b.jacobian(x)
-        b = -Ax_b.subs(dict(list([(item,0) for item in x])))
-        
-        m = len(q_d)
-        A_full = sympy.zeros(2*m)   
-        A_full[:m,:m] = sympy.eye(m)
-        A_full[m:,m:] = A
-        b_full = sympy.zeros(2*m,1)
-        b_full[:m,0]=q_d
-        b_full[m:,0]=b
-        
-        c_sym = list(system.constants.keys())
-        c_val = [system.constants[key] for key in c_sym]
-    
-        fA = sympy.lambdify(q_state+c_sym,A_full)
-        fb = sympy.lambdify(q_state+c_sym,b_full)
-    
         @static_vars(ii=0)
         def func(state,time):
-            a = list(state)+c_val
-#            global ii
-            Ji = fJ(*state)
-            U, s, V = scipy.linalg.svd(Ji,full_matrices = False)
-
-            s= s[s!=0]
-            V = V[s!=0]
-            l = len(s)
-
-            Ai = fA(*a)
-            bi = fb(*a)
             if func.ii%100==0:
                 print(time)
             func.ii+=1
-#            A = numpy.vstack((Ai[4:,4:],Ji))            
             
-#            bi[m:] = bi[m:] - (s*V).T
-            n = len(Ai)
-            Ai2 = numpy.zeros((n+l,n+l))
-            Ai2[:n,:n] = Ai
-            Ai2[n:,m:n] = V
-            Ai2[m:n,n:] = V.T
-#            Ai2[n:,n:] = numpy.eye(l)
-            bi2 = numpy.zeros((n+l,1))
-            bi2[:n] = bi[:n]
-#            bi2[n:] = numpy.zeros(l)
-#            U, s, V = scipy.linalg.svd(A,full_matrices = True)
-#            print(U.shape,s.shape,V.shape)
-#            Ai[4:,4:]=V.T
-            x = numpy.array(scipy.linalg.inv(Ai2).dot(bi2))
-            
-#            x =             
-            return x.flatten().tolist()
+            x1 = [state[ii] for ii in indeces]
+            x2 = [f(*state) for f in functions]
+            x3 = numpy.r_[x1,x2]
+            x4 = x3.flatten().tolist()
+
+            return x4
+
         return func
+
+    def state_space_post_invert(system,f,ma,eq = None,eq_active = None,presolve_constants = False):
+        '''invert A matrix each call'''
         
-    def createsecondorderfunction5(system,f,ma,fJ,zero):
         q_state = system.get_q(0)+system.get_q(1)
-        q_state_d = system.get_q(1) + system.get_q(2)
-    #    q = system.get_q(0)+system.get_q(1)
-        f = sympy.Matrix(f)
-        f = f.subs(system.constants)
-    #    f_f = sympy.lambdify(q,f)
-        ma = sympy.Matrix(ma)
-        ma = ma.subs(system.constants)
-    #    f_ma = sympy.lambdify(q,f)
-        q = system.get_q(0)
+
         q_d = system.get_q(1)
         q_dd = system.get_q(2)
-    
-        Ax_b = ma-f
-    #    Ax_b = Ax_b.subs(system.constants)
-        x = sympy.Matrix(q_dd)
-        A = Ax_b.jacobian(x)
-        b = -Ax_b.subs(dict(list([(item,0) for item in x])))
-        fA = sympy.lambdify(q_state,A)
-        fb = sympy.lambdify(q_state,b)
 
-        z = zero.subs(system.constants)
-        fz = sympy.lambdify(q_state,z)
-        
-        
-        @static_vars(ii=0)
-        def func(state,time):
-            Ai = fA(*state)
-            bi = fb(*state)
-            Ji = fJ(*state)
-            zi = fz(*state)
-
-#            U, s, V = scipy.linalg.svd(Ji,full_matrices = False)
-#            if 0 in s:
-#                print(s)
-#                s = s[s!=0]
-#                U = U[:,s!=0]
-#                V = V[s!=0]
-#                S = numpy.zeros((U.shape[1],V.shape[0]))
-#                S[:len(s),:len(s)] = numpy.diag(s)
-#                Ji = numpy.matrix(S.dot(V))
-            
-            if func.ii%1000==0:
-                print(time)
-            func.ii+=1
-            
-            a_state = numpy.c_[state]
-
-            m_A,n_A = Ai.shape
-            m_b,n_b = bi.shape
-            m_J,n_J = Ji.shape
-
-            A_1 = numpy.vstack((Ai,Ji))
-            C = numpy.zeros((m_J,m_J))
-            A_2 = numpy.vstack((Ji.T,C))
-            A = numpy.hstack((A_1,A_2))
-
-#            U, s, V = scipy.linalg.svd(A,full_matrices = False)
-#            filt = abs(s)/abs(s).max()>1e-3
-##            S = numpy.zeros((U.shape[1],V.shape[0]))
-##            S[:len(s),:len(s)] = numpy.diag(s)
-#            S_pinv = numpy.zeros((U.shape[1],V.shape[0]))
-#            S_pinv[filt,filt] = 1/s[filt]
-#            S_pinv = S_pinv.T
-#            
-#            A_inv = ((V.T.dot(S_pinv)).dot(U.T))
-            A_inv = scipy.linalg.pinv2(A_1)
-            m_q = len(state)
-            A_inv_full = numpy.zeros((m_q+m_J,m_q+m_J))
-            A_inv_full[:m_q-m_b,:m_q-m_b] = numpy.eye(m_q-m_b)
-            A_inv_full[m_q-m_b:,m_q-m_b:] = A_inv
-            b_full = numpy.zeros((m_q+m_J,1))
-            b_full[:m_q-m_b] = a_state[m_q-m_b:]
-            b_full[m_q-m_b:m_q] = bi
-            x = A_inv_full.dot(b_full)
-#            x[m_q-m_b:m_q] += -1e-1*Ji.T*zi
-#            x[:m_q-m_b] += -1e-2*Ji.T*zi
-#            x
-            
-#            x = A_full
-#            A = numpy.vstack((Ai[4:,4:],Ji))            
-#            bi[m:] = bi[m:] - (s*V).T
-#            n = len(Ai)
-#            Ai2 = numpy.zeros((n+l,n+l))
-#            Ai2[:n,:n] = Ai
-#            Ai2[n:,m:n] = V
-#            Ai2[m:n,n:] = V.T
-##            Ai2[n:,n:] = numpy.eye(l)
-#            bi2 = numpy.zeros((n+l,1))
-#            bi2[:n] = bi[:n]
-##            bi2[n:] = numpy.zeros(l)
-##            U, s, V = scipy.linalg.svd(A,full_matrices = True)
-##            print(U.shape,s.shape,V.shape)
-##            Ai[4:,4:]=V.T
-#            x = numpy.array(scipy.linalg.inv(Ai2).dot(bi2))
-            
-#            x =             
-            return x[:m_q].flatten().tolist()
-#            return [0]*len(state)
-        return func
-        
-    def createsecondorderfunction6(system,f,ma,fJ,zero,zero_d):
-        from numpy import r_, c_
-        q_state = system.get_q(0)+system.get_q(1)
-    #    q = system.get_q(0)+system.get_q(1)
-        f = sympy.Matrix(f)
-        f = f.subs(system.constants)
-    #    f_f = sympy.lambdify(q,f)
-        ma = sympy.Matrix(ma)
-        ma = ma.subs(system.constants)
-    #    f_ma = sympy.lambdify(q,f)
-        q_dd = system.get_q(2)
-    
-        Ma_f = ma-f
-        M = Ma_f.jacobian(q_dd)
-        f = -Ma_f.subs(dict(list([(item,0) for item in q_dd])))
-        fM = sympy.lambdify(q_state,M)
-        ff = sympy.lambdify(q_state,f)
-
-        z = zero.subs(system.constants)
-        fz = sympy.lambdify(q_state,z)
-
-        z_d = zero_d.subs(system.constants)
-        fz_d = sympy.lambdify(q_state,z_d)
-        
-        
-        @static_vars(ii=0)
-        def func(state,time):
-            Mi = fM(*state)
-            fi = ff(*state)
-            Ji = fJ(*state)
-            zi = fz(*state)
-            z_di = fz_d(*state)
-
-            Mi_inv = scipy.linalg.pinv(Mi)
-
-            if func.ii%1000==0:
-                print(time)
-            func.ii+=1
-            
-#            Ji_o = Ji            
-#            Ji = svd.prefilter(Ji)
-            
-            k,l = M.shape
-            m,n = Ji.shape
-            A = Ji.dot(Mi_inv.dot(Ji.T))
-            b = -Ji.dot(Mi_inv.dot(fi))
-#            Ai = svd.pinv(A)
-            Ai = scipy.linalg.pinv2(A)
-#            if not ((Ai-Ai2)==0).all():
-#                print(Ai-Ai2)
-#                Ai = svd.pinv(A)
-#            else:
-#                Ai = svd.pinv(A)
-            lam = Ai.dot(b)
-            
-#            H = r_[c_[Mi,-Ji.T],c_[-Ji,numpy.zeros((m,m))]]
-#            zb = r_[numpy.zeros(k),numpy.asarray(b).squeeze()]
-#            ylam = scipy.linalg.pinv2(H).dot(zb)
-#            lam = ylam[k:]
-            a = numpy.asarray(Mi_inv.dot(Ji.T.dot(lam)+fi)).flatten()
-            a += numpy.asarray(-1e4*Ji.T*z_di).flatten()
-#            print(a,b)            
-            a = a.tolist()
-
-            v = numpy.asarray(state[k:]).flatten()
-            v += numpy.asarray(-1e4*Ji.T*zi).flatten()
-            v = v.tolist()
-            return v+a
-            
-        return func
-
-
-    def create_state_space_constrained(system,f,ma,eq = None,eq_active = None):
-        eq = eq or []
-        
-        q = system.get_q(0)
-        q_d = system.get_q(1)
-        q_dd = system.get_q(2)
-    
-        if not eq:
-            J = sympy.Matrix([])
-            c = sympy.Matrix
-        else:
-            eq2 = sympy.Matrix([eq])
-            J = eq2.jacobian(q_dd)
-            c = (eq2-J*sympy.Matrix(q_dd)).expand()
-            
-        q_state = system.get_q(0)+system.get_q(1)
         f = sympy.Matrix(f)
         ma = sympy.Matrix(ma)
-    
-        Ax_b = ma-f
-        x = sympy.Matrix(q_dd)
-        A = Ax_b.jacobian(x)
-        b = -Ax_b.subs(dict(list([(item,0) for item in x])))
         
+        Ax_b = ma-f
+        if presolve_constants:
+            Ax_b = Ax_b.subs(system.constants)
+        A = Ax_b.jacobian(q_dd)
+        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+
         m = len(q_d)
     
+        eq = eq or []
+#        eq_active = eq_active or []
+        
         if not eq:
             A_full = A
             b_full = b
-
+            n=0
         else:
+            eq2 = sympy.Matrix(eq)
+            J = eq2.jacobian(q_dd)
+            c = -eq2.subs(dict(list([(item,0) for item in q_dd])))
+
             n = len(eq)
             A_full = sympy.zeros(m+n)   
             A_full[:m,:m] = A
@@ -519,25 +203,51 @@ class System(object):
         
             b_full = sympy.zeros(m+n,1)
             b_full[:m,0]=b
-            b_full[m:,0]=-c
+            b_full[m:,0]=c
             
-        c_sym = list(system.constants.keys())
-        c_val = [system.constants[key] for key in c_sym]
+        if presolve_constants:
+            fA = sympy.lambdify(q_state,A_full)
+            fb = sympy.lambdify(q_state,b_full)
+#            factive = sympy.lambdify(q_state,sympy.Matrix(eq_active))
+        else:
+            c_sym = list(system.constants.keys())
+            c_val = [system.constants[key] for key in c_sym]
+            fA = sympy.lambdify(q_state+c_sym,A_full)
+            fb = sympy.lambdify(q_state+c_sym,b_full)
+#            factive = sympy.lambdify(q_state+c_sym,sympy.Matrix(eq_active))
+
+        indeces = [q_state.index(element) for element in system.get_q(1)]
     
-        fA = sympy.lambdify(q_state+c_sym,A_full)
-        fb = sympy.lambdify(q_state+c_sym,b_full)
-    
+        @static_vars(ii=0)
         def func(state,time,*args):
-            a = list(state)+c_val
+            if func.ii%100==0:
+                print(time)
+            func.ii+=1
+            
+            if presolve_constants:
+                a = list(state)
+            else:
+                a = list(state)+c_val
+                
             Ai = fA(*a)
             bi = fb(*a)
-            x1 = state[m:]
+            
+#            active = numpy.array(m*[1]+factive(*a).flatten().tolist())
+#            f1 = numpy.eye(m+n)             
+#            f2 = f1[(active!=0).nonzero()[0],:]
+#            
+#            Ai2=(f2.dot(Ai)).dot(f2.T)
+#            bi2=f2.dot(bi)
+            
+            x1 = [state[ii] for ii in indeces]
             x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
+            
             return x4
-        return func
-    
+            
+        return func        
+
     @staticmethod
     def assembleconstrained(eq_dyn,eq_con,q_dyn,q_con,method='LU'):
         AC1x_b1 = sympy.Matrix(eq_dyn)
