@@ -119,7 +119,7 @@ def createsecondorderfunction2(system,f,ma,J,c):
 
     b_full = sympy.zeros(m+n,1)
     b_full[:m,0]=b
-    b_full[m:,0]=c
+    b_full[m:,0]=-c
     
     c_sym = list(system.constants.keys())
     c_val = [system.constants[key] for key in c_sym]

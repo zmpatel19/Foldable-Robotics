@@ -91,5 +91,5 @@ plt.plot(y[:,2])
 
 plt.figure(3)
 plt.hold(True)
-plt.plot(t,y[:,3])
+plt.plot(t,y[:,0])
 plt.show()
