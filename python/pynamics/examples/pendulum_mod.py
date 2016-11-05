@@ -23,6 +23,12 @@ plt.ion()
 from sympy import pi
 system = System()
 
+def der(eq,system):
+    b = sympy.Number(0)
+    for item in system.get_q(0)+system.get_q(1):
+        b+=eq.diff(item)*system.derivative(item)
+    return b
+
 lA = Constant('lA',1,system)
 
 mA = Constant('mA',1,system)
@@ -40,6 +46,7 @@ preload1 = Constant('preload1',0*pi/180,system)
 
 x,x_d,x_dd = Differentiable(system,'x')
 y,y_d,y_dd = Differentiable(system,'y')
+f = Variable('f')
 
 initialvalues = {}
 initialvalues[x]=1
@@ -69,13 +76,29 @@ y1 = ParticleA.pCM.dot(N.y)
 KE = system.KE
 PE = system.getPEGravity(pNA) - system.getPESprings()
 
-v = pAB-pNA
-eq = [(v.dot(v))**.5 - lA]
-J = sympy.Matrix(eq).jacobian(system.get_q(0))
+pynamics.tic()
+print('solving dynamics...')
+f,ma = system.getdynamics()
+print('creating second order function...')
 
-def createsecondorderfunction2(system,f,ma):
+v = pAB-pNA
+u = (v.dot(v))**.5
+
+eq = [(v.dot(v)) - lA**2]
+b=der(der(eq[0],system),system)
+b = sympy.Matrix([b])
+q2 = sympy.Matrix(system.get_q(2))
+J = b.jacobian(q2)
+c = (b-J*q2).expand()
+
+#system.addforce(-f*u,vAB)
+
+statevariables = system.get_q(0)+system.get_q(1)
+augmented = [f]
+
+def createsecondorderfunction2(system,f,ma,J,c):
     q_state = system.get_q(0)+system.get_q(1)
-    q_state_d = system.get_q(1) + system.get_q(2)
+#    q_state_d = system.get_q(1) + system.get_q(2)
     f = sympy.Matrix(f)
     ma = sympy.Matrix(ma)
     q = system.get_q(0)
@@ -88,12 +111,15 @@ def createsecondorderfunction2(system,f,ma):
     b = -Ax_b.subs(dict(list([(item,0) for item in x])))
     
     m = len(q_d)
-    A_full = sympy.zeros(2*m)   
-    A_full[:m,:m] = sympy.eye(m)
-    A_full[m:,m:] = A
-    b_full = sympy.zeros(2*m,1)
-    b_full[:m,0]=q_d
-    b_full[m:,0]=b
+    n = J.shape[0]
+    A_full = sympy.zeros(m+n)   
+    A_full[:m,:m] = A
+    A_full[m,:m] = J
+    A_full[:m,m] = J.T
+
+    b_full = sympy.zeros(m+n,1)
+    b_full[:m,0]=b
+    b_full[m:,0]=c
     
     c_sym = list(system.constants.keys())
     c_val = [system.constants[key] for key in c_sym]
@@ -105,15 +131,14 @@ def createsecondorderfunction2(system,f,ma):
         a = list(state)+c_val
         Ai = fA(*a)
         bi = fb(*a)
-        x = numpy.array(scipy.linalg.inv(Ai).dot(bi))
-        return x.flatten().tolist()
+        x1 = state[m:]
+        x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
+        x3 = numpy.r_[x1,x2[:m]]
+        x4 = x3.flatten().tolist()
+        return x4
     return func
-    
-pynamics.tic()
-print('solving dynamics...')
-f,ma = system.getdynamics()
-print('creating second order function...')
-func1 = createsecondorderfunction2(system,f,ma)
+
+func1 = createsecondorderfunction2(system,f,ma,J,c)
 print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
 pynamics.toc()
