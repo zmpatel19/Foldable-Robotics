@@ -23,7 +23,7 @@ plt.ion()
 from sympy import pi
 system = System()
 
-lA = Constant('lA',1,system)
+lA = Constant('lA',2,system)
 mA = Constant('mA',1,system)
 g = Constant('g',9.81,system)
 b = Constant('b',1e0,system)
@@ -70,20 +70,21 @@ v = pAB-pNA
 u = (v.dot(v))**.5
 
 eq1 = [(v.dot(v)) - lA**2]
+eq1_d=[system.derivative(item) for item in eq1]
 eq1_dd=[system.derivative(system.derivative(item)) for item in eq1]
 eq = eq1_dd
-
-#a=[(v.dot(v)) - lA**2]
-a=[1]
+#
+a=[(v.dot(v)) - lA**2]
+#a=[1]
 b = [(item+abs(item)) for item in a]
 
 pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
 print('creating second order function...')
-func = system.state_space_post_invert(f,ma,eq,eq_active = b)
+func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = b)
 print('integrating...')
-states=scipy.integrate.odeint(func,ini,t,args=(),rtol=1e-12,atol=1e-12,hmin=1e-14)
+states=scipy.integrate.odeint(func,ini,t,args=(1e4,1e2))
 pynamics.toc()
 print('calculating outputs..')
 output = Output([x1,y1,KE-PE,x,y]+eq1+b,system)

@@ -248,6 +248,99 @@ class System(object):
             
         return func        
 
+    def state_space_post_invert2(system,f,ma,eq_dd,eq_d,eq,eq_active,presolve_constants = False):
+        '''invert A matrix each call'''
+        
+        q_state = system.get_q(0)+system.get_q(1)
+
+        q_d = system.get_q(1)
+        q_dd = system.get_q(2)
+
+        f = sympy.Matrix(f)
+        ma = sympy.Matrix(ma)
+        
+        Ax_b = ma-f
+        if presolve_constants:
+            Ax_b = Ax_b.subs(system.constants)
+        A = Ax_b.jacobian(q_dd)
+        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+
+        m = len(q_d)
+    
+        eq = eq or []
+        eq_d = eq_d or []
+        eq_dd = eq_dd or []
+        
+        if not eq_dd:
+            A_full = A
+            b_full = b
+            n=0
+        else:
+            eq2 = sympy.Matrix(eq_dd)
+            J = eq2.jacobian(q_dd)
+            c = -eq2.subs(dict(list([(item,0) for item in q_dd])))
+
+            n = len(eq_dd)
+            A_full = sympy.zeros(m+n)   
+            A_full[:m,:m] = A
+            A_full[m:,:m] = J
+            A_full[:m,m:] = J.T
+        
+            b_full = sympy.zeros(m+n,1)
+            b_full[:m,0]=b
+            b_full[m:,0]=c
+
+        eq_active = eq_active or [1]*m
+            
+        if presolve_constants:
+            state_full = q_state
+        else:
+            c_sym = list(system.constants.keys())
+            c_val = [system.constants[key] for key in c_sym]
+            state_full = q_state+c_sym
+
+        fA = sympy.lambdify(state_full,A_full)
+        fb = sympy.lambdify(state_full,b_full)
+        feq = sympy.lambdify(state_full,sympy.Matrix(eq))
+        feq_d = sympy.lambdify(state_full,sympy.Matrix(eq_d))
+        factive = sympy.lambdify(state_full,sympy.Matrix(eq_active))
+
+        indeces = [q_state.index(element) for element in system.get_q(1)]
+    
+        @static_vars(ii=0)
+        def func(state,time,*args):
+            if func.ii%100==0:
+                print(time)
+            func.ii+=1
+            
+            alpha, beta = args
+            
+            if presolve_constants:
+                state_i_full = list(state)
+            else:
+                state_i_full = list(state)+c_val
+                
+            Ai = fA(*state_i_full)
+            bi = fb(*state_i_full)
+            eqi = feq(*state_i_full)
+            eq_di = feq_d(*state_i_full)
+            
+            bi[m:] = bi[m:]-2*alpha*eq_di-beta**2*eqi
+
+            active = numpy.array(m*[1]+factive(*state_i_full).flatten().tolist())
+            f1 = numpy.eye(m+n)             
+            f2 = f1[(active!=0).nonzero()[0],:]
+            
+            Ai=(f2.dot(Ai)).dot(f2.T)
+            bi=f2.dot(bi)
+            
+            x1 = [state[ii] for ii in indeces]
+            x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
+            x3 = numpy.r_[x1,x2[:m]]
+            x4 = x3.flatten().tolist()
+            return x4
+        return func       
+
     @staticmethod
     def assembleconstrained(eq_dyn,eq_con,q_dyn,q_con,method='LU'):
         AC1x_b1 = sympy.Matrix(eq_dyn)
