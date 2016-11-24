@@ -27,7 +27,7 @@ mA = Constant('mA',1,system)
 
 g = Constant('g',9.81,system)
 b = Constant('b',1e0,system)
-k = Constant('k',1e10,system)
+k = Constant('k',1e5,system)
 
 tinitial = 0
 tfinal = 5
@@ -77,7 +77,7 @@ pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
 print('creating second order function...')
-func1 = system.createsecondorderfunction2(f,ma)
+func1 = system.state_space_post_invert(f,ma)
 print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
 pynamics.toc()
