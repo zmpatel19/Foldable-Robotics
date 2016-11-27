@@ -27,8 +27,8 @@ class Body(object):
         self.effectiveforce = self.mass*self.aCM
         self.momentofeffectiveforce= self.inertia.dot(self.alNBody)+self.wNBody.cross(self.inertia.dot(self.wNBody))
         self.KE = .5*mass*self.vCM.dot(self.vCM) + .5*self.wNBody.dot(self.inertia.dot(self.wNBody))
-        self.linearmomentum = self.mass*self.vCM
-        self.angularmomentum = self.inertia.dot(self.wNBody)
+#        self.linearmomentum = self.mass*self.vCM
+#        self.angularmomentum = self.inertia.dot(self.wNBody)
         
         self.system.bodies.append(self)
         self.adddynamics()
@@ -37,8 +37,8 @@ class Body(object):
     def adddynamics(self):
         self.system.addeffectiveforce(self.effectiveforce,self.vCM)
         self.system.addeffectiveforce(self.momentofeffectiveforce,self.wNBody)
-        self.system.addmomentum(self.linearmomentum,self.vCM)
-        self.system.addmomentum(self.angularmomentum,self.wNBody)
+#        self.system.addmomentum(self.linearmomentum,self.vCM)
+#        self.system.addmomentum(self.angularmomentum,self.wNBody)
         self.system.addKE(self.KE)
 
     def addforcegravity(self,gravityvector):

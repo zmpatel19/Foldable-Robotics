@@ -62,7 +62,7 @@ B.rotate_fixed_axis_directed(A,[1,0,0],-qB,system)
 
 Origin=0*N.x
 pCcm=Origin + L*B.z
-vCcm = pCcm.diff_in_parts(N,system)
+vCcm = pCcm.time_derivative(N,system)
 
 II = 1/4*m*r**2
 

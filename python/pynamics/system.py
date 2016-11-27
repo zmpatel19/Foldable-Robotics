@@ -25,7 +25,7 @@ class System(object):
         self.constants = {}
         self.forces = []
         self.effectiveforces = []
-        self.momentum = []
+#        self.momentum = []
         self.KE = sympy.Number(0)
         self.bodies = []
         self.particles = []
@@ -65,8 +65,8 @@ class System(object):
     def addeffectiveforce(self,effectiveforce,velocity):
         self.effectiveforces.append((effectiveforce,velocity))
 
-    def addmomentum(self,momentum,velocity):
-        self.momentum.append((momentum,velocity))
+#    def addmomentum(self,momentum,velocity):
+#        self.momentum.append((momentum,velocity))
 
     def addKE(self,KE):
         self.KE+=KE

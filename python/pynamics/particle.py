@@ -23,14 +23,14 @@ class Particle(object):
                 
         self.effectiveforce = self.mass*self.aCM
         self.KE = .5*mass*self.vCM.dot(self.vCM)
-        self.linearmomentum = self.mass*self.vCM
+#        self.linearmomentum = self.mass*self.vCM
         
         self.system.particles.append(self)
         self.adddynamics()
 
     def adddynamics(self):
         self.system.addeffectiveforce(self.effectiveforce,self.vCM)
-        self.system.addmomentum(self.linearmomentum,self.vCM)
+#        self.system.addmomentum(self.linearmomentum,self.vCM)
         self.system.addKE(self.KE)
         
     def addforcegravity(self,gravityvector):
