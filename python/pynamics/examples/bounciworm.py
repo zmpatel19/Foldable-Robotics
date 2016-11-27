@@ -75,9 +75,9 @@ pk2 = pm1+l2*A.x
 vk1 = pk1.time_derivative(N,system)
 vk2 = pk2.time_derivative(N,system)
 
-Ixx_A = Constant('Ixx_A',8.96572844222684e-07,system)
-Iyy_A = Constant('Iyy_A',5.31645644183654e-06,system)
-Izz_A = Constant('Izz_A',5.31645644183654e-06,system)
+Ixx_A = Constant('Ixx_A',1e-4,system)
+Iyy_A = Constant('Iyy_A',1e-4,system)
+Izz_A = Constant('Izz_A',1e-4,system)
 #Ixx_B = Constant('Ixx_B',6.27600676796613e-07,system)
 #Iyy_B = Constant('Iyy_B',1.98358014762822e-06,system)
 #Izz_B = Constant('Izz_B',1.98358014762822e-06,system)
@@ -96,7 +96,7 @@ s1 = pk1.dot(N.y)*N.y
 s2 = pk2.dot(N.y)*N.y
 
 system.add_spring_force(k,s1,vk1)
-system.add_spring_force(k,s2,vk1)
+system.add_spring_force(k,s2,vk2)
 system.addforcegravity(-g*N.y)
 #system.addforcegravity(-g*N.y)
 #system.addforcegravity(-g*N.y)
@@ -105,7 +105,6 @@ x1 = BodyA.pCM.dot(N.x)
 y1 = BodyA.pCM.dot(N.y)
 x2 = Particle2.pCM.dot(N.x)
 y2 = Particle2.pCM.dot(N.y)
-
 
 KE = system.KE
 PE = system.getPEGravity(pNA) - system.getPESprings()
@@ -136,8 +135,8 @@ plt.hold(True)
 plt.plot(t,y[:,3])
 plt.show()
 
-plt.figure(5)
-plt.plot(t,y[:,5:7])
-plt.show()
+#plt.figure(5)
+#plt.plot(t,y[:,5:7])
+#plt.show()
 
 
