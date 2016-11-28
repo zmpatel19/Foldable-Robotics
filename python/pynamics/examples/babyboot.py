@@ -114,5 +114,5 @@ plt.plot(y[:,4])
 
 plt.figure(3)
 plt.hold(True)
-plt.plot(t,y[:,5:])
+plt.plot(t,y[:,6:]*180/pi)
 plt.show()
