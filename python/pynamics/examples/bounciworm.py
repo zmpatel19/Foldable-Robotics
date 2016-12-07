@@ -23,19 +23,24 @@ plt.ion()
 from sympy import pi
 system = System()
 
+error = 1e-4
+
 l1 = Constant('l1',1,system)
 l2 = Constant('l2',1,system)
 l3 = Constant('l3',1,system)
 m2 = Constant('m1',1,system)
 m1 = Constant('m2',1,system)
 g = Constant('g',9.81,system)
-#b = Constant('b',1e0,system)
+b = Constant('b',1e1,system)
 k = Constant('k',1e1,system)
 #preload1 = Constant('preload1',0*pi/180,system)
+k_controller = Constant('k_controller',1e2,system)
+q2_command = Constant('q2_command',90*pi/180,system)
+#q2_command= Variable('q2_command')
 
 tinitial = 0
-tfinal = 5
-tstep = .001
+tfinal = 1
+tstep = .01
 t = numpy.r_[tinitial:tfinal:tstep]
 
 x,x_d,x_dd = Differentiable(system,'x')
@@ -69,6 +74,7 @@ pNA=0*N.x
 #vAB=pAB.time_derivative(N,system)
 
 pm1 = x*N.x+y*N.y
+vm1 = pm1.time_derivative(N,system)
 pm2 = pm1 + l3*B.x
 pk1 = pm1-l1*A.x
 pk2 = pm1+l2*A.x
@@ -94,10 +100,21 @@ Particle2 = Particle(system,pm2,m2,'Particle2')
 
 s1 = pk1.dot(N.y)*N.y
 s2 = pk2.dot(N.y)*N.y
+s3 = (q2-q2_command)*A.z
+wNA = A.getw_(N)
+wNB = B.getw_(N)
+
+#switch1 = 
 
 system.add_spring_force(k,s1,vk1)
 system.add_spring_force(k,s2,vk2)
+system.add_spring_force(k_controller,s3,wNA)
+system.add_spring_force(k_controller,-s3,wNB)
+
+system.addforce(-b*vm1,vm1)
+
 system.addforcegravity(-g*N.y)
+
 #system.addforcegravity(-g*N.y)
 #system.addforcegravity(-g*N.y)
 
@@ -115,7 +132,7 @@ f,ma = system.getdynamics()
 print('creating second order function...')
 func = system.state_space_post_invert(f,ma)
 print('integrating...')
-states=scipy.integrate.odeint(func,ini,t,args=(1e4,1e2))
+states=scipy.integrate.odeint(func,ini,t,rtol = error, atol = error, args=(1e4,1e2))
 pynamics.toc()
 print('calculating outputs..')
 output = Output([x1,y1,KE-PE,x,y],system)
