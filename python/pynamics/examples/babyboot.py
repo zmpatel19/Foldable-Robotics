@@ -8,7 +8,7 @@ Please see LICENSE for full license.
 import pynamics
 #pynamics.script_mode = True
 from pynamics.frame import Frame
-from pynamics.variable_types import Differentiable,Constant
+from pynamics.variable_types import Differentiable,Constant,Variable
 from pynamics.system import System
 from pynamics.body import Body
 from pynamics.dyadic import Dyadic
@@ -23,11 +23,13 @@ plt.ion()
 from sympy import pi
 system = System()
 
-lA = Constant('lA',.075,system)
-lB = Constant('lB',.02,system)
+error = 1e-12
 
-mA = Constant('mA',.01,system)
-mB = Constant('mB',.1,system)
+lA = Constant('lA',7.5/100,system)
+lB = Constant('lB',20/100,system)
+
+mA = Constant('mA',10/1000,system)
+mB = Constant('mB',100/1000,system)
 
 g = Constant('g',9.81,system)
 
@@ -36,18 +38,19 @@ tfinal = 10
 tstep = .001
 t = numpy.r_[tinitial:tfinal:tstep]
 
-Ixx_A = Constant('Ixx_A',.05/100/100,system)
-Iyy_A = Constant('Iyy_A',.05/100/100,system)
-Izz_A = Constant('Izz_A',.05/100/100,system)
-Ixx_B = Constant('Ixx_B',2.5/100/100,system)
-Iyy_B = Constant('Iyy_B',.5/100/100,system)
-Izz_B = Constant('Izz_B',2/100/100,system)
+
+Ixx_A = Constant('Ixx_A',50/1000/100/100,system)
+Iyy_A = Variable('Iyy_A')
+Izz_A = Variable('Izz_A')
+Ixx_B = Constant('Ixx_B',2500/1000/100/100,system)
+Iyy_B = Constant('Iyy_B',500/1000/100/100,system)
+Izz_B = Constant('Izz_B',2000/1000/100/100,system)
 
 qA,qA_d,qA_dd = Differentiable(system,'qA')
 qB,qB_d,qB_dd = Differentiable(system,'qB')
 
 initialvalues = {}
-initialvalues[qA]=45*pi/180
+initialvalues[qA]=90*pi/180
 initialvalues[qA_d]=0*pi/180
 initialvalues[qB]=.5*pi/180
 initialvalues[qB_d]=0*pi/180
@@ -93,10 +96,19 @@ PE = system.getPEGravity(pNA) - system.getPESprings()
 pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
+
+#import sympy
+#eq = sympy.Matrix(f)-sympy.Matrix(ma)
+#sol = sympy.solve(eq,(qA_dd,qB_dd))
+#
+#qadd = sol[qA_dd]
+#qbdd = sol[qB_dd]
+#
+#(Ixx_B*qA_d*qB_d*sin(2*qB) - Iyy_B*qA_d*qB_d*sin(2*qB) - g*lA*mA*sin(qA) - g*lB*mB*sin(qA))/(Ixx_A - Ixx_B*sin(qB)**2 + Ixx_B + Iyy_B*sin(qB)**2 + lA**2*mA + lB**2*mB)
 print('creating second order function...')
 func1 = system.state_space_post_invert(f,ma)
 print('integrating...')
-states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
+states=scipy.integrate.odeint(func1,ini,t,rtol=error,atol=error)
 pynamics.toc()
 print('calculating outputs..')
 output = Output([x1,y1,x2,y2,KE-PE,qA,qB],system)
