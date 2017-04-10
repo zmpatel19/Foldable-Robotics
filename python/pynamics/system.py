@@ -9,7 +9,6 @@ import sympy
 import pynamics
 import numpy
 import scipy
-import pydevtools.svd as svd
 
 def static_vars(**kwargs):
     def decorate(func):
