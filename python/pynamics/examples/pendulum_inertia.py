@@ -28,7 +28,8 @@ lA = Constant('lA',1,system)
 mA = Constant('mA',1,system)
 
 g = Constant('g',9.81,system)
-b = Constant('b',1e0,system)
+b_air = Constant('b_air',1e0,system)
+b_joint = Constant('b_joint',1e0,system)
 k = Constant('k',1e1,system)
 
 Ixx_A = Constant('Ixx_A',1,system)
@@ -68,7 +69,8 @@ BodyA = Body('BodyA',A,pAB,mA,IA,system)
 
 wNA = N.getw_(A)
 
-system.addforce(-b*vAB,vAB)
+system.addforce(-b_air*vAB,vAB)
+system.addforce(-b_joint*wNA,wNA)
 system.addforcegravity(-g*N.y)
 system.add_spring_force(k,(qA-preload1)*N.z,wNA) 
 
