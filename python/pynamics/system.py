@@ -228,8 +228,8 @@ class System(object):
             else:
                 a = list(state)+c_val
                 
-            Ai = fA(*a)
-            bi = fb(*a)
+            Ai = numpy.array(fA(*a),dtype=float)
+            bi = numpy.array(fb(*a),dtype=float)
             
 #            active = numpy.array(m*[1]+factive(*a).flatten().tolist())
 #            f1 = numpy.eye(m+n)             
@@ -239,7 +239,8 @@ class System(object):
 #            bi2=f2.dot(bi)
             
             x1 = [state[ii] for ii in indeces]
-            x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
+#            x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
+            x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
             
@@ -319,10 +320,10 @@ class System(object):
             else:
                 state_i_full = list(state)+c_val
                 
-            Ai = fA(*state_i_full)
-            bi = fb(*state_i_full)
-            eqi = feq(*state_i_full)
-            eq_di = feq_d(*state_i_full)
+            Ai = numpy.array(fA(*a),dtype=float)
+            bi = numpy.array(fb(*a),dtype=float)
+            eqi = numpy.array(feq(*state_i_full),dtype = float)
+            eq_di = numpy.array(feq_d(*state_i_full),dtype = float)
             
             bi[m:] = bi[m:]-2*alpha*eq_di-beta**2*eqi
 
@@ -334,7 +335,8 @@ class System(object):
             bi=f2.dot(bi)
             
             x1 = [state[ii] for ii in indeces]
-            x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
+#            x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
+            x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
             return x4
