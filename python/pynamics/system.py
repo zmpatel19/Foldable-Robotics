@@ -320,8 +320,8 @@ class System(object):
             else:
                 state_i_full = list(state)+c_val
                 
-            Ai = numpy.array(fA(*a),dtype=float)
-            bi = numpy.array(fb(*a),dtype=float)
+            Ai = numpy.array(fA(*state_i_full),dtype=float)
+            bi = numpy.array(fb(*state_i_full),dtype=float)
             eqi = numpy.array(feq(*state_i_full),dtype = float)
             eq_di = numpy.array(feq_d(*state_i_full),dtype = float)
             
