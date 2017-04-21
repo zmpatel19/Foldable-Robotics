@@ -22,13 +22,13 @@ import matplotlib.pyplot as plt
 plt.ion()
 from sympy import pi
 system = System()
-
+tol = 1e-10
 lA = Constant('lA',1,system)
 
 mA = Constant('mA',1,system)
 
 g = Constant('g',9.81,system)
-b_air = Constant('b_air',1e0,system)
+b_air = Constant('b_air',1e1,system)
 b_joint = Constant('b_joint',1e0,system)
 k = Constant('k',1e1,system)
 
@@ -69,6 +69,12 @@ BodyA = Body('BodyA',A,pAB,mA,IA,system)
 
 wNA = N.getw_(A)
 
+lab2 = vAB.dot(vAB)
+uab = vAB * (1/(lab2**.5+tol))
+
+#squared term
+#system.addforce(-b_air*lab2*uab,vAB)
+#linear term
 system.addforce(-b_air*vAB,vAB)
 system.addforce(-b_joint*wNA,wNA)
 system.addforcegravity(-g*N.y)
