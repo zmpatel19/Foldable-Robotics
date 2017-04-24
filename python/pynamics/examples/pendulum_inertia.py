@@ -119,8 +119,8 @@ ma = ma[0].simplify()
 
 q = y[:,-1].astype(float)
 q += numpy.random.rand(len(q))*1e-6
-q_d = (q[2:]-q[:-2])/tstep
-q_dd = (q_d[2:]-q_d[:-2])/tstep
+q_d = (q[2:]-q[:-2])/(2*tstep)
+q_dd = (q_d[2:]-q_d[:-2])/(2*tstep)
 
 
 q = q[2:-2]
