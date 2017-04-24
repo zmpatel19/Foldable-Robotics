@@ -28,9 +28,9 @@ lA = Constant('lA',1,system)
 mA = Constant('mA',1,system)
 
 g = Constant('g',9.81,system)
-b_air = Constant('b_air',1e1,system)
-b_joint = Constant('b_joint',1e0,system)
-k = Constant('k',1e1,system)
+b_air = Constant('b_air',1e-1,system)
+b_joint = Constant('b_joint',1e-1,system)
+k = Constant('k',2e1,system)
 
 Ixx_A = Constant('Ixx_A',1,system)
 Iyy_A = Constant('Iyy_A',1,system)
@@ -111,3 +111,38 @@ plt.plot(y[:,2])
 plt.figure(3)
 plt.plot(t,y[:,0])
 plt.show()
+
+import numpy.random
+
+f = f[0].simplify()
+ma = ma[0].simplify()
+
+q = y[:,-1].astype(float)
+q += numpy.random.rand(len(q))*1e-6
+q_d = (q[2:]-q[:-2])/tstep
+q_dd = (q_d[2:]-q_d[:-2])/tstep
+
+
+q = q[2:-2]
+t = t[2:-2]
+q_d = q_d[1:-1]
+
+plt.figure()
+plt.plot(t,q)
+plt.figure()
+plt.plot(t,q_d)
+plt.figure()
+plt.plot(t,q_dd)
+
+
+x = numpy.c_[q,numpy.cos(q),q_d]
+m = float((ma/qA_dd).subs(system.constants))
+y = m*q_dd
+
+C = numpy.linalg.solve(x.T.dot(x),x.T.dot(y))
+y2 = numpy.r_[[C]].dot(x.T).T
+
+plt.figure()
+plt.plot(t,y)
+plt.plot(t,y2)
+
