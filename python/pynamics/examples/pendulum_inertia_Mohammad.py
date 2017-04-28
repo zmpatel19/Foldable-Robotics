@@ -125,15 +125,15 @@ plt.show()
 #f = f[0].simplify()
 #ma = ma[0].simplify()
 #
-#q = y[:,-1].astype(float)
-#q += numpy.random.rand(len(q))*1e-6
-#q_d = (q[2:]-q[:-2])/(2*tstep)
-#q_dd = (q_d[2:]-q_d[:-2])/(2*tstep)
+q = y[:,-1].astype(float)
+q += numpy.random.rand(len(q))*1e-6
+q_d = (q[2:]-q[:-2])/(2*tstep)
+q_dd = (q_d[2:]-q_d[:-2])/(2*tstep)
 #
 #
-#q = q[2:-2]
-#t = t[2:-2]
-#q_d = q_d[1:-1]
+q = q[2:-2]
+t = t[2:-2]
+q_d = q_d[1:-1]
 #
 #plt.figure()
 #plt.plot(t,q)
@@ -153,3 +153,10 @@ plt.show()
 #plt.figure()
 #plt.plot(t,y)
 #plt.plot(t,y2)
+
+lines = []
+for item in zip(t,q,q_d,q_dd):
+    lines.append('{0:0.5e},{1:0.5e},{2:0.5e},{3:0.5e}\n'.format(*item))
+
+with open('output.csv','w') as f:
+    f.writelines(lines)
