@@ -35,8 +35,14 @@ m1 = Constant('m1',1e1,system)
 m2 = Constant('m2',1e0,system)
 k = Constant('k',1e4,system)
 l0 = Constant('l0',1,system)
-b = Constant('b',5e0,system)
+b = Constant('b',1e3,system)
 g = Constant('g',9.81,system)
+
+
+Ixx_A = Constant('Ixx_A',1,system)
+Iyy_A = Constant('Iyy_A',1,system)
+Izz_A = Constant('Izz_A',1,system)
+IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 
 tinitial = 0
 tfinal = 10
@@ -44,26 +50,40 @@ tstep = .01
 t = numpy.r_[tinitial:tfinal:tstep]
 
 x1,x1_d,x1_dd = Differentiable(system,'x1')
-x2,x2_d,x2_dd = Differentiable(system,'x2')
+y1,y1_d,y1_dd = Differentiable(system,'y1')
+q1,q1_d,q1_dd = Differentiable(system,'q1')
+y2,y2_d,y2_dd = Differentiable(system,'x2')
 
 initialvalues = {}
+
+initialvalues[q1]=0
+initialvalues[q1_d]=0
+
 initialvalues[x1]=2
 initialvalues[x1_d]=0
-initialvalues[x2]=1
-initialvalues[x2_d]=0
+
+initialvalues[y1]=0
+initialvalues[y1_d]=0
+
+initialvalues[y2]=1
+initialvalues[y2_d]=0
 
 statevariables = system.get_q(0)+system.get_q(1)
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')
+A = Frame('A')
+
 system.set_newtonian(N)
+A.rotate_fixed_axis_directed(N,[0,0,1],q1,system)
 
-pNA=0*N.x
-pm1 = x1*N.y
-pm2 = pm1 - x2*N.y
+pOrigin = 0*N.x
+pm1 = x1*N.x +y1*N.y
+pm2 = pm1 - y2*A.y
 
-#BodyA = Body('BodyA',A,pm1,m1,IA,system)
-Particle1 = Particle(system,pm1,m1,'Particle1')
+
+
+BodyA = Body('BodyA',A,pm1,m1,IA,system)
 Particle2 = Particle(system,pm2,m2,'Particle2')
 
 vpm1 = pm1.time_derivative(N,system)
@@ -71,9 +91,8 @@ vpm2 = pm2.time_derivative(N,system)
 
 l_ = pm1-pm2
 l = (l_.dot(l_))**.5
-l_d =system.derivative(l)
 stretch = l - l0
-ul_ = l_*((l+error_tol)**-1)
+ul_ = l_*(l**-1)
 vl = l_.time_derivative(N,system)
 
 system.add_spring_force(k,stretch*ul_,vl)
