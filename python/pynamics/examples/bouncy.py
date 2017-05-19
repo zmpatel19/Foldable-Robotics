@@ -25,12 +25,12 @@ system = System()
 
 error = 1e-4
 error_tol = 1e-10
-l1 = Constant('l1',1,system)
 
 alpha = 1e6
 beta = 1e5
 
 #preload1 = Constant('preload1',0*pi/180,system)
+l1 = Constant('l1',1,system)
 m1 = Constant('m1',1e1,system)
 m2 = Constant('m2',1e0,system)
 k = Constant('k',1e4,system)
