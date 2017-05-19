@@ -31,6 +31,7 @@ class System(object):
         self.q = {}
         self.replacements = {}
         self.springs = []
+        self.t = sympy.Symbol('t')
 
     def add_q(self,q,ii):
         if ii in self.q:
@@ -136,7 +137,7 @@ class System(object):
                     return x
             AA = A.applyfunc(func1)
             AA_inv = AA.inv(method = inv_method)
-            keys = system.replacements.keys()
+            keys = system.replacements.keys()+[system.t]
 
             fAA_inv = sympy.lambdify(keys,AA_inv)
             A_inv = fAA_inv(*[system.replacements[key] for key in keys])
@@ -155,7 +156,7 @@ class System(object):
             func.ii+=1
             
             x1 = [state[ii] for ii in indeces]
-            x2 = [f(*state) for f in functions]
+            x2 = [f(*(state+[time]) for f in functions]
             x3 = numpy.r_[x1,x2]
             x4 = x3.flatten().tolist()
 
@@ -205,14 +206,14 @@ class System(object):
             b_full[m:,0]=c
             
         if presolve_constants:
-            fA = sympy.lambdify(q_state,A_full)
-            fb = sympy.lambdify(q_state,b_full)
+            fA = sympy.lambdify(q_state+[system.t],A_full)
+            fb = sympy.lambdify(q_state+[system.t],b_full)
 #            factive = sympy.lambdify(q_state,sympy.Matrix(eq_active))
         else:
             c_sym = list(system.constants.keys())
             c_val = [system.constants[key] for key in c_sym]
-            fA = sympy.lambdify(q_state+c_sym,A_full)
-            fb = sympy.lambdify(q_state+c_sym,b_full)
+            fA = sympy.lambdify(q_state+c_sym+[system.t],A_full)
+            fb = sympy.lambdify(q_state+c_sym+[system.t],b_full)
 #            factive = sympy.lambdify(q_state+c_sym,sympy.Matrix(eq_active))
 
         indeces = [q_state.index(element) for element in system.get_q(1)]
@@ -224,9 +225,9 @@ class System(object):
             func.ii+=1
             
             if presolve_constants:
-                a = list(state)
+                a = list(state)+[time]
             else:
-                a = list(state)+c_val
+                a = list(state)+c_val+[time]
                 
             Ai = numpy.array(fA(*a),dtype=float)
             bi = numpy.array(fb(*a),dtype=float)
@@ -293,11 +294,11 @@ class System(object):
         eq_active = eq_active or [1]*m
             
         if presolve_constants:
-            state_full = q_state
+            state_full = q_state+[system.t]
         else:
             c_sym = list(system.constants.keys())
             c_val = [system.constants[key] for key in c_sym]
-            state_full = q_state+c_sym
+            state_full = q_state+c_sym+[system.t]
 
         fA = sympy.lambdify(state_full,A_full)
         fb = sympy.lambdify(state_full,b_full)
@@ -316,9 +317,9 @@ class System(object):
             alpha, beta = args
             
             if presolve_constants:
-                state_i_full = list(state)
+                state_i_full = list(state)+[time]
             else:
-                state_i_full = list(state)+c_val
+                state_i_full = list(state)+c_val+[time]
                 
             Ai = numpy.array(fA(*state_i_full),dtype=float)
             bi = numpy.array(fb(*state_i_full),dtype=float)
