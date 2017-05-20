@@ -156,7 +156,7 @@ class System(object):
             func.ii+=1
             
             x1 = [state[ii] for ii in indeces]
-            x2 = [f(*(state+[time]) for f in functions]
+            x2 = [f(*(state+[time])) for f in functions]
             x3 = numpy.r_[x1,x2]
             x4 = x3.flatten().tolist()
 
