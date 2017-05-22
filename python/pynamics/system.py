@@ -164,7 +164,7 @@ class System(object):
 
         return func
 
-    def state_space_post_invert(system,f,ma,eq = None,eq_active = None,presolve_constants = False):
+    def state_space_post_invert(system,f,ma,eq_dd = None,eq_active = None,presolve_constants = False,eq_d = None):
         '''invert A matrix each call'''
         
         q_state = system.get_q(0)+system.get_q(1)
@@ -183,19 +183,19 @@ class System(object):
 
         m = len(q_d)
     
-        eq = eq or []
-#        eq_active = eq_active or []
+#        eq_d = eq_d or []
+        eq_dd = eq_dd or []
         
-        if not eq:
+        if not eq_dd:
             A_full = A
             b_full = b
             n=0
         else:
-            eq2 = sympy.Matrix(eq)
-            J = eq2.jacobian(q_dd)
-            c = -eq2.subs(dict(list([(item,0) for item in q_dd])))
+            eq2_dd = sympy.Matrix(eq_dd)
+            J = eq2_dd.jacobian(q_dd)
+            c = -eq2_dd.subs(dict(list([(item,0) for item in q_dd])))
 
-            n = len(eq)
+            n = len(eq_dd)
             A_full = sympy.zeros(m+n)   
             A_full[:m,:m] = A
             A_full[m:,:m] = J
@@ -204,17 +204,19 @@ class System(object):
             b_full = sympy.zeros(m+n,1)
             b_full[:m,0]=b
             b_full[m:,0]=c
-            
+
+        eq_active = eq_active or [1]*m
+           
         if presolve_constants:
-            fA = sympy.lambdify(q_state+[system.t],A_full)
-            fb = sympy.lambdify(q_state+[system.t],b_full)
-#            factive = sympy.lambdify(q_state,sympy.Matrix(eq_active))
+            state_full = q_state+[system.t]
         else:
             c_sym = list(system.constants.keys())
             c_val = [system.constants[key] for key in c_sym]
-            fA = sympy.lambdify(q_state+c_sym+[system.t],A_full)
-            fb = sympy.lambdify(q_state+c_sym+[system.t],b_full)
-#            factive = sympy.lambdify(q_state+c_sym,sympy.Matrix(eq_active))
+            state_full = q_state+c_sym+[system.t]
+
+        fA = sympy.lambdify(state_full,A_full)
+        fb = sympy.lambdify(state_full,b_full)
+        factive = sympy.lambdify(state_full,sympy.Matrix(eq_active))
 
         indeces = [q_state.index(element) for element in system.get_q(1)]
     
@@ -225,22 +227,21 @@ class System(object):
             func.ii+=1
             
             if presolve_constants:
-                a = list(state)+[time]
+                state_i_full = list(state)+[time]
             else:
-                a = list(state)+c_val+[time]
+                state_i_full = list(state)+c_val+[time]
                 
-            Ai = numpy.array(fA(*a),dtype=float)
-            bi = numpy.array(fb(*a),dtype=float)
+            Ai = numpy.array(fA(*state_i_full),dtype=float)
+            bi = numpy.array(fb(*state_i_full),dtype=float)
             
-#            active = numpy.array(m*[1]+factive(*a).flatten().tolist())
-#            f1 = numpy.eye(m+n)             
-#            f2 = f1[(active!=0).nonzero()[0],:]
+            active = numpy.array(m*[1]+factive(*state_i_full).flatten().tolist())
+            f1 = numpy.eye(m+n)             
+            f2 = f1[(active!=0).nonzero()[0],:]
 #            
-#            Ai2=(f2.dot(Ai)).dot(f2.T)
-#            bi2=f2.dot(bi)
+            Ai=(f2.dot(Ai)).dot(f2.T)
+            bi=f2.dot(bi)
             
             x1 = [state[ii] for ii in indeces]
-#            x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
             x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
@@ -277,9 +278,9 @@ class System(object):
             b_full = b
             n=0
         else:
-            eq2 = sympy.Matrix(eq_dd)
-            J = eq2.jacobian(q_dd)
-            c = -eq2.subs(dict(list([(item,0) for item in q_dd])))
+            eq2_dd = sympy.Matrix(eq_dd)
+            J = eq2_dd.jacobian(q_dd)
+            c = -eq2_dd.subs(dict(list([(item,0) for item in q_dd])))
 
             n = len(eq_dd)
             A_full = sympy.zeros(m+n)   
@@ -336,7 +337,6 @@ class System(object):
             bi=f2.dot(bi)
             
             x1 = [state[ii] for ii in indeces]
-#            x2 = numpy.array(scipy.linalg.inv(Ai).dot(bi)).flatten()
             x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()

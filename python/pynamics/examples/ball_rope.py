@@ -82,7 +82,8 @@ pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
 print('creating second order function...')
-func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = b)
+func = system.state_space_post_invert(f,ma,eq1_dd,eq_active = b,eq_d = eq1_d)
+#func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = b)
 print('integrating...')
 states=scipy.integrate.odeint(func,ini,t,args=(1e4,1e2))
 pynamics.toc()
@@ -109,3 +110,8 @@ plt.plot(t,y[:,5:7])
 plt.show()
 
 
+
+a = sympy.Matrix(eq1_d).jacobian([x_d,y_d])
+for item in states[0:1]:
+    cc=dict([(aa,bb) for aa,bb in zip(statevariables,item)])
+    dd = a.subs(cc)
