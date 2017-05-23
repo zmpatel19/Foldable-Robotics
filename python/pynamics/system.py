@@ -183,6 +183,9 @@ class System(object):
 
         m = len(q_d)
     
+        if not not eq_dd:
+            eq_active = eq_active or [1]*len(eq_dd)
+
 #        eq_d = eq_d or []
         eq_dd = eq_dd or []
         
@@ -205,7 +208,6 @@ class System(object):
             b_full[:m,0]=b
             b_full[m:,0]=c
 
-        eq_active = eq_active or [1]*m
            
         if presolve_constants:
             state_full = q_state+[system.t]
@@ -250,7 +252,7 @@ class System(object):
             
         return func        
 
-    def state_space_post_invert2(system,f,ma,eq_dd,eq_d,eq,eq_active,presolve_constants = False):
+    def state_space_post_invert2(system,f,ma,eq_dd,eq_d,eq,eq_active=None,presolve_constants = False):
         '''invert A matrix each call'''
         
         q_state = system.get_q(0)+system.get_q(1)
@@ -268,6 +270,9 @@ class System(object):
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
         m = len(q_d)
+
+        if not not eq_dd:
+            eq_active = eq_active or [1]*len(eq_dd)
     
         eq = eq or []
         eq_d = eq_d or []
@@ -292,7 +297,6 @@ class System(object):
             b_full[:m,0]=b
             b_full[m:,0]=c
 
-        eq_active = eq_active or [1]*m
             
         if presolve_constants:
             state_full = q_state+[system.t]

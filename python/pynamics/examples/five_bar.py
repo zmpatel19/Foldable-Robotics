@@ -139,17 +139,26 @@ system.add_spring_force(k,(qB1+pi/180*45)*B1.x,wB1)
 
 system.addforcegravity(-g*N.z)
 
+
+v1 = B23.x - A3.x
+v2 = B23.y - A3.y
+v3 = B23.z - A3.z
+
 eq1 = []
+
+eq1.append(v1.dot(v1))
+eq1.append(v2.dot(v2))
+eq1.append(v3.dot(v3))
 #eq1.append(B23.x.dot(A3.x)-1)
 #eq1.append(A34.x.dot(B2.x)-1)
 #eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.y))
 #eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.x))
 #eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.z))
 #eq1 = []
-eq1.append((B23.x-A3.x).dot(N.x))
-eq1.append((B23.x-A3.x).dot(N.z))
+#eq1.append((B23.x-A3.x).dot(N.x))
+#eq1.append((B23.x-A3.x).dot(N.z))
 #eq1.append((A34.x-B2.x).dot(N.x))
-eq1.append((A34.x-B2.x).dot(N.z))
+#eq1.append((A34.x-B2.x).dot(N.z))
 #eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.z))
 
 eq1_d=[(system.derivative(item)) for item in eq1]
@@ -170,8 +179,8 @@ pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
 print('creating second order function...')
-#func1 = system.state_space_post_invert(f,ma,eq)
-func1 = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = [1]*len(eq))
+func1 = system.state_space_post_invert(f,ma,eq)
+#func1 = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
 
 print('integrating...')
 #states=scipy.integrate.odeint(func1,ini,t,rtol=1e-5,atol=1e-5)
@@ -195,6 +204,9 @@ ax = fig.add_subplot(111, projection='3d')
 
 import pydevtools.matplotlib_misc as mm
 
+import pydevtools.makemovie
+pydevtools.makemovie.prep_folder()
+
 jj = 0
 for item in y2:
     ax.cla()
@@ -204,5 +216,8 @@ for item in y2:
         vec = numpy.c_[item3,item2]
         ax.plot3D(vec[0],vec[1],vec[2])
     mm.equal_axes(ax,y2.reshape((-1,3),order=0))
-    plt.savefig('render/{0:05d}.png'.format(jj))
+    plt.savefig('render/{0:04d}.png'.format(jj))
     jj+=1
+
+pydevtools.makemovie.render(image_name_format='%04d.png')
+pydevtools.makemovie.clear_folder(rmdir=True)
