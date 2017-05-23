@@ -179,8 +179,8 @@ pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
 print('creating second order function...')
-func1 = system.state_space_post_invert(f,ma,eq)
-#func1 = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
+#func1 = system.state_space_post_invert(f,ma,eq)
+func1 = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
 
 print('integrating...')
 #states=scipy.integrate.odeint(func1,ini,t,rtol=1e-5,atol=1e-5)
@@ -204,8 +204,8 @@ ax = fig.add_subplot(111, projection='3d')
 
 import pydevtools.matplotlib_misc as mm
 
-import pydevtools.makemovie
-pydevtools.makemovie.prep_folder()
+import idealab_tools.makemovie
+idealab_tools.makemovie.prep_folder()
 
 jj = 0
 for item in y2:
@@ -219,5 +219,5 @@ for item in y2:
     plt.savefig('render/{0:04d}.png'.format(jj))
     jj+=1
 
-pydevtools.makemovie.render(image_name_format='%04d.png')
-pydevtools.makemovie.clear_folder(rmdir=True)
+idealab_tools.makemovie.render(image_name_format='%04d.png')
+idealab_tools.makemovie.clear_folder(rmdir=True)
