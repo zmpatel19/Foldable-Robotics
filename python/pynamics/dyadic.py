@@ -55,10 +55,13 @@ class Dyad(object):
 class Dyadic(object):
     def __init__(self,dyads):
         self._dyads = dyads
+        
     def dyads(self):
         return self._dyads
+    
     def __str__(self):
         return ''.join([str(dyad)+'+' for dyad in self._dyads[:-1]]+[str(self._dyads[-1])])
+
     def __repr__(self):
         return str(self)
 
@@ -103,6 +106,11 @@ class Dyadic(object):
         result = Ixx*Dyad(frame.x,frame.x)+Iyy*Dyad(frame.y,frame.y)+Izz*Dyad(frame.z,frame.z)
         return result
 
+    @classmethod
+    def unit(cls,frame):
+        result = Dyad(frame.x,frame.x)+Dyad(frame.y,frame.y)+Dyad(frame.z,frame.z)
+        return result
+    
 if __name__=='__main__':
     from pynamics.frame import Frame
     A = Frame('A')
