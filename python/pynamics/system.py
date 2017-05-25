@@ -185,6 +185,8 @@ class System(object):
     
         if not not eq_dd:
             eq_active = eq_active or [1]*len(eq_dd)
+        else:
+            eq_active = eq_active or []
 
 #        eq_d = eq_d or []
         eq_dd = eq_dd or []
@@ -273,6 +275,8 @@ class System(object):
 
         if not not eq_dd:
             eq_active = eq_active or [1]*len(eq_dd)
+        else:
+            eq_active = eq_active or []
     
         eq = eq or []
         eq_d = eq_d or []
