@@ -10,15 +10,15 @@ def solid_parallelepiped(lx,ly=None,lz=None,density = 1,mass = None):
     ly = ly or lx
     lz = lz or lx
     
+    volume = lx*ly*lz
     if not mass:
-        volume = lx*ly*lz
         mass = volume*density
 
     Ixx = mass*(ly**2+lz**2)/12
     Iyy = mass*(lx**2+lz**2)/12
     Izz = mass*(lx**2+ly**2)/12
 
-    return Ixx,Iyy,Izz
+    return (Ixx,Iyy,Izz),mass,volume
 
 def solid_ellipsoid(lx,ly=None,lz=None,density = 1,mass = None):
     import math
@@ -26,15 +26,15 @@ def solid_ellipsoid(lx,ly=None,lz=None,density = 1,mass = None):
     ly = ly or lx
     lz = lz or lx
 
+    volume = 4/3*math.pi*lx*ly*lz
     if not mass:
-        volume = 4/3*math.pi*lx*ly*lz
         mass = volume*density
 
     Ixx = mass*(ly**2+lz**2)/5
     Iyy = mass*(lx**2+lz**2)/5
     Izz = mass*(lx**2+ly**2)/5
 
-    return Ixx,Iyy,Izz
+    return (Ixx,Iyy,Izz),mass,volume
 
 def shift(I_cm,cm,p,m,frame):
     import pynamics.dyadic
