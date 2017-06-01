@@ -102,8 +102,8 @@ class Dyadic(object):
         return new
 
     @classmethod
-    def build(cls,frame,Ixx = 0,Iyy = 0, Izz = 0):
-        result = Ixx*Dyad(frame.x,frame.x)+Iyy*Dyad(frame.y,frame.y)+Izz*Dyad(frame.z,frame.z)
+    def build(cls,frame,Ixx = 0,Iyy = 0, Izz = 0,Ixy = 0,Iyz=0,Izx=0):
+        result = Ixx*Dyad(frame.x,frame.x)+Iyy*Dyad(frame.y,frame.y)+Izz*Dyad(frame.z,frame.z)+Ixy*Dyad(frame.x,frame.y)+Ixy*Dyad(frame.y,frame.x)+Iyz*Dyad(frame.y,frame.z)+Iyz*Dyad(frame.z,frame.y)+Izx*Dyad(frame.z,frame.x)+Izx*Dyad(frame.x,frame.z)
         return result
 
     @classmethod
