@@ -25,17 +25,17 @@ plt.ion()
 from sympy import pi
 system = System()
 
-error = 1e-3
+error = 1e-2
 error_tol = 1e-3
 
-alpha = 1e6
-beta = 1e5
+alpha = 1e3
+beta = 1e2
 
 #preload1 = Constant('preload1',0*pi/180,system)
 g = Constant('g',9.81,system)
 
-k_scaling = 3
-b_scaling = 2
+k_scaling = 1
+b_scaling = 0
 
 k_hip = Constant('k_hip',1*10**k_scaling,system)
 k_knee = Constant('k_knee',1*10**k_scaling,system)
@@ -215,13 +215,14 @@ system.addforcegravity(-g*N.y)
 
 
 eq1 = []
-eq1.append(x_body)
-eq1.append(y_body)
-eq1.append(q_body)
-#eq1.append(0-p_toes1.dot(N.y))
-#eq1.append(0-p_toes2.dot(N.y))
-#eq1.append(0-p_toes1.dot(N.x))
-#eq1.append(0-p_toes2.dot(N.x))
+#eq1.append(x_body)
+#eq1.append(y_body)
+#eq1.append(q_body)
+eq1.append(0.029289321881345233-p_toes1.dot(N.x))
+eq1.append(0.8999999999999999-p_toes1.dot(N.y))
+#eq1.append(-0.17071067811865476-p_toes2.dot(N.x))
+eq1.append(0.8999999999999999-p_toes2.dot(N.y))
+
 eq1_d=[system.derivative(item) for item in eq1]
 eq1_dd=[system.derivative(system.derivative(item)) for item in eq1]
 
@@ -254,12 +255,12 @@ print('solving dynamics...')
 f,ma = system.getdynamics()
 pynamics.toc()
 print('creating second order function...')
-func = system.state_space_post_invert(f,ma,eq1_dd)
+#func = system.state_space_post_invert(f,ma,eq1_dd)
 pynamics.toc()
-#func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
+func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
 #func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = b)
 print('integrating...')
-states=scipy.integrate.odeint(func,ini,t,rtol = error, atol = error, args=(alpha, beta),full_output = 1,mxstep = int(1e5))
+states=scipy.integrate.odeint(func,ini,t,rtol = error, atol = error, args=(alpha, beta),full_output = 1)
 states = states[0]
 pynamics.toc()
 print('calculating outputs..')
