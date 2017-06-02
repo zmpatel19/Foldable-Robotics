@@ -25,8 +25,9 @@ plt.ion()
 from sympy import pi
 system = System()
 
-error = 1e-2
-error_tol = 1e-3
+numpy.set_printoptions(precision = 2)
+
+integration_tol = 1e-2
 
 alpha = 1e3
 beta = 1e2
@@ -218,20 +219,24 @@ eq1 = []
 #eq1.append(x_body)
 #eq1.append(y_body)
 #eq1.append(q_body)
-eq1.append(0.029289321881345233-p_toes1.dot(N.x))
-eq1.append(0.8999999999999999-p_toes1.dot(N.y))
+#eq1.append(0.029289321881345233-p_toes1.dot(N.x))
+#eq1.append(0.8999999999999999-p_toes1.dot(N.y))
 #eq1.append(-0.17071067811865476-p_toes2.dot(N.x))
-eq1.append(0.8999999999999999-p_toes2.dot(N.y))
+#eq1.append(0.8999999999999999-p_toes2.dot(N.y))
+#eq1.append(0-p_toes1.dot(N.x))
+eq1.append(0-p_toes1.dot(N.y))
+#eq1.append(0-p_toes2.dot(N.x))
+eq1.append(0-p_toes2.dot(N.y))
 
 eq1_d=[system.derivative(item) for item in eq1]
 eq1_dd=[system.derivative(system.derivative(item)) for item in eq1]
 
-#a = []
+a = []
 #a.append(0-p_toes1.dot(N.y))
+a.append(0-p_toes1.dot(N.y))
 #a.append(0-p_toes2.dot(N.y))
-#a.append(0-p_toes1.dot(N.y))
-#a.append(0-p_toes2.dot(N.y))
-#b = [(item+abs(item)) for item in a]
+a.append(0-p_toes2.dot(N.y))
+b = [(item+abs(item)) for item in a]
 
 #x_body = BodyA.pCM.dot(N.y)
 #x2 = Particle2.pCM.dot(N.y)
@@ -257,17 +262,19 @@ pynamics.toc()
 print('creating second order function...')
 #func = system.state_space_post_invert(f,ma,eq1_dd)
 pynamics.toc()
-func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
-#func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = b)
+#func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
+func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = b)
 print('integrating...')
-states=scipy.integrate.odeint(func,ini,t,rtol = error, atol = error, args=(alpha, beta),full_output = 1)
+states=scipy.integrate.odeint(func,ini,t,rtol = integration_tol, atol = integration_tol, args=(alpha, beta),full_output = 1)
 states = states[0]
 pynamics.toc()
 print('calculating outputs..')
 output = Output(outputlist,system)
 output2 = Output([KE-PE],system)
+output3 = Output(eq1+b,system)
 y = output.calc(states)
 y2 = output2.calc(states)
+y3 = output3.calc(states)
 pynamics.toc()
 #
 plt.figure(0)
@@ -278,8 +285,8 @@ plt.axis('equal')
 #
 plt.figure(1)
 plt.plot(t,y2[:])
-#plt.axis('equal')
-#
+plt.axis('equal')
+
 
 plt.figure(2)
 plt.plot(y[-1,0::2],y[-1,1::2],'ro-')
@@ -288,3 +295,7 @@ plt.axis('equal')
 plt.figure(3)
 plt.plot(y[0,0::2],y[0,1::2],'ro-')
 plt.axis('equal')
+
+plt.figure(4)
+plt.plot(y3)
+#plt.axis('equal')

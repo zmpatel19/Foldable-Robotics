@@ -32,7 +32,8 @@ class System(object):
         self.replacements = {}
         self.springs = []
         self.t = sympy.Symbol('t')
-
+        self.error_tolerance = 1e-10
+        
     def add_q(self,q,ii):
         if ii in self.q:
             self.q[ii].append(q)
@@ -240,7 +241,7 @@ class System(object):
             
             active = numpy.array(m*[1]+factive(*state_i_full).flatten().tolist())
             f1 = numpy.eye(m+n)             
-            f2 = f1[(active!=0).nonzero()[0],:]
+            f2 = f1[(active>system.error_tolerance).nonzero()[0],:]
 #            
             Ai=(f2.dot(Ai)).dot(f2.T)
             bi=f2.dot(bi)
@@ -339,7 +340,7 @@ class System(object):
 
             active = numpy.array(m*[1]+factive(*state_i_full).flatten().tolist())
             f1 = numpy.eye(m+n)             
-            f2 = f1[(active!=0).nonzero()[0],:]
+            f2 = f1[(active>system.error_tolerance).nonzero()[0],:]
             
             Ai=(f2.dot(Ai)).dot(f2.T)
             bi=f2.dot(bi)
