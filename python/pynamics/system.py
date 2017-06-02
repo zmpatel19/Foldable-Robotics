@@ -32,7 +32,7 @@ class System(object):
         self.replacements = {}
         self.springs = []
         self.t = sympy.Symbol('t')
-        self.error_tolerance = 1e-10
+        self.error_tolerance = 1e-16
         
     def add_q(self,q,ii):
         if ii in self.q:
