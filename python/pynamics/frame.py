@@ -13,9 +13,7 @@ from pynamics.name import Name
 from pynamics.rotation import Rotation,FixedAxisRotation
 
 import sympy
-#from pynamics import PynamicsObject
 
-#class Frame(TreeNode,PynamicsObject):
 class Frame(TreeNode):
     def __init__(self,name = None):
         super(Frame,self).__init__()
@@ -76,11 +74,15 @@ class Frame(TreeNode):
         return self.calc(other).to_other(self)
     def getw_(self,other):
         return self.calc(other).w__from(self)
-    def rotate_fixed_axis(self,fromframe,axis,q,sys):
+    def rotate_fixed_axis(self,fromframe,axis,q,sys = None):
+        sys = sys or pynamics.get_system()
+
         rotation = FixedAxisRotation(fromframe,self,axis,q,sys)
         self.add_rotation(rotation)
         fromframe.add_rotation(rotation)
-    def rotate_fixed_axis_directed(self,fromframe,axis,q,sys):
+    def rotate_fixed_axis_directed(self,fromframe,axis,q,sys=None):
+        sys = sys or pynamics.get_system()
+        
         self.rotate_fixed_axis(fromframe,axis,q,sys)
         fromframe.add_branch(self)        
         

@@ -5,9 +5,11 @@ Email: danaukes<at>gmail.com
 Please see LICENSE for full license.
 """
 import numpy
+import pynamics
 
 class Output(object):
     def __init__(self,y_exp,system):
+        system = system or pynamics.get_system()
         import sympy
         self.y_expression = sympy.Matrix(y_exp)
         cons_s = list(system.constants.keys())

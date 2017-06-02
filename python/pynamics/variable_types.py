@@ -42,8 +42,8 @@ class Differentiable(sympy.Symbol):
                 variable = sympy.Symbol.__new__(cls,subname)
 
             sys.add_q(variable,jj)
-            pynamics.addself(variable,subname)
             differentiables.append(variable)
+            pynamics.addself(variable,subname)
         for a,a_d in zip(differentiables[:-1],differentiables[1:]):
             sys.add_derivative(a,a_d)
         return differentiables 

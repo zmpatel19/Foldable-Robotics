@@ -14,7 +14,8 @@ import sys
 
 ZERO = sympy.Number(0)
 dimension = 3
-script_mode = False
+script_mode = True
+systemname = '_system'
 
 def PynamicsObject(object):
     
@@ -22,17 +23,16 @@ def PynamicsObject(object):
         addself(self,name)
 
 def addself(self,name,modulename='__main__'):
-    '''
-Written by Daniel M. Aukes
-Email: danaukes<at>gmail.com
-Please see LICENSE for full license.
-'''
     if script_mode:
         module = sys.modules[modulename]
         if hasattr(module,name):
             raise NameError('variable '+name+' exists')
         else:
             setattr(module, name, self)
+
+def get_system(self):
+    module = sys.modules['__main__']
+    return getattr(module,systemname)
             
 import time
 time0 = 0

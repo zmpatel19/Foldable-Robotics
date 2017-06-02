@@ -9,6 +9,7 @@ Please see LICENSE for full license.
 import sympy
 from sympy import cos, sin
 from pynamics.vector import Vector
+import pynamics
 
 class Rotation(object):
     def __init__(self,f1,f2,R,w_):
@@ -39,7 +40,8 @@ class Rotation(object):
             raise(Exception('frame not in this rotation'))
      
 class FixedAxisRotation(Rotation):
-    def __init__(self,f1,f2,axis,q,sys):
+    def __init__(self,f1,f2,axis,q,sys = None):
+        sys = sys or pynamics.get_system()
         self.f1 = f1
         self.f2 = f2
         f1.add_rotation(self)
@@ -49,10 +51,12 @@ class FixedAxisRotation(Rotation):
 #        self.w = 
 #        w = q.diff().subs(sys.derivatives)
 #        self.w_ = w*Vector({f1:axis})
-        self._R,self.w_,self.fixedaxis = self.build_fixed_axis(axis,q,sys,f1)
+        self._R,self.w_,self.fixedaxis = self.build_fixed_axis(axis,q,f1,sys)
         
     @staticmethod
-    def build_fixed_axis(axis,q,sys,frame):
+    def build_fixed_axis(axis,q,frame,sys = None):
+        sys = sys or pynamics.get_system()
+
         axis = sympy.Matrix(axis)
         l_2 = axis.dot(axis)
         axis = axis/(l_2**.5)

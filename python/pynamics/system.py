@@ -33,7 +33,8 @@ class System(object):
         self.springs = []
         self.t = sympy.Symbol('t')
         self.error_tolerance = 1e-16
-        
+        pynamics.addself(self,pynamics.systemname)
+
     def add_q(self,q,ii):
         if ii in self.q:
             self.q[ii].append(q)
