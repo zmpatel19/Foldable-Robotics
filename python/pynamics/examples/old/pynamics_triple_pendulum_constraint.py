@@ -105,9 +105,9 @@ wBC = B.getw_(C)
 #BodyB = Body('BodyB',B,pBcm,mB,IB,system)
 #BodyC = Body('BodyC',C,pCcm,mC,IC,system)
 
-ParticleA = Particle(system,pAcm,mA,'ParticleA')
-ParticleB = Particle(system,pBcm,mB,'ParticleB')
-ParticleC = Particle(system,pCcm,mC,'ParticleC')
+ParticleA = Particle(pAcm,mA,'ParticleA',system)
+ParticleB = Particle(pBcm,mB,'ParticleB',system)
+ParticleC = Particle(pCcm,mC,'ParticleC',system)
 
 system.addforce(-b*wNA,wNA)
 system.addforce(-b*wAB,wAB)

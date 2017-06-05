@@ -66,9 +66,9 @@ IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 
 BodyA = Body('BodyA',A,pAcm,mA,IA,system)
 
-#BodyA = Particle(system,pAcm,mA,'ParticleA')
-#ParticleB = Particle(system,pBcm,mB,'ParticleB')
-#ParticleC = Particle(system,pCcm,mC,'ParticleC')
+#BodyA = Particle(pAcm,mA,'ParticleA',system)
+#ParticleB = Particle(pBcm,mB,'ParticleB',system)
+#ParticleC = Particle(pCcm,mC,'ParticleC',system)
 
 
 #system.addforce(-k*(qA-preload1)*N.z,wNA)

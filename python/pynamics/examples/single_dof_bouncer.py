@@ -55,7 +55,7 @@ pNA=0*N.x
 pAcm=pNA+x*N.x+y*N.y
 vAcm = pAcm.time_derivative(N,system)
 
-ParticleA = Particle(system,pAcm,mA,'ParticleA')
+ParticleA = Particle(pAcm,mA,'ParticleA',system)
 
 system.addforce(-b*vAcm,vAcm)
 

@@ -84,7 +84,7 @@ pm2 = pm1 +a*A.x - y2*A.y
 
 IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 BodyA = Body('BodyA',A,pm1,m1,IA,system)
-Particle2 = Particle(system,pm2,m2,'Particle2')
+Particle2 = Particle(pm2,m2,'Particle2',system)
 
 vpm1 = pm1.time_derivative(N,system)
 vpm2 = pm2.time_derivative(N,system)

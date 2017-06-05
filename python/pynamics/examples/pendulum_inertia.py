@@ -63,7 +63,7 @@ pNA=0*N.x
 pAB=pNA+lA*A.x
 vAB=pAB.time_derivative(N,system)
 
-#ParticleA = Particle(system,pAB,mA,'ParticleA')
+#ParticleA = Particle(pAB,mA,'ParticleA',system)
 IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 BodyA = Body('BodyA',A,pAB,mA,IA,system)
 

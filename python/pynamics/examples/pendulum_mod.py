@@ -55,7 +55,7 @@ pNA=0*N.x
 pAB=pNA+x*N.x+y*N.y
 vAB=pAB.time_derivative(N,system)
 
-ParticleA = Particle(system,pAB,mA,'ParticleA')
+ParticleA = Particle(pAB,mA,'ParticleA',system)
 
 system.addforce(-b*vAB,vAB)
 system.addforcegravity(-g*N.y)

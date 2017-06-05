@@ -110,11 +110,11 @@ B23.rotate_fixed_axis_directed(B2,[0,0,1],-t3,system)
 
 pNO = 0*N.x
 
-ParticleA1 = Particle(system,A1.x+A12.x,m,'ParticleA1')
-ParticleA2 = Particle(system,A2.x+A23.x,m,'ParticleA2')
-ParticleA3 = Particle(system,A3.x+A34.x,m/2,'ParticleA3')
-ParticleB1 = Particle(system,B1.x+B12.x,m,'ParticleA1')
-ParticleB2 = Particle(system,B2.x+B23.x,m/2,'ParticleA2')
+ParticleA1 = Particle(A1.x+A12.x,m,'ParticleA1',system)
+ParticleA2 = Particle(A2.x+A23.x,m,'ParticleA2',system)
+ParticleA3 = Particle(A3.x+A34.x,m/2,'ParticleA3',system)
+ParticleB1 = Particle(B1.x+B12.x,m,'ParticleA1',system)
+ParticleB2 = Particle(B2.x+B23.x,m/2,'ParticleA2',system)
 
 
 wA1 = N.getw_(A1)

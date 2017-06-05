@@ -80,9 +80,9 @@ IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)
 BodyA = Body('BodyA',A,pAcm,mA,IA,system)
 BodyB = Body('BodyB',B,pBcm,mB,IB,system)
 
-#ParticleA = Particle(system,pAcm,mA,'ParticleA')
-#ParticleB = Particle(system,pBcm,mB,'ParticleB')
-#ParticleC = Particle(system,pCcm,mC,'ParticleC')
+#ParticleA = Particle(pAcm,mA,'ParticleA',system)
+#ParticleB = Particle(pBcm,mB,'ParticleB',system)
+#ParticleC = Particle(pCcm,mC,'ParticleC',system)
 
 system.addforcegravity(-g*N.y)
 
