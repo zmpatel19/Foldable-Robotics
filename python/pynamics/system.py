@@ -115,41 +115,41 @@ class System(object):
             generalized.append(new)
         return generalized
         
-    def state_space_pre_invert(system,f,ma,inv_method = 'LU',auto_z= False):
+    def state_space_pre_invert(self,f,ma,inv_method = 'LU',auto_z= False):
         '''pre-invert A matrix'''
         
-        q_state = system.get_q(0)+system.get_q(1)
+        q_state = self.get_q(0)+self.get_q(1)
 
-#        q_d = system.get_q(1)
-        q_dd = system.get_q(2)
+#        q_d = self.get_q(1)
+        q_dd = self.get_q(2)
         
         f = sympy.Matrix(f)
         ma = sympy.Matrix(ma)
         
         Ax_b = ma-f
-        Ax_b = Ax_b.subs(system.constants)
+        Ax_b = Ax_b.subs(self.constants)
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
         if auto_z:
             def func1(x):
                 if x!=pynamics.ZERO:
-                    return system.generatez(x)
+                    return self.generatez(x)
                 else:
                     return x
             AA = A.applyfunc(func1)
             AA_inv = AA.inv(method = inv_method)
-            keys = system.replacements.keys()+[system.t]
+            keys = self.replacements.keys()+[self.t]
 
             fAA_inv = sympy.lambdify(keys,AA_inv)
-            A_inv = fAA_inv(*[system.replacements[key] for key in keys])
+            A_inv = fAA_inv(*[self.replacements[key] for key in keys])
 
         else:
             A_inv = A.inv(method=inv_method)
         var_dd = A_inv*b 
         
         functions = [sympy.lambdify(q_state,rhs) for rhs in var_dd]
-        indeces = [q_state.index(element) for element in system.get_q(1)]
+        indeces = [q_state.index(element) for element in self.get_q(1)]
         
         @static_vars(ii=0)
         def func(state,time):
@@ -166,20 +166,20 @@ class System(object):
 
         return func
 
-    def state_space_post_invert(system,f,ma,eq_dd = None,eq_active = None,presolve_constants = False,eq_d = None):
+    def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,presolve_constants = False,eq_d = None):
         '''invert A matrix each call'''
         
-        q_state = system.get_q(0)+system.get_q(1)
+        q_state = self.get_q(0)+self.get_q(1)
 
-        q_d = system.get_q(1)
-        q_dd = system.get_q(2)
+        q_d = self.get_q(1)
+        q_dd = self.get_q(2)
 
         f = sympy.Matrix(f)
         ma = sympy.Matrix(ma)
         
         Ax_b = ma-f
         if presolve_constants:
-            Ax_b = Ax_b.subs(system.constants)
+            Ax_b = Ax_b.subs(self.constants)
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
@@ -214,17 +214,17 @@ class System(object):
 
            
         if presolve_constants:
-            state_full = q_state+[system.t]
+            state_full = q_state+[self.t]
         else:
-            c_sym = list(system.constants.keys())
-            c_val = [system.constants[key] for key in c_sym]
-            state_full = q_state+c_sym+[system.t]
+            c_sym = list(self.constants.keys())
+            c_val = [self.constants[key] for key in c_sym]
+            state_full = q_state+c_sym+[self.t]
 
         fA = sympy.lambdify(state_full,A_full)
         fb = sympy.lambdify(state_full,b_full)
         factive = sympy.lambdify(state_full,sympy.Matrix(eq_active))
 
-        indeces = [q_state.index(element) for element in system.get_q(1)]
+        indeces = [q_state.index(element) for element in self.get_q(1)]
     
         @static_vars(ii=0)
         def func(state,time,*args):
@@ -242,7 +242,7 @@ class System(object):
             
             active = numpy.array(m*[1]+factive(*state_i_full).flatten().tolist())
             f1 = numpy.eye(m+n)             
-            f2 = f1[(active>system.error_tolerance).nonzero()[0],:]
+            f2 = f1[(active>self.error_tolerance).nonzero()[0],:]
 #            
             Ai=(f2.dot(Ai)).dot(f2.T)
             bi=f2.dot(bi)
@@ -256,20 +256,20 @@ class System(object):
             
         return func        
 
-    def state_space_post_invert2(system,f,ma,eq_dd,eq_d,eq,eq_active=None,presolve_constants = False):
+    def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,presolve_constants = False):
         '''invert A matrix each call'''
         
-        q_state = system.get_q(0)+system.get_q(1)
+        q_state = self.get_q(0)+self.get_q(1)
 
-        q_d = system.get_q(1)
-        q_dd = system.get_q(2)
+        q_d = self.get_q(1)
+        q_dd = self.get_q(2)
 
         f = sympy.Matrix(f)
         ma = sympy.Matrix(ma)
         
         Ax_b = ma-f
         if presolve_constants:
-            Ax_b = Ax_b.subs(system.constants)
+            Ax_b = Ax_b.subs(self.constants)
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
@@ -305,11 +305,11 @@ class System(object):
 
             
         if presolve_constants:
-            state_full = q_state+[system.t]
+            state_full = q_state+[self.t]
         else:
-            c_sym = list(system.constants.keys())
-            c_val = [system.constants[key] for key in c_sym]
-            state_full = q_state+c_sym+[system.t]
+            c_sym = list(self.constants.keys())
+            c_val = [self.constants[key] for key in c_sym]
+            state_full = q_state+c_sym+[self.t]
 
         fA = sympy.lambdify(state_full,A_full)
         fb = sympy.lambdify(state_full,b_full)
@@ -317,7 +317,7 @@ class System(object):
         feq_d = sympy.lambdify(state_full,sympy.Matrix(eq_d))
         factive = sympy.lambdify(state_full,sympy.Matrix(eq_active))
 
-        indeces = [q_state.index(element) for element in system.get_q(1)]
+        indeces = [q_state.index(element) for element in self.get_q(1)]
     
         @static_vars(ii=0)
         def func(state,time,*args):
@@ -341,7 +341,7 @@ class System(object):
 
             active = numpy.array(m*[1]+factive(*state_i_full).flatten().tolist())
             f1 = numpy.eye(m+n)             
-            f2 = f1[(active>system.error_tolerance).nonzero()[0],:]
+            f2 = f1[(active>self.error_tolerance).nonzero()[0],:]
             
             Ai=(f2.dot(Ai)).dot(f2.T)
             bi=f2.dot(bi)

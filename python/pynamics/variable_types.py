@@ -15,7 +15,9 @@ class Variable(sympy.Symbol):
         return obj
 
 class Constant(sympy.Symbol):
-    def __new__(self,name,value,system):
+    def __new__(self,name,value,system = None):
+        system = systeme or pynamics.get_system()
+
         obj = sympy.Symbol.__new__(self,name)
         obj.value = value
         system.add_constant(obj,value)
@@ -24,7 +26,9 @@ class Constant(sympy.Symbol):
 
 class Differentiable(sympy.Symbol):
     ii = 0    
-    def __new__(cls,sys,name=None,limit = 3,ii=0):
+    def __new__(cls,sys = None,name=None,limit = 3,ii=0):
+        sys = sys or pynamics.get_system()
+
         if name==None:
             name = 'x{0:d}'.format(cls.ii)
             cls.ii+=1

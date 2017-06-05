@@ -7,7 +7,9 @@ Please see LICENSE for full license.
 import pynamics
 
 class BodyGeneric(object):
-    def __init__(self,name,frame,pCM,vCM,aCM,wNBody,alNBody,mass,inertia,system):
+    def __init__(self,name,frame,pCM,vCM,aCM,wNBody,alNBody,mass,inertia,system=None):
+        system = system or pynamics.get_system()
+
         self.name = name
         self.frame = frame
         self.system = system
@@ -54,7 +56,9 @@ class BodyGeneric(object):
 
 
 class Body(object):
-    def __init__(self,name,frame,pCM,mass,inertia,system):
+    def __init__(self,name,frame,pCM,mass,inertia,system = None):
+        system = system or pynamics.get_system()
+
         self.name = name
         self.frame = frame
         self.system = system

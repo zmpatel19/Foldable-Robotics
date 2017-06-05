@@ -9,7 +9,9 @@ import pynamics
 
 class ParticleGeneric(object):
     ii = 0
-    def __init__(self,system,pCM,mass,name = None):
+    def __init__(self,pCM,mass,name = None,system = None):
+        system = system or pynamics.get_system()
+        
         if name==None:
             name = 'Particle{0:d}'.format(self.ii)
             type(self).ii+=1
@@ -49,7 +51,9 @@ class ParticleGeneric(object):
 
 class Particle(object):
     ii = 0
-    def __init__(self,system,pCM,mass,name = None):
+    def __init__(self,pCM,mass,name = None,system = None):
+        system = system or pynamics.get_system()
+
         if name==None:
             name = 'Particle{0:d}'.format(self.ii)
             type(self).ii+=1
