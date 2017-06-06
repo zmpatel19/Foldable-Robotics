@@ -46,6 +46,7 @@ class RK4(Integrator):
 
 class DoPri(Integrator):
     def step(self,t,x,args = None):
+        raise(Exception('not working yet'))
         h = self.h
         f = self.f
         
