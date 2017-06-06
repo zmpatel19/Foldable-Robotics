@@ -10,10 +10,10 @@ class NameGenerator(object):
     @classmethod
     def generate_name(cls):
         try:
-            cls._generate_name()
+            name = cls._generate_name()
         except AttributeError:
             cls._ii = 0
-            return cls._generate_name()
+            name = cls._generate_name()
         return name
     
     @classmethod

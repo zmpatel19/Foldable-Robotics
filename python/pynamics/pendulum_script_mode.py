@@ -22,14 +22,20 @@ import matplotlib.pyplot as plt
 plt.ion()
 from sympy import pi
 system = System()
+tol = 1e-10
+lA = Constant(None,1)
 
-lA = Constant('lA',1,system)
-
-mA = Constant('mA',1,system)
+mA = Constant(None,1)
 
 g = Constant('g',9.81,system)
-b = Constant('b',1e0,system)
-k = Constant('k',1e1,system)
+b_air = Constant('b_air',1e-1,system)
+b_joint = Constant('b_joint',1e-1,system)
+k = Constant('k',2e1,system)
+
+Ixx_A = Constant('Ixx_A',1,system)
+Iyy_A = Constant('Iyy_A',1,system)
+Izz_A = Constant('Izz_A',1,system)
+
 
 tinitial = 0
 tfinal = 5
@@ -57,13 +63,27 @@ pNA=0*N.x
 pAB=pNA+lA*A.x
 vAB=pAB.time_derivative(N,system)
 
-ParticleA = Particle(pAB,mA,'ParticleA',system)
+#ParticleA = Particle(pAB,mA,'ParticleA',system)
+IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
+BodyA = Body('BodyA',A,pAB,mA,IA,system)
 
-system.addforce(-b*vAB,vAB)
+wNA = N.getw_(A)
+
+lab2 = vAB.dot(vAB)
+uab = vAB * (1/(lab2**.5+tol))
+
+#squared term
+#system.addforce(-b_air*lab2*uab,vAB)
+#linear term
+system.addforce(-b_air*vAB,vAB)
+system.addforce(-b_joint*wNA,wNA)
 system.addforcegravity(-g*N.y)
+system.add_spring_force(k,(qA-preload1)*N.z,wNA) 
 
-x1 = ParticleA.pCM.dot(N.x)
-y1 = ParticleA.pCM.dot(N.y)
+#x1 = ParticleA.pCM.dot(N.x)
+#y1 = ParticleA.pCM.dot(N.y)
+x1 = BodyA.pCM.dot(N.x)
+y1 = BodyA.pCM.dot(N.y)
 
 KE = system.KE
 PE = system.getPEGravity(pNA) - system.getPESprings()
@@ -74,11 +94,7 @@ f,ma = system.getdynamics()
 print('creating second order function...')
 func = system.state_space_post_invert(f,ma)
 print('integrating...')
-#states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
-from pynamics.integrator import RK4
-integrator = RK4(func,ini,t)
-states = integrator.run()
-
+states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
 pynamics.toc()
 print('calculating outputs..')
 output = Output([x1,y1,KE-PE,qA],system)
@@ -95,3 +111,38 @@ plt.plot(y[:,2])
 plt.figure(3)
 plt.plot(t,y[:,0])
 plt.show()
+
+import numpy.random
+
+f = f[0].simplify()
+ma = ma[0].simplify()
+
+q = y[:,-1].astype(float)
+q += numpy.random.rand(len(q))*1e-6
+q_d = (q[2:]-q[:-2])/(2*tstep)
+q_dd = (q_d[2:]-q_d[:-2])/(2*tstep)
+
+
+q = q[2:-2]
+t = t[2:-2]
+q_d = q_d[1:-1]
+
+plt.figure()
+plt.plot(t,q)
+plt.figure()
+plt.plot(t,q_d)
+plt.figure()
+plt.plot(t,q_dd)
+
+
+x = numpy.c_[q,numpy.cos(q),q_d]
+m = float((ma/qA_dd).subs(system.constants))
+y = m*q_dd
+
+C = numpy.linalg.solve(x.T.dot(x),x.T.dot(y))
+y2 = numpy.r_[[C]].dot(x.T).T
+
+plt.figure()
+plt.plot(t,y)
+plt.plot(t,y2)
+
