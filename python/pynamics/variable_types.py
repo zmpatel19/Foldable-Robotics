@@ -16,7 +16,7 @@ class Variable(sympy.Symbol):
 
 class Constant(sympy.Symbol):
     def __new__(self,name,value,system = None):
-        system = systeme or pynamics.get_system()
+        system = system or pynamics.get_system()
 
         obj = sympy.Symbol.__new__(self,name)
         obj.value = value

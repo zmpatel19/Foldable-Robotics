@@ -111,7 +111,7 @@ class System(object):
         for speed in q_d:
             new = pynamics.ZERO
             for expression,velocity in list1:
-                new+=expression.dot(velocity.diff_partial_local(speed,self))
+                new+=expression.dot(velocity.diff_partial_local(speed))
             generalized.append(new)
         return generalized
         

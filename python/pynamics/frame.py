@@ -9,7 +9,6 @@ Please see LICENSE for full license.
 import pynamics
 from pynamics.tree_node import TreeNode
 from pynamics.vector import Vector
-from pynamics.name import Name
 from pynamics.rotation import Rotation,FixedAxisRotation
 
 import sympy
