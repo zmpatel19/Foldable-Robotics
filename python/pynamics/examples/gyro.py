@@ -25,11 +25,11 @@ from sympy import pi
 system = System()
 
 
-m = Constant('m',.1,system)
-r = Constant('r',.2,system)
-L = Constant('L',.2,system)
+m = Constant(.1,'m',system)
+r = Constant(.2,'r',system)
+L = Constant(.2,'L',system)
 
-g = Constant('g',9.81,system)
+g = Constant(9.81,'g',system)
 
 tinitial = 0
 tfinal = 5

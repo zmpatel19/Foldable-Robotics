@@ -30,19 +30,19 @@ alpha = 1e6
 beta = 1e5
 
 #preload1 = Constant('preload1',0*pi/180,system)
-a = Constant('a',0,system)
-l1 = Constant('l1',1,system)
-m1 = Constant('m1',1e1,system)
-m2 = Constant('m2',1e0,system)
-k = Constant('k',1e4,system)
-l0 = Constant('l0',1,system)
-b = Constant('b',5e0,system)
-g = Constant('g',9.81,system)
+a = Constant(0,'a',system)
+l1 = Constant(1,'l1',system)
+m1 = Constant(1e1,'m1',system)
+m2 = Constant(1e0,'m2',system)
+k = Constant(1e4,'k',system)
+l0 = Constant(1,'l0',system)
+b = Constant(5e0,'b',system)
+g = Constant(9.81,'g',system)
 
 
-Ixx_A = Constant('Ixx_A',1,system)
-Iyy_A = Constant('Iyy_A',1,system)
-Izz_A = Constant('Izz_A',1,system)
+Ixx_A = Constant(1,'Ixx_A',system)
+Iyy_A = Constant(1,'Iyy_A',system)
+Izz_A = Constant(1,'Izz_A',system)
 
 tinitial = 0
 tfinal = 10

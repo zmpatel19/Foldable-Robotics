@@ -23,18 +23,18 @@ plt.ion()
 from sympy import pi
 system = System()
 tol = 1e-10
-lA = Constant(None,1)
+lA = Constant(1)
 
-mA = Constant(None,1)
+mA = Constant(1)
 
-g = Constant('g',9.81,system)
-b_air = Constant('b_air',1e-1,system)
-b_joint = Constant('b_joint',1e-1,system)
-k = Constant('k',2e1,system)
+g = Constant(9.81)
+b_air = Constant(1e-1)
+b_joint = Constant(1e-1)
+k = Constant(2e1)
 
-Ixx_A = Constant('Ixx_A',1,system)
-Iyy_A = Constant('Iyy_A',1,system)
-Izz_A = Constant('Izz_A',1,system)
+Ixx_A = Constant(1)
+Iyy_A = Constant(1)
+Izz_A = Constant(1)
 
 
 tinitial = 0
@@ -42,7 +42,7 @@ tfinal = 5
 tstep = .001
 t = numpy.r_[tinitial:tfinal:tstep]
 
-preload1 = Constant('preload1',0*pi/180,system)
+preload1 = Constant(0*pi/180)
 
 qA,qA_d,qA_dd = Differentiable(system,'qA')
 

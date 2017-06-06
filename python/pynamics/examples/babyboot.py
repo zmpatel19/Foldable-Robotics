@@ -25,13 +25,13 @@ system = System()
 
 error = 1e-12
 
-lA = Constant('lA',7.5/100,system)
-lB = Constant('lB',20/100,system)
+lA = Constant(7.5/100,'lA',system)
+lB = Constant(20/100,'lB',system)
 
-mA = Constant('mA',10/1000,system)
-mB = Constant('mB',100/1000,system)
+mA = Constant(10/1000,'mA',system)
+mB = Constant(100/1000,'mB',system)
 
-g = Constant('g',9.81,system)
+g = Constant(9.81,'g',system)
 
 tinitial = 0
 tfinal = 10
@@ -39,12 +39,12 @@ tstep = .001
 t = numpy.r_[tinitial:tfinal:tstep]
 
 
-Ixx_A = Constant('Ixx_A',50/1000/100/100,system)
+Ixx_A = Constant(50/1000/100/100,'Ixx_A',system)
 Iyy_A = Variable('Iyy_A')
 Izz_A = Variable('Izz_A')
-Ixx_B = Constant('Ixx_B',2500/1000/100/100,system)
-Iyy_B = Constant('Iyy_B',500/1000/100/100,system)
-Izz_B = Constant('Izz_B',2000/1000/100/100,system)
+Ixx_B = Constant(2500/1000/100/100,'Ixx_B',system)
+Iyy_B = Constant(500/1000/100/100,'Iyy_B',system)
+Izz_B = Constant(2000/1000/100/100,'Izz_B',system)
 
 qA,qA_d,qA_dd = Differentiable(system,'qA')
 qB,qB_d,qB_dd = Differentiable(system,'qB')

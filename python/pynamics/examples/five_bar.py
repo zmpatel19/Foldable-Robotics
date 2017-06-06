@@ -40,17 +40,17 @@ t3 = 70*pi/180
 t4 = 60*pi/180
 t0 = 2*pi-(t1+t2+t3+t4)
 
-m = Constant('m',1,system)
+m = Constant(1,'m',system)
 
-t0 = Constant('t0',t0,system)
-t1 = Constant('t1',t1,system)
-t2 = Constant('t2',t2,system)
-t3 = Constant('t3',t3,system)
-t4 = Constant('t4',t4,system)
+t0 = Constant(t0,'t0',system)
+t1 = Constant(t1,'t1',system)
+t2 = Constant(t2,'t2',system)
+t3 = Constant(t3,'t3',system)
+t4 = Constant(t4,'t4',system)
 
-g = Constant('g',0,system)
-b = Constant('b',1e0,system)
-k = Constant('k',1e2,system)
+g = Constant(0,'g',system)
+b = Constant(1e0,'b',system)
+k = Constant(1e2,'k',system)
 
 tinitial = 0
 tfinal = 5

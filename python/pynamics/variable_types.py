@@ -10,7 +10,7 @@ import pynamics
 from pynamics.name_generator import NameGenerator
 
 class Variable(sympy.Symbol,NameGenerator):
-    def __new__(self,name):
+    def __new__(self,name=None):
         
         name = name or self.generate_name()
         
@@ -19,7 +19,7 @@ class Variable(sympy.Symbol,NameGenerator):
         return obj
 
 class Constant(sympy.Symbol,NameGenerator):
-    def __new__(self,name,value,system = None):
+    def __new__(self,value,name=None,system = None):
 
         name = name or self.generate_name()
 

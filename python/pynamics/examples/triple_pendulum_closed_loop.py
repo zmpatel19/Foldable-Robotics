@@ -23,39 +23,29 @@ plt.ion()
 from sympy import pi
 system = System()
 
-lA = Constant('lA',1,system)
-lB = Constant('lB',1,system)
-lC = Constant('lC',1,system)
-lD = Constant('lD',1,system)
+lA = Constant(1,'lA',system)
+lB = Constant(1,'lB',system)
+lC = Constant(1,'lC',system)
+lD = Constant(1,'lD',system)
 
-mA = Constant('mA',1,system)
-mB = Constant('mB',.5,system)
-mC = Constant('mC',1,system)
-mD = Constant('mD',.5,system)
+mA = Constant(1,'mA',system)
+mB = Constant(.5,'mB',system)
+mC = Constant(1,'mC',system)
+mD = Constant(.5,'mD',system)
 
-g = Constant('g',9.81,system)
-b = Constant('b',1e1,system)
-k = Constant('k',1e2,system)
+g = Constant(9.81,'g',system)
+b = Constant(1e1,'b',system)
+k = Constant(1e2,'k',system)
 
 tinitial = 0
 tfinal = 5
 tstep = .001
 t = numpy.r_[tinitial:tfinal:tstep]
 
-preload1 = Constant('preload1',0*pi/180,system)
-preload2 = Constant('preload2',0*pi/180,system)
-preload3 = Constant('preload3',0*pi/180,system)
-preload4 = Constant('preload4',0*pi/180,system)
-
-#Ixx_A = Constant('Ixx_A',8.96572844222684e-07,system)
-#Iyy_A = Constant('Iyy_A',5.31645644183654e-06,system)
-#Izz_A = Constant('Izz_A',5.31645644183654e-06,system)
-#Ixx_B = Constant('Ixx_B',6.27600676796613e-07,system)
-#Iyy_B = Constant('Iyy_B',1.98358014762822e-06,system)
-#Izz_B = Constant('Izz_B',1.98358014762822e-06,system)
-#Ixx_C = Constant('Ixx_C',4.39320316677997e-07,system)
-#Iyy_C = Constant('Iyy_C',7.9239401855911e-07,system)
-#Izz_C = Constant('Izz_C',7.9239401855911e-07,system)
+preload1 = Constant(0*pi/180,'preload1',system)
+preload2 = Constant(0*pi/180,'preload2',system)
+preload3 = Constant(0*pi/180,'preload3',system)
+preload4 = Constant(0*pi/180,'preload4',system)
 
 qA,qA_d,qA_dd = Differentiable(system,'qA')
 qB,qB_d,qB_dd = Differentiable(system,'qB')

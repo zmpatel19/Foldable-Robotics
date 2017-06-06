@@ -23,11 +23,11 @@ plt.ion()
 from sympy import pi
 system = System()
 
-mA = Constant('mA',1,system)
+mA = Constant(1,'mA',system)
 
-g = Constant('g',9.81,system)
-b = Constant('b',1e0,system)
-k = Constant('k',1e5,system)
+g = Constant(9.81,'g',system)
+b = Constant(1e0,'b',system)
+k = Constant(1e5,'k',system)
 
 tinitial = 0
 tfinal = 5

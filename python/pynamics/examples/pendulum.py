@@ -23,20 +23,20 @@ plt.ion()
 from sympy import pi
 system = System()
 
-lA = Constant('lA',1,system)
+lA = Constant(1,'lA',system)
 
-mA = Constant('mA',1,system)
+mA = Constant(1,'mA',system)
 
-g = Constant('g',9.81,system)
-b = Constant('b',1e0,system)
-k = Constant('k',1e1,system)
+g = Constant(9.81,'g',system)
+b = Constant(1e0,'b',system)
+k = Constant(1e1,'k',system)
 
 tinitial = 0
 tfinal = 5
 tstep = .001
 t = numpy.r_[tinitial:tfinal:tstep]
 
-preload1 = Constant('preload1',0*pi/180,system)
+preload1 = Constant(0*pi/180,'preload1',system)
 
 qA,qA_d,qA_dd = Differentiable(system,'qA')
 
