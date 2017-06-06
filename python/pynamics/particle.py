@@ -6,9 +6,9 @@ Please see LICENSE for full license.
 """
 
 import pynamics
+from pynamics.name_generator import NameGenerator
 
-class Particle(object):
-    _ii = 0
+class Particle(NameGenerator):
     typestring = 'Particle'
     def __init__(self,pCM,mass,name = None,system = None):
         system = system or pynamics.get_system()
@@ -27,6 +27,7 @@ class Particle(object):
         
         self.system.particles.append(self)
         self.adddynamics()
+        pynamics.addself(self,self.name)
 
     def adddynamics(self):
         self.system.addeffectiveforce(self.effectiveforce,self.vCM)
@@ -38,13 +39,11 @@ class Particle(object):
         self.forcegravity = self.mass*gravityvector
         self.system.addforce(self.forcegravity,self.vCM)
         
-    def generate_name(self):
-        name = '{0}{1:04d}'.format(self.typestring,self._ii)
-        type(self)._ii+=1
-        return name
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return str(self)
+if __name__=='__main__':
+    from pynamics.system import System
+    from pynamics.frame import Frame
+    sys = System()
+    N = Frame(name = 'N')
+    
+    sys.set_newtonian(N)
+    Particle(0*N.x,1)

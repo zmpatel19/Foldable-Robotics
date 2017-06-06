@@ -30,7 +30,7 @@ def addself(self,name,modulename='__main__'):
         else:
             setattr(module, name, self)
 
-def get_system(self):
+def get_system():
     module = sys.modules['__main__']
     return getattr(module,systemname)
             
