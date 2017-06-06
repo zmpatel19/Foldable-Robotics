@@ -9,7 +9,7 @@ import pynamics
 from pynamics.name_generator import NameGenerator
 
 class Particle(NameGenerator):
-    typestring = 'Particle'
+#    typestring = 'Particle'
     def __init__(self,pCM,mass,name = None,system = None):
         system = system or pynamics.get_system()
 

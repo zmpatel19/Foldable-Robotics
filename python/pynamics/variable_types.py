@@ -7,14 +7,15 @@ Please see LICENSE for full license.
 
 import sympy
 import pynamics
+from pynamics.name_generator import NameGenerator
 
-class Variable(sympy.Symbol):
+class Variable(sympy.Symbol,NameGenerator):
     def __new__(self,name):
         obj = sympy.Symbol.__new__(self,name)
         pynamics.addself(obj,name)
         return obj
 
-class Constant(sympy.Symbol):
+class Constant(sympy.Symbol,NameGenerator):
     def __new__(self,name,value,system = None):
         system = system or pynamics.get_system()
 
@@ -24,7 +25,7 @@ class Constant(sympy.Symbol):
         pynamics.addself(obj,name)
         return obj
 
-class Differentiable(sympy.Symbol):
+class Differentiable(sympy.Symbol,NameGenerator):
     ii = 0    
     def __new__(cls,sys = None,name=None,limit = 3,ii=0):
         sys = sys or pynamics.get_system()

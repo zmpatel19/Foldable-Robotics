@@ -16,7 +16,13 @@ class NameGenerator(object):
         return name
     
     def _generate_name(self):
-        name = '{0}{1:04d}'.format(self.typestring,self._ii)
+        try:
+            typestring = self.typestring
+        except AttributeError:
+            typestring = type(self).__name__
+        typestring = typestring.lower()
+            
+        name = '{0}_{1:04d}'.format(typestring,self._ii)
         type(self)._ii+=1
         return name
 
