@@ -75,8 +75,9 @@ print('creating second order function...')
 func = system.state_space_post_invert(f,ma)
 print('integrating...')
 #states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
-from pynamics.integrator import RK4
+from pynamics.integrator import RK4,DoPri
 integrator = RK4(func,ini,t)
+#integrator = DoPri(func,ini,t)
 states = integrator.run()
 
 pynamics.toc()
