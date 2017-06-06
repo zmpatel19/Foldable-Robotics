@@ -14,6 +14,7 @@ class Particle(NameGenerator):
         system = system or pynamics.get_system()
 
         self.name = name or self.generate_name()
+
         self.pCM = pCM
         self.mass = mass
         self.system = system

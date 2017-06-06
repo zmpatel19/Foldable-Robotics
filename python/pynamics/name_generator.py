@@ -7,23 +7,25 @@ Created on Mon Jun  5 17:35:06 2017
 
 class NameGenerator(object):
 
-    def generate_name(self):
+    @classmethod
+    def generate_name(cls):
         try:
-            self._generate_name()
+            cls._generate_name()
         except AttributeError:
-            type(self)._ii = 0
-            return self._generate_name()
+            cls._ii = 0
+            return cls._generate_name()
         return name
     
-    def _generate_name(self):
+    @classmethod
+    def _generate_name(cls):
         try:
-            typestring = self.typestring
+            typestring = cls.typestring
         except AttributeError:
-            typestring = type(self).__name__
+            typestring = cls.__name__
         typestring = typestring.lower()
             
-        name = '{0}_{1:04d}'.format(typestring,self._ii)
-        type(self)._ii+=1
+        name = '{0}_{1:04d}'.format(typestring,cls._ii)
+        cls._ii+=1
         return name
 
     def __str__(self):

@@ -11,12 +11,18 @@ from pynamics.name_generator import NameGenerator
 
 class Variable(sympy.Symbol,NameGenerator):
     def __new__(self,name):
+        
+        name = name or self.generate_name()
+        
         obj = sympy.Symbol.__new__(self,name)
         pynamics.addself(obj,name)
         return obj
 
 class Constant(sympy.Symbol,NameGenerator):
     def __new__(self,name,value,system = None):
+
+        name = name or self.generate_name()
+
         system = system or pynamics.get_system()
 
         obj = sympy.Symbol.__new__(self,name)
@@ -26,13 +32,11 @@ class Constant(sympy.Symbol,NameGenerator):
         return obj
 
 class Differentiable(sympy.Symbol,NameGenerator):
-    ii = 0    
     def __new__(cls,sys = None,name=None,limit = 3,ii=0):
+
         sys = sys or pynamics.get_system()
 
-        if name==None:
-            name = 'x{0:d}'.format(cls.ii)
-            cls.ii+=1
+        name = name or self.generate_name()
 
         differentiables = []
 
@@ -49,6 +53,8 @@ class Differentiable(sympy.Symbol,NameGenerator):
             sys.add_q(variable,jj)
             differentiables.append(variable)
             pynamics.addself(variable,subname)
+
         for a,a_d in zip(differentiables[:-1],differentiables[1:]):
             sys.add_derivative(a,a_d)
+
         return differentiables 

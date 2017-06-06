@@ -10,7 +10,8 @@ import pynamics
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
-from pynamics.body import Body,BodyGeneric
+from pynamics.body import Body
+from pynamics.body_generic import BodyGeneric
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
