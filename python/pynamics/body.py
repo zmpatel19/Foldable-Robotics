@@ -12,7 +12,8 @@ class Body(NameGenerator):
     def __init__(self,name,frame,pCM,mass,inertia,system = None):
         system = system or pynamics.get_system()
 
-        self.name = name or self.generate_name()
+        name = name or self.generate_name()
+        self.name = name
 
         self.frame = frame
         self.system = system

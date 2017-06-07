@@ -21,7 +21,8 @@ class Frame(TreeNode,NameGenerator):
         self.precomputed = {}
         self.reps = {}
 
-        self.name = name or self.generate_name()
+        name = name or self.generate_name()
+        self.name = name
         
         self.x = Vector()
         self.y = Vector()

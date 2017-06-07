@@ -13,7 +13,8 @@ class Particle(NameGenerator):
     def __init__(self,pCM,mass,name = None,system = None):
         system = system or pynamics.get_system()
 
-        self.name = name or self.generate_name()
+        name = name or self.generate_name()
+        self.name = name
 
         self.pCM = pCM
         self.mass = mass
