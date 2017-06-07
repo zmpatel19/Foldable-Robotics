@@ -95,17 +95,14 @@ y = output.calc(states)
 pynamics.toc()
 
 plt.figure()
-plt.hold(True)
 plt.plot(t,y[:,0])
 plt.show()
 
 plt.figure()
-plt.hold(True)
 plt.plot(t,y[:,1])
 plt.show()
 
 plt.figure()
-plt.hold(True)
 plt.plot(t,y[:,2]*180/pi)
 plt.show()
 

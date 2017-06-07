@@ -86,7 +86,6 @@ y = output.calc(states)
 pynamics.toc()
 
 plt.figure(1)
-plt.hold(True)
 plt.plot(y[:,0],y[:,1])
 plt.axis('equal')
 
@@ -94,6 +93,5 @@ plt.figure(2)
 plt.plot(y[:,2])
 
 plt.figure(3)
-plt.hold(True)
 plt.plot(t,y[:,3])
 plt.show()

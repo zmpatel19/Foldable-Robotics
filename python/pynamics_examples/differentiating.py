@@ -20,8 +20,8 @@ from pynamics.output import Output
 from pynamics.particle import Particle
 
 s = System()
-x,x_d,x_dd=pynamics.variable_types.Differentiable(s,'x')
-q1,q1_d,q1_dd=pynamics.variable_types.Differentiable(s,'q1')
+x,x_d,x_dd=pynamics.variable_types.Differentiable('x',s)
+q1,q1_d,q1_dd=pynamics.variable_types.Differentiable('q1',s)
 
 eq = x**2+2*x
 eq_d = s.derivative(eq)
