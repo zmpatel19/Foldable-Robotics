@@ -236,7 +236,7 @@ class System(object):
     
         @static_vars(ii=0)
         def func(state,time,*args):
-            if func.ii%100==0:
+            if func.ii%1000==0:
                 print(time)
             func.ii+=1
             
@@ -329,7 +329,7 @@ class System(object):
     
         @static_vars(ii=0)
         def func(state,time,*args):
-            if func.ii%100==0:
+            if func.ii%1000==0:
                 print(time)
             func.ii+=1
             
