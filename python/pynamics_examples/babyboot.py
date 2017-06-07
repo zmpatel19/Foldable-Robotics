@@ -45,8 +45,8 @@ Ixx_B = Constant(2500/1000/100/100,'Ixx_B',system)
 Iyy_B = Constant(500/1000/100/100,'Iyy_B',system)
 Izz_B = Constant(2000/1000/100/100,'Izz_B',system)
 
-qA,qA_d,qA_dd = Differentiable(system,'qA')
-qB,qB_d,qB_dd = Differentiable(system,'qB')
+qA,qA_d,qA_dd = Differentiable('qA',system)
+qB,qB_d,qB_dd = Differentiable('qB',system)
 
 initialvalues = {}
 initialvalues[qA]=90*pi/180

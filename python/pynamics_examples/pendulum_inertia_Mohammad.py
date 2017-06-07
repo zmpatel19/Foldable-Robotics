@@ -43,7 +43,7 @@ t = numpy.r_[tinitial:tfinal:tstep]
 
 preload1 = Constant(0*pi/180,'preload1',system)
 
-qA,qA_d,qA_dd = Differentiable(system,'qA')
+qA,qA_d,qA_dd = Differentiable('qA',system)
 
 initialvalues = {}
 initialvalues[qA]=10*pi/180

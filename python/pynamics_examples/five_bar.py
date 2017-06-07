@@ -56,11 +56,11 @@ tfinal = 5
 tstep = .05
 t = numpy.r_[tinitial:tfinal:tstep]
 
-qA1,qA1_d,qA1_dd = Differentiable(system,'qA1')
-qA2,qA2_d,qA2_dd = Differentiable(system,'qA2')
-qA3,qA3_d,qA3_dd = Differentiable(system,'qA3')
-qB1,qB1_d,qB1_dd = Differentiable(system,'qB1')
-qB2,qB2_d,qB2_dd = Differentiable(system,'qB2')
+qA1,qA1_d,qA1_dd = Differentiable('qA1',system)
+qA2,qA2_d,qA2_dd = Differentiable('qA2',system)
+qA3,qA3_d,qA3_dd = Differentiable('qA3',system)
+qB1,qB1_d,qB1_dd = Differentiable('qB1',system)
+qB2,qB2_d,qB2_dd = Differentiable('qB2',system)
 
 initialvalues = {}
 initialvalues[qA1]=.1*pi/180

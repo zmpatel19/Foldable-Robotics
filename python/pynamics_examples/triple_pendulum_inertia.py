@@ -53,9 +53,9 @@ Ixx_C = Constant(1,'Ixx_C',system)
 Iyy_C = Constant(1,'Iyy_C',system)
 Izz_C = Constant(1,'Izz_C',system)
 
-qA,qA_d,qA_dd = Differentiable(system,'qA')
-qB,qB_d,qB_dd = Differentiable(system,'qB')
-qC,qC_d,qC_dd = Differentiable(system,'qC')
+qA,qA_d,qA_dd = Differentiable('qA',system)
+qB,qB_d,qB_dd = Differentiable('qB',system)
+qC,qC_d,qC_dd = Differentiable('qC',system)
 
 initialvalues = {}
 initialvalues[qA]=0*pi/180

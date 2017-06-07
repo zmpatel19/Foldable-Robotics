@@ -6,7 +6,6 @@ Please see LICENSE for full license.
 """
 
 import pynamics
-#pynamics.script_mode = True
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant,Variable
 from pynamics.system import System
@@ -36,8 +35,8 @@ t = numpy.r_[tinitial:tfinal:tstep]
 
 preload1 = Constant(0*pi/180,'preload1',system)
 
-x,x_d,x_dd = Differentiable(system,'x')
-y,y_d,y_dd = Differentiable(system,'y')
+x,x_d,x_dd = Differentiable('x',system)
+y,y_d,y_dd = Differentiable('y',system)
 
 initialvalues = {}
 initialvalues[x]=1

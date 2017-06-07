@@ -46,10 +46,10 @@ preload2 = Constant(0*pi/180,'preload2',system)
 preload3 = Constant(0*pi/180,'preload3',system)
 preload4 = Constant(0*pi/180,'preload4',system)
 
-qA,qA_d,qA_dd = Differentiable(system,'qA')
-qB,qB_d,qB_dd = Differentiable(system,'qB')
-qC,qC_d,qC_dd = Differentiable(system,'qC')
-qD,qD_d,qD_dd = Differentiable(system,'qD')
+qA,qA_d,qA_dd = Differentiable('qA',system)
+qB,qB_d,qB_dd = Differentiable('qB',system)
+qC,qC_d,qC_dd = Differentiable('qC',system)
+qD,qD_d,qD_dd = Differentiable('qD',system)
 
 initialvalues = {}
 initialvalues[qA]=1*pi/180

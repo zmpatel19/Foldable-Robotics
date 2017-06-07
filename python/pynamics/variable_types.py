@@ -32,11 +32,11 @@ class Constant(sympy.Symbol,NameGenerator):
         return obj
 
 class Differentiable(sympy.Symbol,NameGenerator):
-    def __new__(cls,sys = None,name=None,limit = 3,ii=0):
+    def __new__(cls,name=None,system = None,limit = 3,ii=0):
 
-        sys = sys or pynamics.get_system()
+        system = system or pynamics.get_system()
 
-        name = name or self.generate_name()
+        name = name or cls.generate_name()
 
         differentiables = []
 
@@ -50,11 +50,11 @@ class Differentiable(sympy.Symbol,NameGenerator):
                 subname = name+'_'+'d'*jj
                 variable = sympy.Symbol.__new__(cls,subname)
 
-            sys.add_q(variable,jj)
+            system.add_q(variable,jj)
             differentiables.append(variable)
             pynamics.addself(variable,subname)
 
         for a,a_d in zip(differentiables[:-1],differentiables[1:]):
-            sys.add_derivative(a,a_d)
+            system.add_derivative(a,a_d)
 
         return differentiables 

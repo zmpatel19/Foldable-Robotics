@@ -42,8 +42,8 @@ tfinal = 10
 tstep = .01
 t = numpy.r_[tinitial:tfinal:tstep]
 
-x1,x1_d,x1_dd = Differentiable(system,'x1')
-x2,x2_d,x2_dd = Differentiable(system,'x2')
+x1,x1_d,x1_dd = Differentiable('x1',system)
+x2,x2_d,x2_dd = Differentiable('x2',system)
 
 initialvalues = {}
 initialvalues[x1]=2

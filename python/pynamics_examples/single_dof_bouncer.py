@@ -34,8 +34,8 @@ tfinal = 5
 tstep = .001
 t = numpy.r_[tinitial:tfinal:tstep]
 
-x,x_d,x_dd = Differentiable(system,'x')
-y,y_d,y_dd = Differentiable(system,'y')
+x,x_d,x_dd = Differentiable('x',system)
+y,y_d,y_dd = Differentiable('y',system)
 
 initialvalues = {}
 initialvalues[x]=0
