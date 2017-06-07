@@ -46,7 +46,11 @@ class System(object):
             return self.q[ii]
         else:
             return []
-            
+        
+    def get_state_variables(self):
+        state_var = self.get_q(0)+self.get_q(1)
+        return state_var
+    
     def set_newtonian(self,frame):
         self.newtonian = frame
         
@@ -118,9 +122,9 @@ class System(object):
     def state_space_pre_invert(self,f,ma,inv_method = 'LU',auto_z= False):
         '''pre-invert A matrix'''
         
-        q_state = self.get_q(0)+self.get_q(1)
+        q_state = self.get_state_variables()
 
-#        q_d = self.get_q(1)
+        q_d = self.get_q(1)
         q_dd = self.get_q(2)
         
         f = sympy.Matrix(f)
@@ -149,7 +153,7 @@ class System(object):
         var_dd = A_inv*b 
         
         functions = [sympy.lambdify(q_state,rhs) for rhs in var_dd]
-        indeces = [q_state.index(element) for element in self.get_q(1)]
+        indeces = [q_state.index(element) for element in q_d]
         
         @static_vars(ii=0)
         def func(state,time):
@@ -169,7 +173,7 @@ class System(object):
     def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,presolve_constants = False,eq_d = None):
         '''invert A matrix each call'''
         
-        q_state = self.get_q(0)+self.get_q(1)
+        q_state = self.get_state_variables()
 
         q_d = self.get_q(1)
         q_dd = self.get_q(2)
@@ -224,7 +228,7 @@ class System(object):
         fb = sympy.lambdify(state_full,b_full)
         factive = sympy.lambdify(state_full,sympy.Matrix(eq_active))
 
-        indeces = [q_state.index(element) for element in self.get_q(1)]
+        indeces = [q_state.index(element) for element in q_d]
     
         @static_vars(ii=0)
         def func(state,time,*args):
@@ -259,7 +263,7 @@ class System(object):
     def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,presolve_constants = False):
         '''invert A matrix each call'''
         
-        q_state = self.get_q(0)+self.get_q(1)
+        q_state = self.get_state_variables()
 
         q_d = self.get_q(1)
         q_dd = self.get_q(2)
@@ -317,7 +321,7 @@ class System(object):
         feq_d = sympy.lambdify(state_full,sympy.Matrix(eq_d))
         factive = sympy.lambdify(state_full,sympy.Matrix(eq_active))
 
-        indeces = [q_state.index(element) for element in self.get_q(1)]
+        indeces = [q_state.index(element) for element in q_d]
     
         @static_vars(ii=0)
         def func(state,time,*args):
@@ -391,10 +395,5 @@ class System(object):
             else:
                 result += expression.diff(a)*self.derivatives[a]
         return result
-        
-    def state_variables(self):
-        return self.get_q(0)+self.get_q(1)
-    def state_variables_d(self):
-        return self.get_q(1)+self.get_q(2)
 
                         

@@ -61,7 +61,7 @@ initialvalues[qC_d]=0*pi/180
 initialvalues[qD]=0*pi/180
 initialvalues[qD_d]=0*pi/180
 
-statevariables = system.get_q(0)+system.get_q(1)
+statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')

@@ -32,7 +32,7 @@ class Constant(sympy.Symbol,NameGenerator):
         return obj
 
 class Differentiable(sympy.Symbol,NameGenerator):
-    def __new__(cls,name=None,system = None,limit = 3,ii=0):
+    def __new__(cls,name=None,system = None,limit = 3,ii=0,ini = None):
 
         system = system or pynamics.get_system()
 

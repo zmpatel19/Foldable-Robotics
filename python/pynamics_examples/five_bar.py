@@ -75,7 +75,7 @@ initialvalues[qA3_d]=0*pi/180
 initialvalues[qB1_d]=0*pi/180
 initialvalues[qB2_d]=0*pi/180
 
-statevariables = system.get_q(0)+system.get_q(1)
+statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')

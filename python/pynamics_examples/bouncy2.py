@@ -67,7 +67,7 @@ initialvalues[y1_d]=0
 initialvalues[y2]=1
 initialvalues[y2_d]=0
 
-statevariables = system.get_q(0)+system.get_q(1)
+statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')

@@ -144,7 +144,7 @@ y2 = BodyB.pCM.dot(N.y)
 KE = system.KE
 PE = system.getPEGravity(pNA)
     
-statevariables = system.get_q(0)+system.get_q(1)
+statevariables = system.get_state_variables()
 ini = [item.subs(initialvalues) for item in statevariables]
 t = scipy.arange(0,10,.01)
 outputs = Output([x1,y1,x2,y2,KE,PE],system)
