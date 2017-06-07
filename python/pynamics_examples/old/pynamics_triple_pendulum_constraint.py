@@ -143,7 +143,7 @@ import sympy
 b = sympy.Matrix(a)
 b.jacobian(system.get_q(2))
 c=b.jacobian(system.get_q(2))
-d = sympy.lambdify(system.get_q(0)+system.get_q(1),c)
+d = sympy.lambdify(system.get_state_variables(),c)
 
 func1 = system.createsecondorderfunction4(f,ma,d)
 print('integrating...')
