@@ -32,8 +32,12 @@ class System(object):
         self.replacements = {}
         self.springs = []
         self.t = sympy.Symbol('t')
+        self.ini = {}
         self.error_tolerance = 1e-16
         pynamics.addself(self,pynamics.systemname)
+
+    def set_ini(self,name,val):
+        self.ini[name]=val
 
     def add_q(self,q,ii):
         if ii in self.q:
@@ -396,4 +400,6 @@ class System(object):
                 result += expression.diff(a)*self.derivatives[a]
         return result
 
+    def get_ini(self):
+        return [self.ini[item] for item in self.get_state_variables()]
                         

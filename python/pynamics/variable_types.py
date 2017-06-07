@@ -54,7 +54,10 @@ class Differentiable(sympy.Symbol,NameGenerator):
             differentiables.append(variable)
             pynamics.addself(variable,subname)
 
-        for a,a_d in zip(differentiables[:-1],differentiables[1:]):
+        for kk,(a,a_d) in enumerate(zip(differentiables[:-1],differentiables[1:])):
             system.add_derivative(a,a_d)
 
+            if ini is not None:
+                system.set_ini(a,ini[kk])
+                
         return differentiables 
