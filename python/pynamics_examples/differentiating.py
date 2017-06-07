@@ -11,7 +11,6 @@ from pynamics.frame import Frame
 from pynamics.system import System
 
 import pynamics
-#pynamics.script_mode = True
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System

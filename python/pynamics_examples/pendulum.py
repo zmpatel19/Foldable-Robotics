@@ -6,7 +6,6 @@ Please see LICENSE for full license.
 """
 
 import pynamics
-#pynamics.script_mode = True
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
@@ -74,11 +73,11 @@ f,ma = system.getdynamics()
 print('creating second order function...')
 func = system.state_space_post_invert(f,ma)
 print('integrating...')
-#states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
-from pynamics.integrator import RK4,DoPri
-integrator = RK4(func,ini,t)
+#from pynamics.integrator import RK4,DoPri
+#integrator = RK4(func,ini,t)
 #integrator = DoPri(func,ini,t)
-states = integrator.run()
+#states = integrator.run()
+states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
 
 pynamics.toc()
 print('calculating outputs..')

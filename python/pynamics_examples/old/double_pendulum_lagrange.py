@@ -10,7 +10,7 @@ Please see LICENSE for full license.
 from sympy import pi
 import sympy
 import pynamics
-pynamics.script_mode = True
+#pynamics.script_mode = True
 from pynamics import *
 import numpy
 import scipy
@@ -29,21 +29,21 @@ system=System()
 
 
 lA = Constant(.04,'lA',system)
-Constant(.04,'lB',system)
-Constant(9.81,'g',system)
-Constant(.0145,'mA',system)
-Constant(.0145,'mB',system)
-Constant(0,'zero',system)
+lB = Constant(.04,'lB',system)
+g = Constant(9.81,'g',system)
+mA = Constant(.0145,'mA',system)
+mB = Constant(.0145,'mB',system)
+zero = Constant(0,'zero',system)
 
-Constant(8.6e-007,'Ixx_A',system)
-Constant(2.2e-006,'Iyy_A',system)
-Constant(2.2e-006,'Izz_A',system)
-Constant(8.6e-007,'Ixx_B',system)
-Constant(2.2e-006,'Iyy_B',system)
-Constant(2.2e-006,'Izz_B',system)
+Ixx_A = Constant(8.6e-007,'Ixx_A',system)
+Iyy_A = Constant(2.2e-006,'Iyy_A',system)
+Izz_A = Constant(2.2e-006,'Izz_A',system)
+Ixx_B = Constant(8.6e-007,'Ixx_B',system)
+Iyy_B = Constant(2.2e-006,'Iyy_B',system)
+Izz_B = Constant(2.2e-006,'Izz_B',system)
 
-Constant(0.00001,'b',system)
-Constant(0.1,'k',system)
+b = Constant(0.00001,'b',system)
+k = Constant(0.1,'k',system)
         
 #accelerationvariable('xA')
 #accelerationvariable('yA')
