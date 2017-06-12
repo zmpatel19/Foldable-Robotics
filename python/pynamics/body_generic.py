@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Written by Daniel M. Aukes
-Email: danaukes<at>gmail.com
-Please see LICENSE for full license.
+Created on Mon Jun  5 20:55:27 2017
+
+@author: danaukes
 """
 
 import pynamics
 from pynamics.name_generator import NameGenerator
 
-class Body(NameGenerator):
-    def __init__(self,name,frame,pCM,mass,inertia,system = None):
+class BodyGeneric(NameGenerator):
+    def __init__(self,name,frame,pCM,vCM,aCM,wNBody,alNBody,mass,inertia,system=None):
         system = system or pynamics.get_system()
 
         name = name or self.generate_name()
@@ -18,22 +18,22 @@ class Body(NameGenerator):
         self.frame = frame
         self.system = system
         self.pCM = pCM
+        self.vCM=vCM
+        self.aCM=aCM
         self.mass = mass
         self.inertia= inertia
-        self.vCM=self.pCM.diff_in_parts(self.system.newtonian,self.system)
-        self.aCM=self.vCM.diff_in_parts(self.system.newtonian,self.system)
         
         self.gravityvector = None
         self.forcegravity = None        
         
-        self.wNBody = self.system.newtonian.getw_(self.frame)
-        self.alNBody=self.wNBody.diff_in_parts(self.system.newtonian,self.system)
+        self.wNBody = wNBody
+        self.alNBody=alNBody
         
         self.effectiveforce = self.mass*self.aCM
         self.momentofeffectiveforce= self.inertia.dot(self.alNBody)+self.wNBody.cross(self.inertia.dot(self.wNBody))
         self.KE = .5*mass*self.vCM.dot(self.vCM) + .5*self.wNBody.dot(self.inertia.dot(self.wNBody))
-#        self.linearmomentum = self.mass*self.vCM
-#        self.angularmomentum = self.inertia.dot(self.wNBody)
+        self.linearmomentum = self.mass*self.vCM
+        self.angularmomentum = self.inertia.dot(self.wNBody)
         
         self.system.bodies.append(self)
         self.adddynamics()
@@ -57,4 +57,3 @@ class Body(NameGenerator):
     def __str__(self):
         return self.name+'(body)'
 #        return self.name+' <frame {0:#x}>'.format(self.__hash__())
-

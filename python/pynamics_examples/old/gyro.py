@@ -6,11 +6,11 @@ Please see LICENSE for full license.
 """
 
 import pynamics
-#pynamics.script_mode = True
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
-from pynamics.body import Body,BodyGeneric
+from pynamics.body import Body
+from pynamics.body_generic import BodyGeneric
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
@@ -24,11 +24,11 @@ from sympy import pi
 system = System()
 
 
-m = Constant('m',.1,system)
-r = Constant('r',.2,system)
-L = Constant('L',.2,system)
+m = Constant(.1,'m',system)
+r = Constant(.2,'r',system)
+L = Constant(.2,'L',system)
 
-g = Constant('g',9.81,system)
+g = Constant(9.81,'g',system)
 
 tinitial = 0
 tfinal = 5
@@ -95,17 +95,14 @@ y = output.calc(states)
 pynamics.toc()
 
 plt.figure()
-plt.hold(True)
 plt.plot(t,y[:,0])
 plt.show()
 
 plt.figure()
-plt.hold(True)
 plt.plot(t,y[:,1])
 plt.show()
 
 plt.figure()
-plt.hold(True)
 plt.plot(t,y[:,2]*180/pi)
 plt.show()
 

@@ -80,7 +80,6 @@ outputs.calc(statevariables,states)
 toc()
 
 plt.figure(1)
-plt.hold(True)
 plt.plot(outputs(x1),outputs(y1))
 
 plt.figure(2)

@@ -6,7 +6,6 @@ Please see LICENSE for full license.
 """
 
 import pynamics
-#pynamics.script_mode = True
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
@@ -40,28 +39,28 @@ t3 = 70*pi/180
 t4 = 60*pi/180
 t0 = 2*pi-(t1+t2+t3+t4)
 
-m = Constant('m',1,system)
+m = Constant(1,'m',system)
 
-t0 = Constant('t0',t0,system)
-t1 = Constant('t1',t1,system)
-t2 = Constant('t2',t2,system)
-t3 = Constant('t3',t3,system)
-t4 = Constant('t4',t4,system)
+t0 = Constant(t0,'t0',system)
+t1 = Constant(t1,'t1',system)
+t2 = Constant(t2,'t2',system)
+t3 = Constant(t3,'t3',system)
+t4 = Constant(t4,'t4',system)
 
-g = Constant('g',0,system)
-b = Constant('b',1e0,system)
-k = Constant('k',1e2,system)
+g = Constant(0,'g',system)
+b = Constant(1e0,'b',system)
+k = Constant(1e2,'k',system)
 
 tinitial = 0
 tfinal = 5
 tstep = .05
 t = numpy.r_[tinitial:tfinal:tstep]
 
-qA1,qA1_d,qA1_dd = Differentiable(system,'qA1')
-qA2,qA2_d,qA2_dd = Differentiable(system,'qA2')
-qA3,qA3_d,qA3_dd = Differentiable(system,'qA3')
-qB1,qB1_d,qB1_dd = Differentiable(system,'qB1')
-qB2,qB2_d,qB2_dd = Differentiable(system,'qB2')
+qA1,qA1_d,qA1_dd = Differentiable('qA1',system)
+qA2,qA2_d,qA2_dd = Differentiable('qA2',system)
+qA3,qA3_d,qA3_dd = Differentiable('qA3',system)
+qB1,qB1_d,qB1_dd = Differentiable('qB1',system)
+qB2,qB2_d,qB2_dd = Differentiable('qB2',system)
 
 initialvalues = {}
 initialvalues[qA1]=.1*pi/180
@@ -76,7 +75,7 @@ initialvalues[qA3_d]=0*pi/180
 initialvalues[qB1_d]=0*pi/180
 initialvalues[qB2_d]=0*pi/180
 
-statevariables = system.get_q(0)+system.get_q(1)
+statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')
@@ -110,11 +109,11 @@ B23.rotate_fixed_axis_directed(B2,[0,0,1],-t3,system)
 
 pNO = 0*N.x
 
-ParticleA1 = Particle(system,A1.x+A12.x,m,'ParticleA1')
-ParticleA2 = Particle(system,A2.x+A23.x,m,'ParticleA2')
-ParticleA3 = Particle(system,A3.x+A34.x,m/2,'ParticleA3')
-ParticleB1 = Particle(system,B1.x+B12.x,m,'ParticleA1')
-ParticleB2 = Particle(system,B2.x+B23.x,m/2,'ParticleA2')
+ParticleA1 = Particle(A1.x+A12.x,m,'ParticleA1',system)
+ParticleA2 = Particle(A2.x+A23.x,m,'ParticleA2',system)
+ParticleA3 = Particle(A3.x+A34.x,m/2,'ParticleA3',system)
+ParticleB1 = Particle(B1.x+B12.x,m,'ParticleA1',system)
+ParticleB2 = Particle(B2.x+B23.x,m/2,'ParticleA2',system)
 
 
 wA1 = N.getw_(A1)

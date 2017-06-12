@@ -58,7 +58,7 @@ initialvalues[qB_d]=0*pi/180
 #initialvalues[qC]=0*pi/180
 #initialvalues[qC_d]=0*pi/180
 
-statevariables = system.get_q(0)+system.get_q(1)
+statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 Frame('N')
@@ -127,7 +127,6 @@ outputs.calc(statevariables,states)
 pynamics.toc()
 
 plt.figure(1)
-plt.hold(True)
 plt.plot(outputs(x1),outputs(y1))
 plt.plot(outputs(x2),outputs(y2))
 #plt.plot(outputs(x3),outputs(y3))
@@ -137,7 +136,6 @@ plt.figure(2)
 plt.plot(outputs(KE)-outputs(PE))
 
 plt.figure(3)
-plt.hold(True)
 plt.plot(t,outputs(qA))
 plt.plot(t,outputs(qB))
 #plt.plot(t,outputs(qC))

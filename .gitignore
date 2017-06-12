@@ -3,3 +3,4 @@ python/pynamics/__pycache__/*
 python/pynamics/popupcad/render*
 python/pynamics/popupcad/rundata
 python/pynamics/examples/render*
+*render*

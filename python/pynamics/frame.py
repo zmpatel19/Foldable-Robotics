@@ -9,19 +9,19 @@ Please see LICENSE for full license.
 import pynamics
 from pynamics.tree_node import TreeNode
 from pynamics.vector import Vector
-from pynamics.name import Name
 from pynamics.rotation import Rotation,FixedAxisRotation
+from pynamics.name_generator import NameGenerator
 
 import sympy
 
-class Frame(TreeNode):
+class Frame(TreeNode,NameGenerator):
     def __init__(self,name = None):
         super(Frame,self).__init__()
         self.connections = {}
         self.precomputed = {}
         self.reps = {}
-        if name==None:
-            name=Name.frame()
+
+        name = name or self.generate_name()
         self.name = name
         
         self.x = Vector()

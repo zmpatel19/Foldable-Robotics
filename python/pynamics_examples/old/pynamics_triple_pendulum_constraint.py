@@ -8,7 +8,7 @@ Please see LICENSE for full license.
 import pynamics
 #pynamics.script_mode = True
 from pynamics.frame import Frame
-from pynamics.variable_types import Differentiable,Constant
+from pynamics.variable_types import Differentiable,Constant,Variable
 from pynamics.system import System
 from pynamics.body import Body
 from pynamics.dyadic import Dyadic
@@ -26,12 +26,10 @@ system = System()
 lA = Constant('lA',1,system)
 lB = Constant('lB',1,system)
 lC = Constant('lC',1,system)
-lD = Constant('lD',1,system)
 
 mA = Constant('mA',1,system)
-mB = Constant('mB',.5,system)
+mB = Constant('mB',1,system)
 mC = Constant('mC',1,system)
-mD = Constant('mD',.5,system)
 
 g = Constant('g',9.81,system)
 b = Constant('b',1e1,system)
@@ -45,7 +43,9 @@ t = numpy.r_[tinitial:tfinal:tstep]
 preload1 = Constant('preload1',0*pi/180,system)
 preload2 = Constant('preload2',0*pi/180,system)
 preload3 = Constant('preload3',0*pi/180,system)
-preload4 = Constant('preload4',0*pi/180,system)
+
+fx = Variable('fx')
+fy = Variable('fy')
 
 #Ixx_A = Constant('Ixx_A',8.96572844222684e-07,system)
 #Iyy_A = Constant('Iyy_A',5.31645644183654e-06,system)
@@ -60,49 +60,42 @@ preload4 = Constant('preload4',0*pi/180,system)
 qA,qA_d,qA_dd = Differentiable(system,'qA')
 qB,qB_d,qB_dd = Differentiable(system,'qB')
 qC,qC_d,qC_dd = Differentiable(system,'qC')
-qD,qD_d,qD_dd = Differentiable(system,'qD')
 
 initialvalues = {}
-initialvalues[qA]=1*pi/180
-initialvalues[qA_d]=10*pi/180
+initialvalues[qA]=0*pi/180
+initialvalues[qA_d]=0*pi/180
 initialvalues[qB]=0*pi/180
 initialvalues[qB_d]=0*pi/180
 initialvalues[qC]=0*pi/180
 initialvalues[qC_d]=0*pi/180
-initialvalues[qD]=0*pi/180
-initialvalues[qD_d]=0*pi/180
 
-statevariables = system.get_q(0)+system.get_q(1)
+statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')
 A = Frame('A')
 B = Frame('B')
 C = Frame('C')
-D = Frame('D')
 
 system.set_newtonian(N)
 A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
 B.rotate_fixed_axis_directed(A,[0,0,1],qB,system)
-C.rotate_fixed_axis_directed(N,[0,0,1],qC,system)
-D.rotate_fixed_axis_directed(C,[0,0,1],qD,system)
+C.rotate_fixed_axis_directed(B,[0,0,1],qC,system)
 
 pNA=0*N.x
-pAB=pNA-lA*A.y
-pBtip = pAB + lB*B.x
+pAB=pNA+lA*A.x
+pBC = pAB + lB*B.x
+pCtip = pBC + lC*C.x
+vCtip = pCtip.time_derivative(N,system)
+aCtip = vCtip.time_derivative(N,system)
 
-pNC = pNA+1*N.x
-pCD = pNC - lC*C.y
-#pDtip = pNC + lC*C.x
-
-pAcm=pNA-lA/2*A.y
+pAcm=pNA+lA/2*A.x
 pBcm=pAB+lB/2*B.x
-pCcm=pNC-lC/2*C.y
-pDcm=pCD-lD/2*D.x
+pCcm=pBC+lC/2*C.x
 
 wNA = N.getw_(A)
 wAB = A.getw_(B)
-#wBC = B.getw_(C)
+wBC = B.getw_(C)
 
 #IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 #IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)
@@ -112,21 +105,22 @@ wAB = A.getw_(B)
 #BodyB = Body('BodyB',B,pBcm,mB,IB,system)
 #BodyC = Body('BodyC',C,pCcm,mC,IC,system)
 
-ParticleA = Particle(system,pAcm,mA,'ParticleA')
-ParticleB = Particle(system,pBcm,mB,'ParticleB')
-ParticleC = Particle(system,pCcm,mC,'ParticleC')
-ParticleD = Particle(system,pDcm,mD,'ParticleD')
+ParticleA = Particle(pAcm,mA,'ParticleA',system)
+ParticleB = Particle(pBcm,mB,'ParticleB',system)
+ParticleC = Particle(pCcm,mC,'ParticleC',system)
 
 system.addforce(-b*wNA,wNA)
 system.addforce(-b*wAB,wAB)
-#system.addforce(-b*wBC,wBC)
+system.addforce(-b*wBC,wBC)
+system.addforce(fx*N.x,vCtip)
+system.addforce(fy*N.y,vCtip)
 
-system.addforce(-k*(qA-preload1)*N.z,wNA)
-system.addforce(-k*(qB-preload2)*A.z,wAB)
+#system.addforce(-k*(qA-preload1)*N.z,wNA)
+#system.addforce(-k*(qB-preload2)*A.z,wAB)
 #system.addforce(-k*(qC-preload3)*B.z,wBC)
-#system.add_spring_force(k,(qA-preload1)*N.z,wNA) 
-#system.add_spring_force(k,(qB-preload2)*N.z,wAB)
-#system.add_spring_force(k,(qC-preload3)*N.z,wBC)
+system.add_spring_force(k,(qA-preload1)*N.z,wNA) 
+system.add_spring_force(k,(qB-preload2)*N.z,wAB)
+system.add_spring_force(k,(qC-preload3)*N.z,wBC)
 
 system.addforcegravity(-g*N.y)
 
@@ -136,31 +130,22 @@ x2 = ParticleB.pCM.dot(N.x)
 y2 = ParticleB.pCM.dot(N.y)
 x3 = ParticleC.pCM.dot(N.x)
 y3 = ParticleC.pCM.dot(N.y)
-x4 = ParticleD.pCM.dot(N.x)
-y4 = ParticleD.pCM.dot(N.y)
-
-eq1 = B.x.dot(D.x)
-#eq1_d = system.derivative(eq1)
-#eq1_dd = system.derivative(eq1_d)
-#eq1_d = eq1.diff_in_parts(N,system)
-#eq1_dd = eq1_d.diff_in_parts(N,system)
-
-eq2 = x4 - x2
-eq3 = y4 - y2
-#eq2 = ParticleB.aCM
-
-eq = [eq1,eq2,eq3]
-eq_d= [system.derivative(item) for item in eq]
-eq_dd= [system.derivative(item) for item in eq_d]
-
 KE = system.KE
 PE = system.getPEGravity(pNA) - system.getPESprings()
     
 pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
-print('creating second order function...')
-func1 = system.state_space_post_invert(f,ma,eq_dd)
+#print('creating second order function...')
+a=[aCtip.dot(N.x),aCtip.dot(N.y)]
+
+import sympy
+b = sympy.Matrix(a)
+b.jacobian(system.get_q(2))
+c=b.jacobian(system.get_q(2))
+d = sympy.lambdify(system.get_state_variables(),c)
+
+func1 = system.createsecondorderfunction4(f,ma,d)
 print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
 pynamics.toc()
@@ -168,18 +153,16 @@ print('calculating outputs..')
 output = Output([x1,y1,x2,y2,x3,y3,KE-PE,qA,qB,qC],system)
 y = output.calc(states)
 pynamics.toc()
-
+#
 plt.figure(1)
-plt.hold(True)
 plt.plot(y[:,0],y[:,1])
 plt.plot(y[:,2],y[:,3])
 plt.plot(y[:,4],y[:,5])
 plt.axis('equal')
-
+#
 plt.figure(2)
 plt.plot(y[:,6])
-
+#
 plt.figure(3)
-plt.hold(True)
 plt.plot(t,y[:,7:10])
 plt.show()

@@ -110,7 +110,6 @@ print(v)
 #toc()
 #
 #plt.figure(1)
-#plt.hold(True)
 #plt.plot(outputs(x1),outputs(y1))
 ##plt.plot(outputs_array[:,6],outputs_array[:,7])
 #

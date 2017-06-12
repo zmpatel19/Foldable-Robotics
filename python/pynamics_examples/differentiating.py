@@ -11,7 +11,6 @@ from pynamics.frame import Frame
 from pynamics.system import System
 
 import pynamics
-#pynamics.script_mode = True
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
@@ -21,8 +20,8 @@ from pynamics.output import Output
 from pynamics.particle import Particle
 
 s = System()
-x,x_d,x_dd=pynamics.variable_types.Differentiable(s,'x')
-q1,q1_d,q1_dd=pynamics.variable_types.Differentiable(s,'q1')
+x,x_d,x_dd=pynamics.variable_types.Differentiable('x',s)
+q1,q1_d,q1_dd=pynamics.variable_types.Differentiable('q1',s)
 
 eq = x**2+2*x
 eq_d = s.derivative(eq)

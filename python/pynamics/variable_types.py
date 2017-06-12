@@ -7,27 +7,36 @@ Please see LICENSE for full license.
 
 import sympy
 import pynamics
+from pynamics.name_generator import NameGenerator
 
-class Variable(sympy.Symbol):
-    def __new__(self,name):
+class Variable(sympy.Symbol,NameGenerator):
+    def __new__(self,name=None):
+        
+        name = name or self.generate_name()
+        
         obj = sympy.Symbol.__new__(self,name)
         pynamics.addself(obj,name)
         return obj
 
-class Constant(sympy.Symbol):
-    def __new__(self,name,value,system):
+class Constant(sympy.Symbol,NameGenerator):
+    def __new__(self,value,name=None,system = None):
+
+        name = name or self.generate_name()
+
+        system = system or pynamics.get_system()
+
         obj = sympy.Symbol.__new__(self,name)
         obj.value = value
         system.add_constant(obj,value)
         pynamics.addself(obj,name)
         return obj
 
-class Differentiable(sympy.Symbol):
-    ii = 0    
-    def __new__(cls,sys,name=None,limit = 3,ii=0):
-        if name==None:
-            name = 'x{0:d}'.format(cls.ii)
-            cls.ii+=1
+class Differentiable(sympy.Symbol,NameGenerator):
+    def __new__(cls,name=None,system = None,limit = 3,ii=0,ini = None):
+
+        system = system or pynamics.get_system()
+
+        name = name or cls.generate_name()
 
         differentiables = []
 
@@ -41,9 +50,14 @@ class Differentiable(sympy.Symbol):
                 subname = name+'_'+'d'*jj
                 variable = sympy.Symbol.__new__(cls,subname)
 
-            sys.add_q(variable,jj)
+            system.add_q(variable,jj)
             differentiables.append(variable)
             pynamics.addself(variable,subname)
-        for a,a_d in zip(differentiables[:-1],differentiables[1:]):
-            sys.add_derivative(a,a_d)
+
+        for kk,(a,a_d) in enumerate(zip(differentiables[:-1],differentiables[1:])):
+            system.add_derivative(a,a_d)
+
+            if ini is not None:
+                system.set_ini(a,ini[kk])
+                
         return differentiables 

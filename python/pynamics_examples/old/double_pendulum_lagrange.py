@@ -10,7 +10,7 @@ Please see LICENSE for full license.
 from sympy import pi
 import sympy
 import pynamics
-pynamics.script_mode = True
+#pynamics.script_mode = True
 from pynamics import *
 import numpy
 import scipy
@@ -28,22 +28,22 @@ from pynamics.output import Output
 system=System()
 
 
-lA = Constant('lA',.04,system)
-Constant('lB',.04,system)
-Constant('g',9.81,system)
-Constant('mA',.0145,system)
-Constant('mB',.0145,system)
-Constant('zero',0,system)
+lA = Constant(.04,'lA',system)
+lB = Constant(.04,'lB',system)
+g = Constant(9.81,'g',system)
+mA = Constant(.0145,'mA',system)
+mB = Constant(.0145,'mB',system)
+zero = Constant(0,'zero',system)
 
-Constant('Ixx_A',8.6e-007,system)
-Constant('Iyy_A',2.2e-006,system)
-Constant('Izz_A',2.2e-006,system)
-Constant('Ixx_B',8.6e-007,system)
-Constant('Iyy_B',2.2e-006,system)
-Constant('Izz_B',2.2e-006,system)
+Ixx_A = Constant(8.6e-007,'Ixx_A',system)
+Iyy_A = Constant(2.2e-006,'Iyy_A',system)
+Izz_A = Constant(2.2e-006,'Izz_A',system)
+Ixx_B = Constant(8.6e-007,'Ixx_B',system)
+Iyy_B = Constant(2.2e-006,'Iyy_B',system)
+Izz_B = Constant(2.2e-006,'Izz_B',system)
 
-Constant('b',0.00001,system)
-Constant('k',0.1,system)
+b = Constant(0.00001,'b',system)
+k = Constant(0.1,'k',system)
         
 #accelerationvariable('xA')
 #accelerationvariable('yA')
@@ -144,7 +144,7 @@ y2 = BodyB.pCM.dot(N.y)
 KE = system.KE
 PE = system.getPEGravity(pNA)
     
-statevariables = system.get_q(0)+system.get_q(1)
+statevariables = system.get_state_variables()
 ini = [item.subs(initialvalues) for item in statevariables]
 t = scipy.arange(0,10,.01)
 outputs = Output([x1,y1,x2,y2,KE,PE],system)
@@ -171,7 +171,6 @@ outputs.calc(statevariables,states)
 #toc()
 
 plt.figure(1)
-plt.hold(True)
 plt.plot(outputs(x1),outputs(y1))
 plt.plot(outputs(x2),outputs(y2))
 

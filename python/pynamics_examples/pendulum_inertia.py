@@ -6,7 +6,6 @@ Please see LICENSE for full license.
 """
 
 import pynamics
-#pynamics.script_mode = True
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
@@ -23,18 +22,18 @@ plt.ion()
 from sympy import pi
 system = System()
 tol = 1e-10
-lA = Constant('lA',1,system)
+lA = Constant(1,'lA',system)
 
-mA = Constant('mA',1,system)
+mA = Constant(1,'mA',system)
 
-g = Constant('g',9.81,system)
-b_air = Constant('b_air',1e-1,system)
-b_joint = Constant('b_joint',1e-1,system)
-k = Constant('k',2e1,system)
+g = Constant(9.81,'g',system)
+b_air = Constant(1e-1,'b_air',system)
+b_joint = Constant(1e-1,'b_joint',system)
+k = Constant(2e1,'k',system)
 
-Ixx_A = Constant('Ixx_A',1,system)
-Iyy_A = Constant('Iyy_A',1,system)
-Izz_A = Constant('Izz_A',1,system)
+Ixx_A = Constant(1,'Ixx_A',system)
+Iyy_A = Constant(1,'Iyy_A',system)
+Izz_A = Constant(1,'Izz_A',system)
 
 
 tinitial = 0
@@ -42,15 +41,15 @@ tfinal = 5
 tstep = .001
 t = numpy.r_[tinitial:tfinal:tstep]
 
-preload1 = Constant('preload1',0*pi/180,system)
+preload1 = Constant(0*pi/180,'preload1',system)
 
-qA,qA_d,qA_dd = Differentiable(system,'qA')
+qA,qA_d,qA_dd = Differentiable('qA',system)
 
 initialvalues = {}
 initialvalues[qA]=0*pi/180
 initialvalues[qA_d]=0*pi/180
 
-statevariables = system.get_q(0)+system.get_q(1)
+statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')
@@ -63,7 +62,7 @@ pNA=0*N.x
 pAB=pNA+lA*A.x
 vAB=pAB.time_derivative(N,system)
 
-#ParticleA = Particle(system,pAB,mA,'ParticleA')
+#ParticleA = Particle(pAB,mA,'ParticleA',system)
 IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 BodyA = Body('BodyA',A,pAB,mA,IA,system)
 

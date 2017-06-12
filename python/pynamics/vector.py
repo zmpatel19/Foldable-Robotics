@@ -7,6 +7,7 @@ Please see LICENSE for full license.
 """
 
 import sympy
+import pynamics
 
 class Vector(object):
     def __init__(self,components=None):
@@ -205,10 +206,12 @@ class Vector(object):
 #        result.clean()
         return result
 
-    def time_derivative(self,frame,sys):
+    def time_derivative(self,frame,sys=None):
         return self.diff_in_parts(frame,sys)
         
-    def diff_in_parts(self,other,sys):    
+    def diff_in_parts(self,other,sys=None):    
+        sys = sys or pynamics.get_system()
+
         result = Vector()
         for frame,vector in self.components.items():
             result+= Vector({frame:sys.derivative(vector)})
@@ -251,7 +254,7 @@ class Vector(object):
 #            newvec.components[frame] = result
 #        return newvec
         
-    def diff_partial_local(self,var,sys = None):
+    def diff_partial_local(self,var):
         newvec = Vector()
         for frame,vec in self.components.items():
             result = vec.diff(var)
@@ -260,6 +263,8 @@ class Vector(object):
         return newvec
         
     def diff_simple(self,frame,sys=None):
+        sys = sys or pynamics.get_system()
+
         v = self.express(frame).components[frame]
         dv = sys.derivative(v)
         newvec = Vector({frame:dv})
