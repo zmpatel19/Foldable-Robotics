@@ -202,7 +202,7 @@ y2 = o2.calc(states)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
-import pydevtools.matplotlib_misc as mm
+import idealab_tools.matplotlib_tools as mm
 
 import idealab_tools.makemovie
 idealab_tools.makemovie.prep_folder()
