@@ -22,9 +22,14 @@ class NameGenerator(object):
             typestring = cls.typestring
         except AttributeError:
             typestring = cls.__name__
-        typestring = typestring.lower()
-            
-        name = '{0}_{1:04d}'.format(typestring,cls._ii)
+            typestring = typestring.lower()
+        
+        try:
+            typeformat = cls.typeformat
+        except AttributeError:
+            typeformat = '{0}_{1:04d}'
+        
+        name = typeformat.format(typestring,cls._ii)
         cls._ii+=1
         return name
 
