@@ -32,15 +32,46 @@ def build_fixed_axis(axis,q,frame,sys = None):
     w_ = w*Vector({frame:axis})
     return R,w_,axis
 
+def w_from_der(R,f,sys):
+    
+    Rxx = R[0,0]
+    Rxy = R[0,1]
+    Rxz = R[0,2]
+
+    Ryx = R[1,0]
+    Ryy = R[1,1]
+    Ryz = R[1,2]
+
+    Rzx = R[2,0]
+    Rzy = R[2,1]
+    Rzz = R[2,2]
+    
+    Rxx_d = sys.derivative(R[0,0])
+    Rxy_d = sys.derivative(R[0,1])
+    Rxz_d = sys.derivative(R[0,2])
+
+    Ryx_d = sys.derivative(R[1,0])
+    Ryy_d = sys.derivative(R[1,1])
+    Ryz_d = sys.derivative(R[1,2])
+
+    Rzx_d = sys.derivative(R[2,0])
+    Rzy_d = sys.derivative(R[2,1])
+    Rzz_d = sys.derivative(R[2,2])
+    
+    wx = Rxz*Rxy_d + Ryz*Ryy_d + Rzz*Rzy_d
+    wy = Rxx*Rxz_d + Ryx*Ryz_d + Rzx*Rzz_d
+    wz = Rxy*Rxx_d + Ryy*Ryx_d + Rzy*Rzx_d
+    
+    w = wx*f.x + wy*f.y + wz*f.z
+    return w
 
 class Rotation(object):
     def __init__(self,f1,f2,R,w_):
         self.f1 = f1
         self.f2 = f2
-        f1.add_rotation(self)
-        f2.add_rotation(self)
         self._R = R
         self.w_ = w_
+ 
     def to_other(self,f):
         if f==self.f1:
             return self._R
@@ -48,6 +79,7 @@ class Rotation(object):
             return self._R.T
         else:
             raise(Exception('frame not in this rotation'))
+
     def w__from(self,f):
         if f==self.f1:
             return self.w_
@@ -55,6 +87,7 @@ class Rotation(object):
             return -self.w_
         else:
             raise(Exception('frame not in this rotation'))
+
     def other(self,f):
         if f==self.f1:
             return self.f2
@@ -65,18 +98,10 @@ class Rotation(object):
             
     @classmethod
     def build_fixed_axis(cls,f1,f2,axis,q,sys = None):
-#        self.f1 = f1
-#        self.f2 = f2
         R,w,fixedaxis = build_fixed_axis(axis,q,f1,sys)
         return cls(f1,f2,R,w)
         
+    def w_from_der(self,sys):
+        return w_from_der(self.R.T,self.f2,sys)
+
         
-    @classmethod
-    def build_xyz(cls,f1,f2,q1,q2,q3,sys = None):
-        r1,w1,a1 = build_fixed_axis([1,0,0],q1,f1,sys)
-        r2,w2,a2 = build_fixed_axis([0,1,0],q2,f1,sys)
-        r3,w3,a3 = build_fixed_axis([0,0,1],q3,f1,sys)
-        r = r1*r2*r3
-        w = w1,w2,w3
-        return cls(f1,f2,r,w)
-            

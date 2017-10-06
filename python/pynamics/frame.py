@@ -41,11 +41,13 @@ class Frame(TreeNode,NameGenerator):
         
     def add_rotation(self,rotation):
         self.connections[rotation.other(self)] = rotation
+        
     def add_precomputed(self,rotation):
         self.precomputed[rotation.other(self)] = rotation
     
     def __str__(self):
         return self.name
+    
     def __repr__(self):
         return str(self)
 
@@ -61,25 +63,29 @@ class Frame(TreeNode,NameGenerator):
             Rs = [from_frame.connections[to_frame].to_other(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]
             w_s = [from_frame.connections[to_frame].w__from(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]
             R_final = Rs.pop(0)      
-            w_final = w_s.pop(0)      
-            for R,w_,to_frame in zip(Rs,w_s,to_frames):
+            w_final = w_s.pop(0)    
+            for R,w_,to_frame in zip(Rs,w_s,to_frames[1:]):
                 R_final = R*R_final
                 w_final += w_
                 rotation = Rotation(self,to_frame,R_final,w_final)
-#                self.add_precomputed(rotation)
-#                to_frame.add_precomputed(rotation)
+                self.add_precomputed(rotation)
+                to_frame.add_precomputed(rotation)
+#            rotation = Rotation(self,to_frame,R_final,w_final)
             return rotation
 
     def getR(self,other):
         return self.calc(other).to_other(self)
+
     def getw_(self,other):
         return self.calc(other).w__from(self)
+
     def rotate_fixed_axis(self,fromframe,axis,q,sys = None):
         sys = sys or pynamics.get_system()
 
         rotation = Rotation.build_fixed_axis(fromframe,self,axis,q,sys)
         self.add_rotation(rotation)
         fromframe.add_rotation(rotation)
+
     def rotate_fixed_axis_directed(self,fromframe,axis,q,sys=None):
         sys = sys or pynamics.get_system()
         
