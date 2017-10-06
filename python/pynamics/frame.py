@@ -9,7 +9,7 @@ Please see LICENSE for full license.
 import pynamics
 from pynamics.tree_node import TreeNode
 from pynamics.vector import Vector
-from pynamics.rotation import Rotation,FixedAxisRotation
+from pynamics.rotation import Rotation
 from pynamics.name_generator import NameGenerator
 
 import sympy
@@ -77,7 +77,7 @@ class Frame(TreeNode,NameGenerator):
     def rotate_fixed_axis(self,fromframe,axis,q,sys = None):
         sys = sys or pynamics.get_system()
 
-        rotation = FixedAxisRotation(fromframe,self,axis,q,sys)
+        rotation = Rotation.build_fixed_axis(fromframe,self,axis,q,sys)
         self.add_rotation(rotation)
         fromframe.add_rotation(rotation)
     def rotate_fixed_axis_directed(self,fromframe,axis,q,sys=None):
