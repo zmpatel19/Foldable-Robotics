@@ -216,7 +216,7 @@ class Vector(object):
         for frame,vector in self.components.items():
             result+= Vector({frame:sys.derivative(vector)})
             v1 = Vector({frame:vector})
-            w_ = other.getw_(frame)
+            w_ = other.getw_(frame).express(frame)
             result+=w_.cross(v1,frame = 'mid')
         result.clean()
         return result
