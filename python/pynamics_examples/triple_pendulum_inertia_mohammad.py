@@ -39,7 +39,7 @@ from math import pi,sin,cos
 
 
 tinitial = 0
-tfinal = 10
+tfinal = 20
 tstep = 0.05
 t = numpy.r_[tinitial:tfinal:tstep]
 
@@ -62,10 +62,10 @@ mB = Constant(0.2,'mB',system)
 mC = Constant(0.2,'mC',system)
 
 g = Constant(9.81,'g',system)
-b = Constant(0.51e-5,'b',system)
+b = Constant(5.51e-1,'b',system)
 #k = Constant(0.0114,'k',system)
 
-k = Constant(1e1,'k',system)
+k = Constant(0.1,'k',system)
 
 
 preload1 = Constant(0*pi/180,'preload1',system)
@@ -104,11 +104,11 @@ Hy,Hy_d,Hy_dd = Differentiable('Hy',system)
 
 
 initialvalues = {}
-initialvalues[qA]=90*pi/180
+initialvalues[qA]=0.01*pi/180
 initialvalues[qA_d]=0.01*pi/180
-initialvalues[qB]=90*pi/180
+initialvalues[qB]=0.01*pi/180
 initialvalues[qB_d]=0.01*pi/180
-initialvalues[qC]=90*pi/180
+initialvalues[qC]=0.01*pi/180
 initialvalues[qC_d]=0.01*pi/180
 initialvalues[Hx]=0.01
 initialvalues[Hx_d]=0
@@ -218,13 +218,13 @@ NVP2 = (VP2.dot(VP2)) ** 0.5
 VP3 = vCcm.cross(pCcm)
 NVP3 = (VP3.dot(VP3)) ** 0.5
 
-Nv1 = (vAcm.dot(vAcm))**0.5
-Nv2 = (vBcm.dot(vBcm))**0.5
-Nv3 = (vCcm.dot(vCcm))**0.5
+Nv1 = (vAcm.dot(vAcm))** 0.5
+Nv2 = (vBcm.dot(vBcm))** 0.5
+Nv3 = (vCcm.dot(vCcm))** 0.5
 
-Np1 = (pAcm.dot(pAcm))**0.5
-Np2 = (pBcm.dot(pBcm))**0.5
-Np3 = (pCcm.dot(pCcm))**0.5
+Np1 = (pAcm.dot(pAcm))** 0.5
+Np2 = (pBcm.dot(pBcm))** 0.5
+Np3 = (pCcm.dot(pCcm))** 0.5
 
 alpha1 = atan2(NVP1,vAcm.dot(pAcm))
 alpha2 = atan2(NVP1,vBcm.dot(pBcm))
@@ -234,9 +234,11 @@ alpha3 = atan2(NVP1,vCcm.dot(pCcm))
 #alpha2 = atan2(vx1*y1-vy1*x1,x1*vx1+x2*vx2)
 #alpha3 = atan2(vx1*y1-vy1*x1,x1*vx1+x2*vx2)
 
-FD1 = rho * pow(Nv1,2-1) * pow(sympy.sin(alpha1),2) * SA * (-vAcm)
-FD2 = rho * pow(Nv2,2-1) * pow(sympy.sin(alpha2),2) * SB * (-vBcm)
-FD3 = rho * pow(Nv3,2-1) * pow(sympy.sin(alpha3),2) * SC * (-vCcm)
+FD1 = rho * Nv1 * (sympy.sin(alpha1)**2) * SA * (-vAcm)
+FD2 = rho * Nv2 * (sympy.sin(alpha2)**2) * SB * (-vBcm)
+FD3 = rho * Nv3 * (sympy.sin(alpha3)**2) * SC * (-vCcm)
+
+#FD1 = Constant(FD1v,'FD1',system)
 
 #FD1 = rho * sympy.sin(alpha1) * (vAcm)
 #FD2 = rho * sympy.sin(alpha2) * (vBcm)
@@ -246,31 +248,29 @@ DV1 = 1/Nv1 * vAcm
 DV2 = 1/Nv2 * vBcm
 DV3 = 1/Nv3 * vCcm
 
-DL1 = DV1.cross(N.z)
-DL2 = DV2.cross(N.z)
-DL3 = DV3.cross(N.z)
+DL1 = DV1.cross(A.z)
+DL2 = DV2.cross(B.z)
+DL3 = DV3.cross(C.z)
 
 
-FL1 = rho * pow(Nv1,2) * sympy.sin(alpha1) * sympy.cos(alpha1) * SA * (DL1)
-FL2 = rho * pow(Nv2,2) * sympy.sin(alpha2) * sympy.cos(alpha2) * SB * (DL2)
-FL3 = rho * pow(Nv3,2) * sympy.sin(alpha3) * sympy.cos(alpha3) * SC * (DL3)
+FL1 = rho * Nv1**2 * sympy.sin(alpha1) * sympy.cos(alpha1) * SA * (DL1)
+FL2 = rho * Nv2**2 * sympy.sin(alpha2) * sympy.cos(alpha2) * SB * (DL2)
+FL3 = rho * Nv3**2 * sympy.sin(alpha3) * sympy.cos(alpha3) * SC * (DL3)
 
 system.addforce(FD1,vAcm)
 system.addforce(FD2,vBcm)
 system.addforce(FD3,vCcm)
 
-
+#
 system.addforce(FL1,vAcm)
 system.addforce(FL2,vBcm)
 system.addforce(FL3,vCcm)
 
-#cd  = 0.2 * sympy.sin(2 * pi * system.t);
+Input_Torque = 0.5 * sympy.sin(2 * pi * system.t);
 
-#Input_Torque = 0.5 * sympy.sin(2 * pi * system.t);
-#
-#w1 = N.getw_(A)
-#
-#system.addforce(Input_Torque*N.z,w1)
+w1 = N.getw_(A)
+
+system.addforce(Input_Torque*N.z,w1)
 
     
 print('solving dynamics...')
@@ -284,29 +284,43 @@ print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=1e-3,atol=1e-3)
 pynamics.toc()
 print('calculating outputs..')
-output = Output([x1,y1,x2,y2,x3,y3,KE-PE,qA,qB,qC,Hx,Hy,FL1,FL2,FL3,FD1,FD2,FD3],system)
+output = Output([x1,y1,x2,y2,x3,y3,KE-PE,qA,qB,qC,Hx,Hy],system)
 y = output.calc(states)
 pynamics.toc()
 
-print('Hinge angles')
+print('Hinge 1 angle')
 plt.figure(1)
-plt.plot(t,180/pi * y[:,7:10])
+plt.plot(t,180/pi * y[:,7])
+plt.show()
+
+print('Hinge 2 angle')
+plt.figure(2)
+plt.plot(t,180/pi * y[:,8])
+plt.show()
+
+print('Hinge 3 angle')
+plt.figure(3)
+plt.plot(t,180/pi * y[:,9])
 plt.show()
 
 print('x position of the head')
-plt.figure(2)
+plt.figure(4)
 plt.plot(t,y[:,10])
 plt.show()
 
 print('y position of the head')
-plt.figure(3)
+plt.figure(5)
 plt.plot(t,y[:,11])
 plt.show()
 
 
+print('x-y position plot')
+plt.figure(6)
+plt.plot(y[:,10],y[:,11])
+plt.show()
 
 print('Energy of the system')
-plt.figure(4)
+plt.figure(7)
 plt.plot(t,y[:,6])
 plt.show()
 
