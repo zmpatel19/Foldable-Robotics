@@ -1,0 +1,433 @@
+# In The Name Of GOD
+#"""
+#Written by Daniel M. Aukes
+#Email: danaukes<at>gmail.com
+#Please see LICENSE for full license.
+#"""
+
+
+import os
+os.system('cls')  # on windows
+import pynamics
+from pynamics.frame import Frame
+from pynamics.variable_types import Differentiable,Constant
+from pynamics.system import System
+from pynamics.body import Body
+from pynamics.dyadic import Dyadic
+from pynamics.output import Output
+from pynamics.particle import Particle
+import math
+
+import matplotlib.pyplot as plt
+plt.ion()
+from mpl_toolkits.mplot3d import Axes3D
+
+#import sympy
+import numpy
+import scipy.integrate
+import matplotlib.pyplot as plt
+plt.ion()
+#from sympy import pi
+
+
+pynamics.tic()
+
+system = System()
+import sympy
+from sympy import atan2
+from math import pi,sin,cos
+
+
+tinitial = 0
+tfinal = 10
+tstep = 0.05
+t = numpy.r_[tinitial:tfinal:tstep]
+
+
+
+av = 0.025
+bv = 0.20
+
+lAA = 0.05
+lBB = 0.05
+lCC = 0.04
+lDD = bv - lAA - lBB -lCC
+
+xAS = 0;
+xAE = lAA;
+xBS = lAA;
+xBE = lAA + lBB
+xCS = lAA + lBB
+xCE = lAA + lBB + lCC
+xDS = lAA + lBB + lCC
+xDE = bv;
+
+yAS = 2*av
+yAE = (2/bv) * pow((av**2)*((bv**2) - (xAE**2)),0.5)
+yBS = yAE
+yBE = (2/bv) * pow((av**2)*((bv**2) - (xBE**2)),0.5)
+yCS = yBE
+yCE = (2/bv) * pow((av**2)*((bv**2) - (xCE**2)),0.5)
+yDS = yCE
+yDE = 0
+
+aA = (yAS + yAE)/2
+aB = (yBS + yBE)/2
+aC = (yCS + yCE)/2
+aD = (yDS + yDE)/2
+
+lA = Constant(lAA,'lA',system)
+lB = Constant(lBB,'lB',system)
+lC = Constant(lCC,'lC',system)
+lD = Constant(lDD,'lD',system)
+
+
+
+g = Constant(9.81,'g',system)
+b = Constant(5.51e-1,'b',system)
+#k = Constant(0.0114,'k',system)
+
+k = Constant(0.05,'k',system)
+
+rho_p = 1111
+th = 0.0032
+
+mA = Constant(lAA * th * aA * rho_p,'mA',system)
+mB = Constant(lBB * th * aB * rho_p,'mB',system)
+mC = Constant(lCC * th * aC * rho_p,'mC',system)
+mD = Constant(lDD * th * aD * rho_p,'mD',system)
+
+preload1 = Constant(0*pi/180,'preload1',system)
+preload2 = Constant(0*pi/180,'preload2',system)
+preload3 = Constant(0*pi/180,'preload3',system)
+preload4 = Constant(0*pi/180,'preload4',system)
+
+Ixx_A = Constant((aA * pow(lA,3))/12,'Ixx_A',system)
+Iyy_A = Constant((lA * pow(aA,3))/12,'Iyy_A',system)
+Izz_A = Constant(1,'Izz_A',system)
+Ixx_B = Constant((aB * pow(lB,3))/12,'Ixx_B',system)
+Iyy_B = Constant((lB * pow(aB,3))/12,'Iyy_B',system)
+Izz_B = Constant(1,'Izz_B',system)
+Ixx_C = Constant((aC * pow(lC,3))/12,'Ixx_C',system)
+Iyy_C = Constant((lC * pow(aC,3))/12,'Iyy_C',system)
+Izz_C = Constant(1,'Izz_C',system)
+Ixx_D = Constant((aD * pow(lD,3))/12,'Ixx_D',system)
+Iyy_D = Constant((lD * pow(aD,3))/12,'Iyy_D',system)
+Izz_D = Constant(1,'Izz_D',system)
+
+#Ixx_A = Constant(1,'Ixx_A',system)
+#Iyy_A = Constant(1,'Iyy_A',system)
+#Izz_A = Constant(1,'Izz_A',system)
+#Ixx_B = Constant(1,'Ixx_B',system)
+#Iyy_B = Constant(1,'Iyy_B',system)
+#Izz_B = Constant(1,'Izz_B',system)
+#Ixx_C = Constant(1,'Ixx_C',system)
+#Iyy_C = Constant(1,'Iyy_C',system)
+#Izz_C = Constant(1,'Izz_C',system)
+
+
+qA,qA_d,qA_dd = Differentiable('qA',system)
+qB,qB_d,qB_dd = Differentiable('qB',system)
+qC,qC_d,qC_dd = Differentiable('qC',system)
+qD,qD_d,qD_dd = Differentiable('qD',system)
+Hx,Hx_d,Hx_dd = Differentiable('Hx',system)
+Hy,Hy_d,Hy_dd = Differentiable('Hy',system)
+
+
+
+
+
+initialvalues = {}
+initialvalues[qA]=0.001*pi/180
+initialvalues[qA_d]=0.001*pi/180
+initialvalues[qB]=0.001*pi/180
+initialvalues[qB_d]=0.001*pi/180
+initialvalues[qC]=0.001*pi/180
+initialvalues[qC_d]=0.001*pi/180
+initialvalues[qD]=0.001*pi/180
+initialvalues[qD_d]=0.001*pi/180
+initialvalues[Hx]=1
+initialvalues[Hx_d]=0
+initialvalues[Hy]=1
+initialvalues[Hy_d]=0
+
+rho = 1000
+SA = aA*lA
+SB = aB*lB
+SC = aC*lC
+SD = aD*lD
+
+
+statevariables = system.get_state_variables()
+ini = [initialvalues[item] for item in statevariables]
+
+N = Frame('N')
+A = Frame('A')
+B = Frame('B')
+C = Frame('C')
+D = Frame('D')
+
+system.set_newtonian(N)
+A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
+B.rotate_fixed_axis_directed(A,[0,0,1],qB,system)
+C.rotate_fixed_axis_directed(B,[0,0,1],qC,system)
+D.rotate_fixed_axis_directed(C,[0,0,1],qD,system)
+
+
+
+pNA = Hx*N.x + Hy*N.y
+#pNA = 0*N.x
+pAB = pNA + lA * A.x
+pBC = pAB + lB * B.x
+pCD = pBC + lC *C .x
+PDtip = pCD + lD *D .x
+
+pAcm= pNA + lA/2 * A.x
+pBcm= pAB + lB/2 * B.x
+pCcm= pBC + lC/2 * C.x
+pDcm= pCD + lD/2 * D.x
+
+vAcm = pAcm.time_derivative(N,system)
+vBcm = pBcm.time_derivative(N,system)
+vCcm = pCcm.time_derivative(N,system)
+vDcm = pDcm.time_derivative(N,system)
+
+wNA = N.getw_(A)
+wAB = A.getw_(B)
+wBC = B.getw_(C)
+wCD = B.getw_(D)
+
+
+IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
+IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)
+IC = Dyadic.build(C,Ixx_C,Iyy_C,Izz_C)
+ID = Dyadic.build(D,Ixx_D,Iyy_D,Izz_D)
+
+BodyA = Body('BodyA',A,pAcm,mA,IA,system)
+BodyB = Body('BodyB',B,pBcm,mB,IB,system)
+BodyC = Body('BodyC',C,pCcm,mC,IC,system)
+BodyD = Body('BodyD',D,pDcm,mD,ID,system)
+
+#ParticleA = Particle(pAcm,mA,'ParticleA',system)
+#ParticleB = Particle(pBcm,mB,'ParticleB',system)
+#ParticleC = Particle(pCcm,mC,'ParticleC',system)
+
+system.addforce(-b*wNA,wNA)
+system.addforce(-b*wAB,wAB)
+system.addforce(-b*wBC,wBC)
+system.addforce(-b*wCD,wCD)
+
+
+#system.addforce(-k*(qA-preload1)*N.z,wNA)
+#system.addforce(-k*(qB-preload2)*A.z,wAB)
+#system.addforce(-k*(qC-preload3)*B.z,wBC)
+
+system.add_spring_force(k,(qA-preload1)*N.z,wNA) 
+system.add_spring_force(k,(qB-preload2)*N.z,wAB)
+system.add_spring_force(k,(qC-preload3)*N.z,wBC)
+system.add_spring_force(k,(qD-preload4)*N.z,wCD)
+
+system.addforcegravity(-0*N.y)
+
+x1 = BodyA.pCM.dot(N.x)
+y1 = BodyA.pCM.dot(N.y)
+x2 = BodyB.pCM.dot(N.x)
+y2 = BodyB.pCM.dot(N.y)
+x3 = BodyC.pCM.dot(N.x)
+y3 = BodyC.pCM.dot(N.y)
+x4 = BodyD.pCM.dot(N.x)
+y4 = BodyD.pCM.dot(N.y)
+KE = system.KE
+PE = system.getPEGravity(pNA) - system.getPESprings()
+
+vx1= vAcm.dot(N.x)
+vy1= vAcm.dot(N.y)
+vx2= vBcm.dot(N.x)
+vy2= vBcm.dot(N.y)
+vx3= vCcm.dot(N.x)
+vy3= vCcm.dot(N.y)
+vx4= vDcm.dot(N.x)
+vy4= vDcm.dot(N.y)
+
+VP1 = vAcm.cross(pAcm)
+NVP1 = (VP1.dot(VP1)) ** 0.5
+VP2 = vBcm.cross(pBcm)
+NVP2 = (VP2.dot(VP2)) ** 0.5
+VP3 = vCcm.cross(pCcm)
+NVP3 = (VP3.dot(VP3)) ** 0.5
+VP4 = vDcm.cross(pDcm)
+NVP4 = (VP4.dot(VP4)) ** 0.5
+
+Nv1 = (vAcm.dot(vAcm))** 0.5
+Nv2 = (vBcm.dot(vBcm))** 0.5
+Nv3 = (vCcm.dot(vCcm))** 0.5
+Nv4 = (vDcm.dot(vDcm))** 0.5
+
+Np1 = (pAcm.dot(pAcm))** 0.5
+Np2 = (pBcm.dot(pBcm))** 0.5
+Np3 = (pCcm.dot(pCcm))** 0.5
+Np4 = (pDcm.dot(pDcm))** 0.5
+
+alpha1 = atan2(NVP1,vAcm.dot(pAcm))
+alpha2 = atan2(NVP2,vBcm.dot(pBcm))
+alpha3 = atan2(NVP3,vCcm.dot(pCcm))
+alpha4 = atan2(NVP4,vDcm.dot(pDcm))
+
+#alpha1 = atan2(vx1*y1-vy1*x1,x1*vx1+y1*vy1)
+#alpha2 = atan2(vx1*y1-vy1*x1,x1*vx1+x2*vx2)
+#alpha3 = atan2(vx1*y1-vy1*x1,x1*vx1+x2*vx2)
+
+FD1 = rho * Nv1 * (sympy.sin(alpha1)**2) * SA * (-vAcm)
+FD2 = rho * Nv2 * (sympy.sin(alpha2)**2) * SB * (-vBcm)
+FD3 = rho * Nv3 * (sympy.sin(alpha3)**2) * SC * (-vCcm)
+FD4 = rho * Nv4 * (sympy.sin(alpha4)**2) * SD * (-vDcm)
+
+DV1 = 1/Nv1 * vAcm
+DV2 = 1/Nv2 * vBcm
+DV3 = 1/Nv3 * vCcm
+DV4 = 1/Nv4 * vDcm
+
+DL1 = DV1.cross(A.z)
+DL2 = DV2.cross(B.z)
+DL3 = DV3.cross(C.z)
+DL4 = DV4.cross(D.z)
+
+
+FL1 = rho * Nv1**2 * sympy.sin(alpha1) * sympy.cos(alpha1) * SA * (-DL1)
+FL2 = rho * Nv2**2 * sympy.sin(alpha2) * sympy.cos(alpha2) * SB * (-DL2)
+FL3 = rho * Nv3**2 * sympy.sin(alpha3) * sympy.cos(alpha3) * SC * (-DL3)
+FL4 = rho * Nv4**2 * sympy.sin(alpha4) * sympy.cos(alpha4) * SD * (-DL4)
+
+system.addforce(FD1,vAcm)
+system.addforce(FD2,vBcm)
+system.addforce(FD3,vCcm)
+system.addforce(FD4,vDcm)
+
+#
+system.addforce(FL1,vAcm)
+system.addforce(FL2,vBcm)
+system.addforce(FL3,vCcm)
+system.addforce(FL4,vDcm)
+
+Input_Torque = 0.5 * sympy.sin(2 * pi * system.t);
+
+w1 = N.getw_(A)
+
+system.addforce(Input_Torque*N.z,w1)
+
+    
+print('solving dynamics...')
+f,ma = system.getdynamics()
+pynamics.toc()
+
+print('creating second order function...')
+func1 = system.state_space_post_invert(f,ma)
+pynamics.toc()
+print('integrating...')
+states=scipy.integrate.odeint(func1,ini,t,rtol=1e-2,atol=1e-2)
+pynamics.toc()
+print('calculating outputs..')
+output = Output([x1,y1,x2,y2,x3,y3,x4,y4,KE-PE,qA,qB,qC,qD,Hx,Hy],system)
+y = output.calc(states)
+pynamics.toc()
+
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+
+print('Hinge 1 angle')
+plt.figure(1)
+plt.plot(t,180/pi * y[:,9])
+plt.show()
+
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+
+print('Hinge 2 angle')
+plt.figure(2)
+plt.plot(t,180/pi * y[:,10])
+plt.show()
+
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+
+print('Hinge 3 angle')
+plt.figure(3)
+plt.plot(t,180/pi * y[:,11])
+plt.show()
+
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+
+print('Hinge 4 angle')
+plt.figure(4)
+plt.plot(t,180/pi * y[:,12])
+plt.show()
+
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+
+print('x position of the head')
+plt.figure(4)
+plt.plot(t,y[:,13])
+plt.show()
+
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+
+print('y position of the head')
+plt.figure(5)
+plt.plot(t,y[:,14])
+plt.show()
+
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+
+print('x-y position plot')
+plt.figure(6)
+plt.plot(y[:,13],y[:,14])
+plt.show()
+
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+
+print('Energy of the system')
+plt.figure(7)
+plt.plot(t,y[:,8])
+plt.show()
+
+print('--------------------------------------------------')
+print('--------------------------------------------------')
+
+print('The overall time:')
+pynamics.toc()
+
+#o2 = [pNA,pAB,pBC,pCtip]
+#o2 = [item2 for item in o2 for item2 in [item.dot(N.x),item.dot(N.y),item.dot(N.z)]]
+#o2 = Output(o2,system)
+#y2 = o2.calc(states)
+#fig = plt.figure()
+#ax = fig.add_subplot(111)
+#
+#import idealab_tools.matplotlib_tools as mm
+#
+#import idealab_tools.makemovie
+#idealab_tools.makemovie.prep_folder()
+#
+#y2 = y2.reshape((-1,4,3))
+#jj = 0
+#for item in y2:
+#    ax.cla()
+#    ax.plot(item[:,0],item[:,1])
+##    plt.axis('equal')
+##    mm.equal_axes(ax,y2.reshape((-1,3),order=0))
+#    plt.savefig('render/{0:04d}.png'.format(jj))
+#    jj+=10
+#
+#idealab_tools.makemovie.render(image_name_format='%04d.png')
+#idealab_tools.makemovie.clear_folder(rmdir=True)
