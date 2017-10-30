@@ -21,7 +21,8 @@ class System(object):
     _z = 0
     def __init__(self):
         self.derivatives = {}
-        self.constants = {}
+        self.constants = []
+        self.constant_values = {}
         self.forces = []
         self.effectiveforces = []
 #        self.momentum = []
@@ -84,8 +85,11 @@ class System(object):
     def add_derivative(self,expression,variable):
         self.derivatives[expression]=variable
 
-    def add_constant(self,constant,value):
-        self.constants[constant]=value
+    def add_constant(self,constant):
+        self.constants.append(constant)
+
+    def add_constant_value(self,constant,value):
+        self.constant_values[constant]=value
 
     def getPEGravity(self,point):
         PE = pynamics.ZERO
@@ -137,7 +141,7 @@ class System(object):
 #         ma = sympy.Matrix(ma)
 #         
 #         Ax_b = ma-f
-#         Ax_b = Ax_b.subs(self.constants)
+#         Ax_b = Ax_b.subs(self.constant_values)
 #         A = Ax_b.jacobian(q_dd)
 #         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 # 
@@ -177,9 +181,10 @@ class System(object):
 #         return func
 # =============================================================================
 
-    def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,presolve_constants = False,constants = None):
+    def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,constants = None):
         '''invert A matrix each call'''
-        constants = constants or self.constants
+        constants = constants or {}
+        remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
         
         q_state = self.get_state_variables()
 
@@ -198,7 +203,7 @@ class System(object):
         ma = sympy.Matrix(ma)
         
         Ax_b = ma-f
-        if presolve_constants:
+        if not not constants:
             Ax_b = Ax_b.subs(constants)
             eq_active = eq_active.subs(constants)
             eq_dd = eq_dd.subs(constants)
@@ -227,12 +232,7 @@ class System(object):
             b_full[m:,0]=c
 
            
-        if presolve_constants:
-            state_full = q_state+[self.t]
-        else:
-            c_sym = list(constants.keys())
-            c_val = [constants[key] for key in c_sym]
-            state_full = q_state+c_sym+[self.t]
+        state_full = q_state+remaining_constant_keys+[self.t]
 
         fA = sympy.lambdify(state_full,A_full)
         fb = sympy.lambdify(state_full,b_full)
@@ -251,18 +251,8 @@ class System(object):
             except IndexError:
                 kwargs = {}
 
-            if not presolve_constants:
-                try:
-                    constants = kwargs['constants']
-                    c_val0 = [constants[key] for key in c_sym]
-                except KeyError:
-                    c_val0=c_val
-                    pass
-            
-            if presolve_constants:
-                state_i_full = list(state)+[time]
-            else:
-                state_i_full = list(state)+c_val0+[time]
+            constant_values = [kwargs['constants'][item] for item in remaining_constant_keys]
+            state_i_full = list(state)+constant_values+[time]
                 
             Ai = numpy.array(fA(*state_i_full),dtype=float)
             bi = numpy.array(fb(*state_i_full),dtype=float)
@@ -283,9 +273,10 @@ class System(object):
             
         return func        
 
-    def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,presolve_constants = False,constants = None):
+    def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,constants = None):
         '''invert A matrix each call'''
-        constants = constants or self.constants
+        constants = constants or {}
+        remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
 
         q_state = self.get_state_variables()
 
@@ -306,7 +297,7 @@ class System(object):
         ma = sympy.Matrix(ma)
         
         Ax_b = ma-f
-        if presolve_constants:
+        if not not constants:
             Ax_b = Ax_b.subs(constants)
             eq_active = eq_active.subs(constants)
             eq = eq.subs(constants)
@@ -337,12 +328,7 @@ class System(object):
             b_full[m:,0]=c
 
             
-        if presolve_constants:
-            state_full = q_state+[self.t]
-        else:
-            c_sym = list(constants.keys())
-            c_val = [constants[key] for key in c_sym]
-            state_full = q_state+c_sym+[self.t]
+        state_full = q_state+remaining_constant_keys+[self.t]
 
         fA = sympy.lambdify(state_full,A_full)
         fb = sympy.lambdify(state_full,b_full)
@@ -363,21 +349,11 @@ class System(object):
             except IndexError:
                 kwargs = {}
 
-            if not presolve_constants:
-                try:
-                    constants = kwargs['constants']
-                    c_val0 = [constants[key] for key in c_sym]
-                except KeyError:
-                    c_val0=c_val
-                    pass
-
             alpha = kwargs['alpha']
             beta = kwargs['beta']
-            
-            if presolve_constants:
-                state_i_full = list(state)+[time]
-            else:
-                state_i_full = list(state)+c_val0+[time]
+
+            constant_values = [kwargs['constants'][item] for item in remaining_constant_keys]
+            state_i_full = list(state)+constant_values+[time]
                 
             Ai = numpy.array(fA(*state_i_full),dtype=float)
             bi = numpy.array(fb(*state_i_full),dtype=float)

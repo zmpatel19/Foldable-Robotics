@@ -139,7 +139,7 @@ print('creating second order function...')
 #func = system.state_space_post_invert(f,ma,eq)
 func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = b)
 print('integrating...')
-states=scipy.integrate.odeint(func,ini,t,rtol = error, atol = error, args=({'alpha':alpha,'beta':beta},),full_output = 1,mxstep = int(1e5))
+states=scipy.integrate.odeint(func,ini,t,rtol = error, atol = error, args=({'alpha':alpha,'beta':beta, 'constants':system.constant_values},),full_output = 1,mxstep = int(1e5))
 states = states[0]
 pynamics.toc()
 print('calculating outputs..')

@@ -77,7 +77,7 @@ print('integrating...')
 #integrator = RK4(func,ini,t)
 #integrator = DoPri(func,ini,t)
 #states = integrator.run()
-states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
+states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 
 pynamics.toc()
 print('calculating outputs..')
