@@ -26,7 +26,7 @@ class System(object):
         self.forces = []
         self.effectiveforces = []
 #        self.momentum = []
-        self.KE = sympy.Number(0)
+#        self.KE = sympy.Number(0)
         self.bodies = []
         self.particles = []
         self.q = {}
@@ -79,8 +79,13 @@ class System(object):
 #    def addmomentum(self,momentum,velocity):
 #        self.momentum.append((momentum,velocity))
 
-    def addKE(self,KE):
-        self.KE+=KE
+    def get_KE(self):
+        KE = sympy.Number(0)
+        for item in self.particles+self.bodies:
+            KE+= item.KE
+        return KE
+#    def addKE(self,KE):
+#        self.KE+=KE
 
     def add_derivative(self,expression,variable):
         self.derivatives[expression]=variable
@@ -113,6 +118,8 @@ class System(object):
             particle.addforcegravity(gravityvector)
 
     def getdynamics(self):
+        for particle in self.particles:
+            particle.adddynamics()
         for body in self.bodies:
             body.adddynamics()
 

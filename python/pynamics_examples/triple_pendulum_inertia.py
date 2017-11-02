@@ -122,12 +122,14 @@ x2 = BodyB.pCM.dot(N.x)
 y2 = BodyB.pCM.dot(N.y)
 x3 = BodyC.pCM.dot(N.x)
 y3 = BodyC.pCM.dot(N.y)
-KE = system.KE
-PE = system.getPEGravity(pNA) - system.getPESprings()
     
 pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
+
+KE = system.get_KE()
+PE = system.getPEGravity(pNA) - system.getPESprings()
+
 print('creating second order function...')
 func1 = system.state_space_post_invert(f,ma)
 print('integrating...')

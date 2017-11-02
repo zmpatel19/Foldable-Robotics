@@ -37,11 +37,15 @@ I = Constant(1,'I',system)
 J = Constant(1,'J',system)
 r = Constant(1,'L',system)
 
-H,H_d,H_dd = Differentiable('H',system)
-L,L_d,L_dd = Differentiable('L',system)
-Q,Q_d,Q_dd = Differentiable('Q',system)
+H,H_d = Differentiable('H',system,limit=2,)
+L,L_d= Differentiable('L',system,limit=2,)
+Q,Q_d = Differentiable('Q',system,limit=2,)
 x,x_d,x_dd = Differentiable('x',system)
 y,y_d,y_dd = Differentiable('y',system)
+
+wx,wx_d = Differentiable('wx',system,limit=2)
+wy,wy_d = Differentiable('wy',system,limit=2)
+wz,wz_d = Differentiable('wz',system,limit=2)
 
 initialvalues = {}
 initialvalues[H]=0*pi/180
@@ -54,6 +58,12 @@ initialvalues[x]=0
 initialvalues[x_d]=0
 initialvalues[y]=0
 initialvalues[y_d]=0
+initialvalues[wx]=0
+initialvalues[wx_d]=0
+initialvalues[wy]=0
+initialvalues[wy_d]=0
+initialvalues[wz]=0
+initialvalues[wz_d]=0
 
 statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
@@ -69,8 +79,9 @@ C.rotate_fixed_axis_directed(B,[1,0,0],-L,system)
 D.rotate_fixed_axis_directed(C,[0,1,0],Q,system)
 
 pNA=0*A.x
-pDA = pNA+x*A.x+y*A.y
-pBcm = pDA+r*C.z
+pAD = pNA+x*A.x+y*A.y
+pBcm = pAD+r*C.z
+pDA = pBcm-r*D.z
 
 wAD = A.getw_(D)
 

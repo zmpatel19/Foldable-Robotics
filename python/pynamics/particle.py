@@ -23,18 +23,18 @@ class Particle(NameGenerator):
         self.vCM=self.pCM.diff_in_parts(self.system.newtonian,self.system)
         self.aCM=self.vCM.diff_in_parts(self.system.newtonian,self.system)
                 
-        self.effectiveforce = self.mass*self.aCM
-        self.KE = .5*mass*self.vCM.dot(self.vCM)
 #        self.linearmomentum = self.mass*self.vCM
         
         self.system.particles.append(self)
-        self.adddynamics()
+#        self.adddynamics()
         pynamics.addself(self,self.name)
 
     def adddynamics(self):
+        self.effectiveforce = self.mass*self.aCM
+        self.KE = .5*self.mass*self.vCM.dot(self.vCM)
         self.system.addeffectiveforce(self.effectiveforce,self.vCM)
 #        self.system.addmomentum(self.linearmomentum,self.vCM)
-        self.system.addKE(self.KE)
+#        self.system.addKE(self.KE)
         
     def addforcegravity(self,gravityvector):
         self.gravityvector = gravityvector

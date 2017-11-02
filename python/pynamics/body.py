@@ -44,7 +44,7 @@ class Body(NameGenerator):
         self.system.addeffectiveforce(self.momentofeffectiveforce,self.wNBody)
 #        self.system.addmomentum(self.linearmomentum,self.vCM)
 #        self.system.addmomentum(self.angularmomentum,self.wNBody)
-        self.system.addKE(self.KE)
+#        self.system.addKE(self.KE)
 
     def addforcegravity(self,gravityvector):
         self.gravityvector = gravityvector
