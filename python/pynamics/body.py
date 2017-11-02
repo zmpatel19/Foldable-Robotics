@@ -29,17 +29,17 @@ class Body(NameGenerator):
         self.wNBody = self.system.newtonian.getw_(self.frame)
         self.alNBody=self.wNBody.diff_in_parts(self.system.newtonian,self.system)
         
-        self.effectiveforce = self.mass*self.aCM
-        self.momentofeffectiveforce= self.inertia.dot(self.alNBody)+self.wNBody.cross(self.inertia.dot(self.wNBody))
-        self.KE = .5*mass*self.vCM.dot(self.vCM) + .5*self.wNBody.dot(self.inertia.dot(self.wNBody))
 #        self.linearmomentum = self.mass*self.vCM
 #        self.angularmomentum = self.inertia.dot(self.wNBody)
         
         self.system.bodies.append(self)
-        self.adddynamics()
         pynamics.addself(self,name)
 
     def adddynamics(self):
+        self.effectiveforce = self.mass*self.aCM
+        self.momentofeffectiveforce= self.inertia.dot(self.alNBody)+self.wNBody.cross(self.inertia.dot(self.wNBody))
+        self.KE = .5*self.mass*self.vCM.dot(self.vCM) + .5*self.wNBody.dot(self.inertia.dot(self.wNBody))
+
         self.system.addeffectiveforce(self.effectiveforce,self.vCM)
         self.system.addeffectiveforce(self.momentofeffectiveforce,self.wNBody)
 #        self.system.addmomentum(self.linearmomentum,self.vCM)

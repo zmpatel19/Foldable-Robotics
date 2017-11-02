@@ -113,6 +113,9 @@ class System(object):
             particle.addforcegravity(gravityvector)
 
     def getdynamics(self):
+        for body in self.bodies:
+            body.adddynamics()
+
         q_d = self.get_q(1)
         generalizedforce=self.generalize(self.forces,q_d)
         generalizedeffectiveforce=self.generalize(self.effectiveforces,q_d)
