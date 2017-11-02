@@ -227,7 +227,7 @@ func1 = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
 
 print('integrating...')
 #states=scipy.integrate.odeint(func1,ini,t,rtol=1e-5,atol=1e-5)
-states=scipy.integrate.odeint(func1,ini,t,rtol=1e-5,atol=1e-5,args=(1e4,1e2))
+states=scipy.integrate.odeint(func1,ini,t,rtol=1e-5,atol=1e-5,args=({'alpha':1e4,'beta':1e2,'constants':system.constant_values},))
 pynamics.toc()
 print('calculating outputs..')
 output = Output([KE-PE],system)

@@ -88,7 +88,7 @@ output = Output([KE-PE])
 f,ma = system.getdynamics()
 func = system.state_space_post_invert(f,ma,eq_dd = eq1_dd)
 t = numpy.r_[0:5:.001]
-states=scipy.integrate.odeint(func,system.get_ini(),t,atol=1e-5,rtol = 1e-5)
+states=scipy.integrate.odeint(func,system.get_ini(),t,atol=1e-5,rtol = 1e-5, args=({'constants':system.constant_values},))
 x = output_x.calc(states)
 y = output_y.calc(states)
 z = output_z.calc(states)

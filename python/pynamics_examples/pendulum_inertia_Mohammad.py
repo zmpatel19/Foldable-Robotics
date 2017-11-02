@@ -93,7 +93,7 @@ f,ma = system.getdynamics()
 print('creating second order function...')
 func = system.state_space_post_invert(f,ma)
 print('integrating...')
-states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
+states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 pynamics.toc()
 print('calculating outputs..')
 output = Output([x1,y1,KE-PE,qA],system)
@@ -143,7 +143,7 @@ q_d = q_d[1:-1]
 #
 #
 #x = numpy.c_[q,numpy.cos(q),q_d]
-#m = float((ma/qA_dd).subs(system.constants))
+#m = float((ma/qA_dd).subs(system.constant_values))
 #y = m*q_dd
 #
 #C = numpy.linalg.solve(x.T.dot(x),x.T.dot(y))

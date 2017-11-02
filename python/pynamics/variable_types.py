@@ -19,7 +19,7 @@ class Variable(sympy.Symbol,NameGenerator):
         return obj
 
 class Constant(sympy.Symbol,NameGenerator):
-    def __new__(self,value,name=None,system = None):
+    def __new__(self,value=None,name=None,system = None):
 
         name = name or self.generate_name()
 
@@ -27,7 +27,9 @@ class Constant(sympy.Symbol,NameGenerator):
 
         obj = sympy.Symbol.__new__(self,name)
         obj.value = value
-        system.add_constant(obj,value)
+        system.add_constant(obj)
+        if value is not None:
+            system.add_constant_value(obj,value)
         pynamics.addself(obj,name)
         return obj
 

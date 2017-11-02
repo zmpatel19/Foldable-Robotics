@@ -21,7 +21,8 @@ class System(object):
     _z = 0
     def __init__(self):
         self.derivatives = {}
-        self.constants = {}
+        self.constants = []
+        self.constant_values = {}
         self.forces = []
         self.effectiveforces = []
 #        self.momentum = []
@@ -84,8 +85,11 @@ class System(object):
     def add_derivative(self,expression,variable):
         self.derivatives[expression]=variable
 
-    def add_constant(self,constant,value):
-        self.constants[constant]=value
+    def add_constant(self,constant):
+        self.constants.append(constant)
+
+    def add_constant_value(self,constant,value):
+        self.constant_values[constant]=value
 
     def getPEGravity(self,point):
         PE = pynamics.ZERO
@@ -123,92 +127,99 @@ class System(object):
             generalized.append(new)
         return generalized
         
-    def state_space_pre_invert(self,f,ma,inv_method = 'LU',auto_z= False):
-        '''pre-invert A matrix'''
-        
-        q_state = self.get_state_variables()
+# =============================================================================
+# TODO: fix this!  It doesn't produce the right answer now.    
+#     def state_space_pre_invert(self,f,ma,inv_method = 'LU',auto_z= False):
+#         '''pre-invert A matrix'''
+#         
+#         q_state = self.get_state_variables()
+# 
+#         q_d = self.get_q(1)
+#         q_dd = self.get_q(2)
+#         
+#         f = sympy.Matrix(f)
+#         ma = sympy.Matrix(ma)
+#         
+#         Ax_b = ma-f
+#         Ax_b = Ax_b.subs(self.constant_values)
+#         A = Ax_b.jacobian(q_dd)
+#         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+# 
+#         if auto_z:
+#             def func1(x):
+#                 if x!=pynamics.ZERO:
+#                     return self.generatez(x)
+#                 else:
+#                     return x
+#             AA = A.applyfunc(func1)
+#             AA_inv = AA.inv(method = inv_method)
+#             keys = self.replacements.keys()+[self.t]
+# 
+#             fAA_inv = sympy.lambdify(keys,AA_inv)
+#             A_inv = fAA_inv(*[self.replacements[key] for key in keys])
+# 
+#         else:
+#             A_inv = A.inv(method=inv_method)
+#         var_dd = A_inv*b 
+#         
+#         functions = [sympy.lambdify(q_state,rhs) for rhs in var_dd]
+#         indeces = [q_state.index(element) for element in q_d]
+#         
+#         @static_vars(ii=0)
+#         def func(state,time):
+#             if func.ii%100==0:
+#                 print(time)
+#             func.ii+=1
+#             
+#             x1 = [state[ii] for ii in indeces]
+#             x2 = [f(*(state+[time])) for f in functions]
+#             x3 = numpy.r_[x1,x2]
+#             x4 = x3.flatten().tolist()
+# 
+#             return x4
+# 
+#         return func
+# =============================================================================
 
-        q_d = self.get_q(1)
-        q_dd = self.get_q(2)
-        
-        f = sympy.Matrix(f)
-        ma = sympy.Matrix(ma)
-        
-        Ax_b = ma-f
-        Ax_b = Ax_b.subs(self.constants)
-        A = Ax_b.jacobian(q_dd)
-        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
-
-        if auto_z:
-            def func1(x):
-                if x!=pynamics.ZERO:
-                    return self.generatez(x)
-                else:
-                    return x
-            AA = A.applyfunc(func1)
-            AA_inv = AA.inv(method = inv_method)
-            keys = self.replacements.keys()+[self.t]
-
-            fAA_inv = sympy.lambdify(keys,AA_inv)
-            A_inv = fAA_inv(*[self.replacements[key] for key in keys])
-
-        else:
-            A_inv = A.inv(method=inv_method)
-        var_dd = A_inv*b 
-        
-        functions = [sympy.lambdify(q_state,rhs) for rhs in var_dd]
-        indeces = [q_state.index(element) for element in q_d]
-        
-        @static_vars(ii=0)
-        def func(state,time):
-            if func.ii%100==0:
-                print(time)
-            func.ii+=1
-            
-            x1 = [state[ii] for ii in indeces]
-            x2 = [f(*(state+[time])) for f in functions]
-            x3 = numpy.r_[x1,x2]
-            x4 = x3.flatten().tolist()
-
-            return x4
-
-        return func
-
-    def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,presolve_constants = False,eq_d = None):
+    def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,constants = None):
         '''invert A matrix each call'''
+        constants = constants or {}
+        remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
         
         q_state = self.get_state_variables()
 
         q_d = self.get_q(1)
         q_dd = self.get_q(2)
 
-        f = sympy.Matrix(f)
-        ma = sympy.Matrix(ma)
-        
-        Ax_b = ma-f
-        if presolve_constants:
-            Ax_b = Ax_b.subs(self.constants)
-        A = Ax_b.jacobian(q_dd)
-        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
-
-        m = len(q_d)
-    
         if not not eq_dd:
             eq_active = eq_active or [1]*len(eq_dd)
         else:
             eq_active = eq_active or []
 
-#        eq_d = eq_d or []
-        eq_dd = eq_dd or []
+        eq_active = sympy.Matrix(eq_active)
+        eq_dd = sympy.Matrix(eq_dd or [])
+
+        f = sympy.Matrix(f)
+        ma = sympy.Matrix(ma)
         
+        Ax_b = ma-f
+        if not not constants:
+            Ax_b = Ax_b.subs(constants)
+            eq_active = eq_active.subs(constants)
+            eq_dd = eq_dd.subs(constants)
+            
+        A = Ax_b.jacobian(q_dd)
+        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+
+        m = len(q_d)
+    
         if not eq_dd:
             A_full = A
             b_full = b
             n=0
         else:
-            eq2_dd = sympy.Matrix(eq_dd)
-            J = eq2_dd.jacobian(q_dd)
-            c = -eq2_dd.subs(dict(list([(item,0) for item in q_dd])))
+            J = eq_dd.jacobian(q_dd)
+            c = -eq_dd.subs(dict(list([(item,0) for item in q_dd])))
 
             n = len(eq_dd)
             A_full = sympy.zeros(m+n)   
@@ -221,16 +232,11 @@ class System(object):
             b_full[m:,0]=c
 
            
-        if presolve_constants:
-            state_full = q_state+[self.t]
-        else:
-            c_sym = list(self.constants.keys())
-            c_val = [self.constants[key] for key in c_sym]
-            state_full = q_state+c_sym+[self.t]
+        state_full = q_state+remaining_constant_keys+[self.t]
 
         fA = sympy.lambdify(state_full,A_full)
         fb = sympy.lambdify(state_full,b_full)
-        factive = sympy.lambdify(state_full,sympy.Matrix(eq_active))
+        factive = sympy.lambdify(state_full,eq_active)
 
         indeces = [q_state.index(element) for element in q_d]
     
@@ -240,10 +246,13 @@ class System(object):
                 print(time)
             func.ii+=1
             
-            if presolve_constants:
-                state_i_full = list(state)+[time]
-            else:
-                state_i_full = list(state)+c_val+[time]
+            try:
+                kwargs = args[0]
+            except IndexError:
+                kwargs = {}
+
+            constant_values = [kwargs['constants'][item] for item in remaining_constant_keys]
+            state_i_full = list(state)+constant_values+[time]
                 
             Ai = numpy.array(fA(*state_i_full),dtype=float)
             bi = numpy.array(fb(*state_i_full),dtype=float)
@@ -264,42 +273,49 @@ class System(object):
             
         return func        
 
-    def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,presolve_constants = False):
+    def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,constants = None):
         '''invert A matrix each call'''
-        
+        constants = constants or {}
+        remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
+
         q_state = self.get_state_variables()
 
         q_d = self.get_q(1)
         q_dd = self.get_q(2)
 
+        if not not eq_dd:
+            eq_active = eq_active or [1]*len(eq_dd)
+        else:
+            eq_active = eq_active or []
+        eq_active = sympy.Matrix(eq_active)
+    
+        eq = sympy.Matrix(eq or [])
+        eq_d = sympy.Matrix(eq_d or [])
+        eq_dd = sympy.Matrix(eq_dd or [])
+
         f = sympy.Matrix(f)
         ma = sympy.Matrix(ma)
         
         Ax_b = ma-f
-        if presolve_constants:
-            Ax_b = Ax_b.subs(self.constants)
+        if not not constants:
+            Ax_b = Ax_b.subs(constants)
+            eq_active = eq_active.subs(constants)
+            eq = eq.subs(constants)
+            eq_d = eq_d.subs(constants)
+            eq_dd = eq_dd.subs(constants)
+            
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
         m = len(q_d)
 
-        if not not eq_dd:
-            eq_active = eq_active or [1]*len(eq_dd)
-        else:
-            eq_active = eq_active or []
-    
-        eq = eq or []
-        eq_d = eq_d or []
-        eq_dd = eq_dd or []
-        
         if not eq_dd:
             A_full = A
             b_full = b
             n=0
         else:
-            eq2_dd = sympy.Matrix(eq_dd)
-            J = eq2_dd.jacobian(q_dd)
-            c = -eq2_dd.subs(dict(list([(item,0) for item in q_dd])))
+            J = eq_dd.jacobian(q_dd)
+            c = -eq_dd.subs(dict(list([(item,0) for item in q_dd])))
 
             n = len(eq_dd)
             A_full = sympy.zeros(m+n)   
@@ -312,18 +328,13 @@ class System(object):
             b_full[m:,0]=c
 
             
-        if presolve_constants:
-            state_full = q_state+[self.t]
-        else:
-            c_sym = list(self.constants.keys())
-            c_val = [self.constants[key] for key in c_sym]
-            state_full = q_state+c_sym+[self.t]
+        state_full = q_state+remaining_constant_keys+[self.t]
 
         fA = sympy.lambdify(state_full,A_full)
         fb = sympy.lambdify(state_full,b_full)
-        feq = sympy.lambdify(state_full,sympy.Matrix(eq))
-        feq_d = sympy.lambdify(state_full,sympy.Matrix(eq_d))
-        factive = sympy.lambdify(state_full,sympy.Matrix(eq_active))
+        feq = sympy.lambdify(state_full,eq)
+        feq_d = sympy.lambdify(state_full,eq_d)
+        factive = sympy.lambdify(state_full,eq_active)
 
         indeces = [q_state.index(element) for element in q_d]
     
@@ -333,12 +344,16 @@ class System(object):
                 print(time)
             func.ii+=1
             
-            alpha, beta = args
-            
-            if presolve_constants:
-                state_i_full = list(state)+[time]
-            else:
-                state_i_full = list(state)+c_val+[time]
+            try:
+                kwargs = args[0]
+            except IndexError:
+                kwargs = {}
+
+            alpha = kwargs['alpha']
+            beta = kwargs['beta']
+
+            constant_values = [kwargs['constants'][item] for item in remaining_constant_keys]
+            state_i_full = list(state)+constant_values+[time]
                 
             Ai = numpy.array(fA(*state_i_full),dtype=float)
             bi = numpy.array(fb(*state_i_full),dtype=float)
