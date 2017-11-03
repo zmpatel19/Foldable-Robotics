@@ -33,8 +33,7 @@ class RK4(Integrator):
         
         args = args or []
         
-        x = numpy.array(x)
-        
+        x = list(x)
         k1 = numpy.array(f(x,t,*args))
         k2 = numpy.array(f((x+k1*(h/2)),t+h/2,*args))
         k3 = numpy.array(f((x+k2*(h/2)),t+h/2,*args))
@@ -83,11 +82,11 @@ class DoPri(Integrator):
         aa = 1
         
         k1 = h*numpy.array(f(x,t,*args))
-        k2 = h*numpy.array(f(x+a*k1,t+b*h,*args))
-        k3 = h*numpy.array(f(x+c*k1+d*k2,t+e*h,*args))
-        k4 = h*numpy.array(f(x+ff*k1+g*k2+hh*k3,t+i*h,*args))
-        k5 = h*numpy.array(f(x+j*k1+k*k2+l*k3+m*k4,t+n*h,*args))
-        k6 = h*numpy.array(f(x+o*k1+p*k2+q*k3+r*k4+s*k5,t+tt*h,*args))
+        k2 = h*numpy.array(f((x+a*k1),t+b*h,*args))
+        k3 = h*numpy.array(f((x+c*k1+d*k2),t+e*h,*args))
+        k4 = h*numpy.array(f((x+ff*k1+g*k2+hh*k3),t+i*h,*args))
+        k5 = h*numpy.array(f((x+j*k1+k*k2+l*k3+m*k4),t+n*h,*args))
+        k6 = h*numpy.array(f((x+o*k1+p*k2+q*k3+r*k4+s*k5),t+tt*h,*args))
         
         jj = x+u*k1+v*k2+w*k3+xx*k4+y*k5+z*k6
         k7 = numpy.array(f(jj,t+aa*h,*args))
