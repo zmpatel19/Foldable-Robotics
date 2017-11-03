@@ -21,3 +21,12 @@ class Output(object):
     def calc(self,x):
         self.y = numpy.array([self.fy_expression(*(item.tolist()+self.cons_v)) for item in x]).squeeze()
         return self.y
+
+    def plot_time(self,t=None):
+        import matplotlib.pyplot as plt
+        plt.figure()
+        try:
+            self.y
+        except AttributeError:
+            self.calc()
+        plt.plot(self.y)
