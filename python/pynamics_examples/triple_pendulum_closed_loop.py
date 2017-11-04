@@ -82,7 +82,7 @@ pBtip = pAB + lB*B.x
 
 pNC = pNA+1*N.x
 pCD = pNC - lC*C.y
-#pDtip = pNC + lC*C.x
+pDtip = pNC + lC*C.x
 
 pAcm=pNA-lA/2*A.y
 pBcm=pAB+lB/2*B.x
@@ -142,9 +142,6 @@ eq = [eq1,eq2,eq3]
 eq_d= [system.derivative(item) for item in eq]
 eq_dd= [system.derivative(item) for item in eq_d]
 
-KE = system.KE
-PE = system.getPEGravity(pNA) - system.getPESprings()
-    
 pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
@@ -154,19 +151,34 @@ print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 pynamics.toc()
 print('calculating outputs..')
+
+KE = system.get_KE()
+PE = system.getPEGravity(pNA) - system.getPESprings()
+
 output = Output([x1,y1,x2,y2,x3,y3,KE-PE,qA,qB,qC],system)
 y = output.calc(states)
 pynamics.toc()
 
-plt.figure(1)
+plt.figure()
 plt.plot(y[:,0],y[:,1])
 plt.plot(y[:,2],y[:,3])
 plt.plot(y[:,4],y[:,5])
 plt.axis('equal')
 
-plt.figure(2)
+joints = [pDtip,pCD,pNC,pNA,pAB,pBtip]
+joints = [item2 for item in joints for item2 in [item.dot(N.x), item.dot(N.y)]]
+output2 = Output(joints,system)
+y= output2.calc(states)
+#y = y.reshape((y.shape[0],-1,2)) 
+plt.figure()
+for item in y[::500]:
+    item = item.reshape(-1,2)
+    plt.plot(*item)
+plt.axis('equal')
+
+plt.figure()
 plt.plot(y[:,6])
 
-plt.figure(3)
+plt.figure()
 plt.plot(t,y[:,7:10])
 plt.show()
