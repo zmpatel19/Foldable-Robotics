@@ -77,18 +77,20 @@ points_x = [item.dot(f1.x) for item in points]
 points_y = [item.dot(f1.y) for item in points]
 points_z = [item.dot(f1.z) for item in points]
 
-KE = system.KE
-PE = system.getPEGravity(0*f1.x) - system.getPESprings()
-
 output_x = Output(points_x)
 output_y = Output(points_y)
 output_z = Output(points_z)
-output = Output([KE-PE])
 
 f,ma = system.getdynamics()
 func = system.state_space_post_invert(f,ma,eq_dd = eq1_dd)
 t = numpy.r_[0:5:.001]
 states=scipy.integrate.odeint(func,system.get_ini(),t,atol=1e-5,rtol = 1e-5, args=({'constants':system.constant_values},))
+
+KE = system.get_KE()
+PE = system.getPEGravity(0*f1.x) - system.getPESprings()
+
+output = Output([KE-PE])
+
 x = output_x.calc(states)
 y = output_y.calc(states)
 z = output_z.calc(states)

@@ -206,8 +206,6 @@ eq = eq1_dd
 #y3 = ParticleC.pCM.dot(N.y)
 ################################################
 #retrive the energy of the system for plotting purposes
-KE = system.KE
-PE = system.getPEGravity(pNO) - system.getPESprings()
 
     
 ################################################
@@ -230,6 +228,10 @@ print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=1e-5,atol=1e-5,args=({'alpha':1e4,'beta':1e2,'constants':system.constant_values},))
 pynamics.toc()
 print('calculating outputs..')
+
+KE = system.get_KE()
+PE = system.getPEGravity(pNO) - system.getPESprings()
+
 output = Output([KE-PE],system)
 y = output.calc(states)
 pynamics.toc()

@@ -129,8 +129,6 @@ x3 = ParticleC.pCM.dot(N.x)
 y3 = ParticleC.pCM.dot(N.y)
 x4 = pCtip.dot(N.x)
 y4 = pCtip.dot(N.y)
-KE = system.KE
-PE = system.getPEGravity(pNA) - system.getPESprings()
     
 pynamics.tic()
 print('solving dynamics...')
@@ -141,6 +139,10 @@ print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 pynamics.toc()
 print('calculating outputs..')
+
+KE = system.get_KE()
+PE = system.getPEGravity(pNA) - system.getPESprings()
+
 output = Output([x1,y1,x2,y2,x3,y3,x4,y4,KE-PE,qA,qB,qC],system)
 y = output.calc(states)
 pynamics.toc()

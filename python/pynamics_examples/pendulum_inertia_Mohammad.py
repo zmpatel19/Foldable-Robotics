@@ -84,9 +84,6 @@ system.add_spring_force(k,(qA-preload1)*N.z,wNA)
 x1 = BodyA.pCM.dot(N.x)
 y1 = BodyA.pCM.dot(N.y)
 
-KE = system.KE
-PE = system.getPEGravity(pNA) - system.getPESprings()
-    
 pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
@@ -96,6 +93,10 @@ print('integrating...')
 states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 pynamics.toc()
 print('calculating outputs..')
+
+KE = system.get_KE()
+PE = system.getPEGravity(pNA) - system.getPESprings()
+    
 output = Output([x1,y1,KE-PE,qA],system)
 y = output.calc(states)
 pynamics.toc()

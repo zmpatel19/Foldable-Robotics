@@ -89,8 +89,6 @@ x1 = BodyA.pCM.dot(N.x)
 y1 = BodyA.pCM.dot(N.y)
 x2 = BodyB.pCM.dot(N.x)
 y2 = BodyB.pCM.dot(N.y)
-KE = system.KE
-PE = system.getPEGravity(pNA) - system.getPESprings()
     
 pynamics.tic()
 print('solving dynamics...')
@@ -110,6 +108,10 @@ print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=error,atol=error, args=({'constants':system.constant_values},))
 pynamics.toc()
 print('calculating outputs..')
+
+KE = system.get_KE()
+PE = system.getPEGravity(pNA) - system.getPESprings()
+
 output = Output([x1,y1,x2,y2,KE-PE,qA,qB],system)
 y = output.calc(states)
 pynamics.toc()

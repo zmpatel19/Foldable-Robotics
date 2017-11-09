@@ -105,9 +105,6 @@ b = [(item+abs(item)) for item in a]
 x1 = Particle1.pCM.dot(N.y)
 x2 = Particle2.pCM.dot(N.y)
 
-KE = system.KE
-PE = system.getPEGravity(pNA) - system.getPESprings()
-
 pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
@@ -119,6 +116,10 @@ states=scipy.integrate.odeint(func,ini,t,rtol = error, atol = error, args=({'alp
 states = states[0]
 pynamics.toc()
 print('calculating outputs..')
+
+KE = system.get_KE()
+PE = system.getPEGravity(pNA) - system.getPESprings()
+
 output = Output([x1,x2,l, KE-PE],system)
 y = output.calc(states)
 pynamics.toc()
