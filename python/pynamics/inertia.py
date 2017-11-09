@@ -36,7 +36,7 @@ def solid_ellipsoid(lx,ly=None,lz=None,density = 1,mass = None):
 
     return (Ixx,Iyy,Izz),mass,volume
 
-def shift(I_cm,cm,p,m,frame):
+def shift_from_cm(I_cm,cm,p,m,frame):
     import pynamics.dyadic
     unit_dyadic = pynamics.dyadic.Dyadic.unit(frame)
     rcmp = p-cm

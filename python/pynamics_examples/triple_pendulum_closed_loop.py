@@ -22,123 +22,134 @@ plt.ion()
 from sympy import pi
 system = System()
 
+lO = Constant(.5,'lO',system)
 lA = Constant(1,'lA',system)
 lB = Constant(1,'lB',system)
 lC = Constant(1,'lC',system)
 lD = Constant(1,'lD',system)
 
+mO = Constant(1,'mO',system)
 mA = Constant(1,'mA',system)
-mB = Constant(.5,'mB',system)
+mB = Constant(1,'mB',system)
 mC = Constant(1,'mC',system)
-mD = Constant(.5,'mD',system)
+mD = Constant(1,'mD',system)
+
+I_xx = Constant(1,'I_xx',system)
+I_yy = Constant(1,'I_yy',system)
+I_zz = Constant(1,'I_zz',system)
 
 g = Constant(9.81,'g',system)
-b = Constant(1e1,'b',system)
+b = Constant(1e0,'b',system)
 k = Constant(1e2,'k',system)
 
 tinitial = 0
-tfinal = 5
-tstep = .001
+tfinal = 10
+tstep = .01
 t = numpy.r_[tinitial:tfinal:tstep]
 
 preload1 = Constant(0*pi/180,'preload1',system)
 preload2 = Constant(0*pi/180,'preload2',system)
-preload3 = Constant(0*pi/180,'preload3',system)
+preload3 = Constant(-180*pi/180,'preload3',system)
 preload4 = Constant(0*pi/180,'preload4',system)
 
+x,x_d,x_dd = Differentiable('x',system)
+y,y_d,y_dd = Differentiable('y',system)
+qO,qO_d,qO_dd = Differentiable('qO',system)
 qA,qA_d,qA_dd = Differentiable('qA',system)
 qB,qB_d,qB_dd = Differentiable('qB',system)
 qC,qC_d,qC_dd = Differentiable('qC',system)
 qD,qD_d,qD_dd = Differentiable('qD',system)
 
 initialvalues = {}
-initialvalues[qA]=1*pi/180
-initialvalues[qA_d]=10*pi/180
-initialvalues[qB]=0*pi/180
+initialvalues[x]=0
+initialvalues[x_d]=0
+initialvalues[y]=10
+initialvalues[y_d]=0
+initialvalues[qO]=0*pi/180
+initialvalues[qO_d]=0*pi/180
+initialvalues[qA]=-60*pi/180
+initialvalues[qA_d]=0*pi/180
+initialvalues[qB]=-150*pi/180
 initialvalues[qB_d]=0*pi/180
-initialvalues[qC]=0*pi/180
+initialvalues[qC]=-120*pi/180
 initialvalues[qC_d]=0*pi/180
-initialvalues[qD]=0*pi/180
+initialvalues[qD]=-30*pi/180
 initialvalues[qD_d]=0*pi/180
 
 statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')
+O = Frame('O')
 A = Frame('A')
 B = Frame('B')
 C = Frame('C')
 D = Frame('D')
 
 system.set_newtonian(N)
+O.rotate_fixed_axis_directed(N,[0,0,1],qO,system)
 A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
-B.rotate_fixed_axis_directed(A,[0,0,1],qB,system)
+B.rotate_fixed_axis_directed(N,[0,0,1],qB,system)
 C.rotate_fixed_axis_directed(N,[0,0,1],qC,system)
-D.rotate_fixed_axis_directed(C,[0,0,1],qD,system)
+D.rotate_fixed_axis_directed(N,[0,0,1],qD,system)
 
-pNA=0*N.x
-pAB=pNA-lA*A.y
+pOcm=x*N.x+y*N.y
+pOA = pOcm+lO/2*O.x
+pOC = pOcm-lO/2*O.x
+pAB = pOA+lA*A.x
 pBtip = pAB + lB*B.x
 
-pNC = pNA+1*N.x
-pCD = pNC - lC*C.y
-pDtip = pNC + lC*C.x
+pCD = pOC + lC*C.x
+pDtip = pCD + lD*D.x
 
-pAcm=pNA-lA/2*A.y
+pAcm=pOA+lA/2*A.x
 pBcm=pAB+lB/2*B.x
-pCcm=pNC-lC/2*C.y
-pDcm=pCD-lD/2*D.x
+pCcm=pOC+lC/2*C.y
+pDcm=pCD+lD/2*D.x
 
-wNA = N.getw_(A)
+wOA = O.getw_(A)
 wAB = A.getw_(B)
-#wBC = B.getw_(C)
+wOC = O.getw_(C)
+wCD = C.getw_(D)
 
-#IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
-#IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)
-#IC = Dyadic.build(C,Ixx_C,Iyy_C,Izz_C)
+I = Dyadic.build(A,I_xx,I_yy,I_zz)
 
-#BodyA = Body('BodyA',A,pAcm,mA,IA,system)
-#BodyB = Body('BodyB',B,pBcm,mB,IB,system)
-#BodyC = Body('BodyC',C,pCcm,mC,IC,system)
+#BodyO = Body('BodyO',O,pOcm,mO,I,system)
+#BodyA = Body('BodyA',A,pAcm,mA,I,system)
+#BodyB = Body('BodyB',B,pBcm,mB,I,system)
+#BodyC = Body('BodyC',C,pCcm,mC,I,system)
+#BodyD = Body('BodyD',D,pDcm,mD,I,system)
 
+ParticleO = Particle(pOcm,mO,'ParticleO',system)
 ParticleA = Particle(pAcm,mA,'ParticleA',system)
 ParticleB = Particle(pBcm,mB,'ParticleB',system)
 ParticleC = Particle(pCcm,mC,'ParticleC',system)
 ParticleD = Particle(pDcm,mD,'ParticleD',system)
 
-system.addforce(-b*wNA,wNA)
+system.addforce(-b*wOA,wOA)
 system.addforce(-b*wAB,wAB)
+system.addforce(-b*wOC,wOC)
+system.addforce(-b*wCD,wCD)
 #system.addforce(-b*wBC,wBC)
 
-system.addforce(-k*(qA-preload1)*N.z,wNA)
-system.addforce(-k*(qB-preload2)*A.z,wAB)
-#system.addforce(-k*(qC-preload3)*B.z,wBC)
-#system.add_spring_force(k,(qA-preload1)*N.z,wNA) 
-#system.add_spring_force(k,(qB-preload2)*N.z,wAB)
-#system.add_spring_force(k,(qC-preload3)*N.z,wBC)
+system.add_spring_force(k,(qA-qO-preload1)*N.z,wOA)
+system.add_spring_force(k,(qB-qA-preload2)*A.z,wAB)
+system.add_spring_force(k,(qC-qO-preload3)*N.z,wOC)
+system.add_spring_force(k,(qD-qC-preload4)*C.z,wCD)
 
 system.addforcegravity(-g*N.y)
 
-x1 = ParticleA.pCM.dot(N.x)
-y1 = ParticleA.pCM.dot(N.y)
-x2 = ParticleB.pCM.dot(N.x)
-y2 = ParticleB.pCM.dot(N.y)
-x3 = ParticleC.pCM.dot(N.x)
-y3 = ParticleC.pCM.dot(N.y)
-x4 = ParticleD.pCM.dot(N.x)
-y4 = ParticleD.pCM.dot(N.y)
+eq = []
+eq.append(pOcm.dot(N.y)-initialvalues[y])
+eq.append(pOcm.dot(N.x)-initialvalues[x])
+eq.append(qO-initialvalues[qO])
+eq.append((pBtip-pDtip).dot(N.x))
+eq.append((pBtip-pDtip).dot(N.y))
 
-eq1 = B.x.dot(D.x)
-#eq1_d = system.derivative(eq1)
-#eq1_dd = system.derivative(eq1_d)
-#eq1_d = eq1.diff_in_parts(N,system)
-#eq1_dd = eq1_d.diff_in_parts(N,system)
 
-eq2 = x4 - x2
-eq3 = y4 - y2
-#eq2 = ParticleB.aCM
+#eq.append(pBtip.dot(N.y))
+#eq.append(pDtip.dot(N.y))
 
-eq = [eq1,eq2,eq3]
 eq_d= [system.derivative(item) for item in eq]
 eq_dd= [system.derivative(item) for item in eq_d]
 
@@ -146,39 +157,65 @@ pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
 print('creating second order function...')
-func1 = system.state_space_post_invert(f,ma,eq_dd)
+func1 = system.state_space_post_invert2(f,ma,eq_dd,eq_d,eq,constants = system.constant_values)
 print('integrating...')
-states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
+states=scipy.integrate.odeint(func1,ini,t,rtol=1e-3,atol=1e-3,args=({'constants':{},'alpha':1e2,'beta':1e1},))
 pynamics.toc()
 print('calculating outputs..')
 
+plt.plot()
+
 KE = system.get_KE()
-PE = system.getPEGravity(pNA) - system.getPESprings()
+PE = system.getPEGravity(0*N.x) - system.getPESprings()
 
-output = Output([x1,y1,x2,y2,x3,y3,KE-PE,qA,qB,qC],system)
-y = output.calc(states)
-pynamics.toc()
 
+energy = Output([KE-PE])
+energy.calc(states)
+energy.plot_time()
+
+
+points = [pDtip,pCD,pOC,pOA,pAB,pBtip]
+points = [item2 for item in points for item2 in [item.dot(N.x),item.dot(N.y)]]
+points = Output(points)
+y = points.calc(states)
+y = y.reshape((-1,6,2))
 plt.figure()
-plt.plot(y[:,0],y[:,1])
-plt.plot(y[:,2],y[:,3])
-plt.plot(y[:,4],y[:,5])
+for item in y[-2:-1]:
+    plt.plot(*(item.T))
+
+eq2 = []
+eq2.append((pBtip-pDtip).dot(N.x))
+eq2.append((pBtip-pDtip).dot(N.y))
+eq2.append((pBtip).dot(N.y))
+
+eq2_d= [system.derivative(item) for item in eq2]
+eq2_dd= [system.derivative(item) for item in eq2_d]
+
+eq2_active = []
+eq2_active.append(1)
+eq2_active.append(1)
+eq2_active.append(0-pBtip.dot(N.y))
+eq2_active = [(item+abs(item)) for item in eq2_active]
+
+ini = states[-1]
+#ini[7:] = 0
+ini[7] = 10
+ini = list(ini)
+
+func1 = system.state_space_post_invert2(f,ma,eq2_dd,eq2_d,eq2,eq_active=eq2_active,constants = system.constant_values)
+states2=scipy.integrate.odeint(func1,ini,t,rtol=1e-4,atol=1e-4,args=({'constants':{},'alpha':1e3,'beta':1e1},))
+y = points.calc(states2)
+y = y.reshape((-1,6,2))
+plt.figure()
+for item in y[::25]:
+    plt.plot(*(item.T))
 plt.axis('equal')
 
-joints = [pDtip,pCD,pNC,pNA,pAB,pBtip]
-joints = [item2 for item in joints for item2 in [item.dot(N.x), item.dot(N.y)]]
-output2 = Output(joints,system)
-y= output2.calc(states)
-#y = y.reshape((y.shape[0],-1,2)) 
-plt.figure()
-for item in y[::500]:
-    item = item.reshape(-1,2)
-    plt.plot(*item)
-plt.axis('equal')
+energy = Output([KE-PE])
+energy.calc(states2)
+energy.plot_time()
 
-plt.figure()
-plt.plot(y[:,6])
+tip = Output([pBtip.dot(N.y)])
+tip.calc(states2)
+tip.plot_time()
 
-plt.figure()
-plt.plot(t,y[:,7:10])
-plt.show()
