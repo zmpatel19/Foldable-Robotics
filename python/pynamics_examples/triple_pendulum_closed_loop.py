@@ -107,7 +107,7 @@ vDtip = pDtip.time_derivative(N,system)
 
 pAcm=pOA+lA/2*A.x
 pBcm=pAB+lB/2*B.x
-pCcm=pOC+lC/2*C.y
+pCcm=pOC+lC/2*C.x
 pDcm=pCD+lD/2*D.x
 
 wOA = O.getw_(A)
@@ -199,7 +199,7 @@ points = Output(points)
 y = points.calc(states)
 y = y.reshape((-1,6,2))
 plt.figure()
-for item in y[-2:-1]:
+for item in y[::30]:
     plt.plot(*(item.T))
 
 #eq2 = []

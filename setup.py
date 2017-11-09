@@ -21,7 +21,7 @@ package_data['pynamics'] = []
 
 setup_kwargs = {}
 setup_kwargs['name']='pynamics'
-setup_kwargs['version']='0.0.1'
+setup_kwargs['version']='0.0.2'
 setup_kwargs['classifiers']=['Programming Language :: Python','Programming Language :: Python :: 3']   
 setup_kwargs['description']='Foldable robotics is a package for designing and analyzing foldable laminate robots'
 setup_kwargs['author']='Dan Aukes'
@@ -31,6 +31,6 @@ setup_kwargs['license']='MIT'
 setup_kwargs['packages']=packages
 setup_kwargs['package_dir']={'pynamics' : 'python/pynamics'}
 setup_kwargs['package_data'] = package_data
-
+setup_kwargs['install_requires']=['idealab_tools','matplotlib','numpy','scipy','sympy']
   
 setup(**setup_kwargs)
