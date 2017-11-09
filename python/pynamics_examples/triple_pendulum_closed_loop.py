@@ -28,7 +28,7 @@ lB = Constant(1,'lB',system)
 lC = Constant(1,'lC',system)
 lD = Constant(1,'lD',system)
 
-mO = Constant(1,'mO',system)
+mO = Constant(10,'mO',system)
 mA = Constant(1,'mA',system)
 mB = Constant(1,'mB',system)
 mC = Constant(1,'mC',system)
@@ -40,7 +40,7 @@ I_zz = Constant(1,'I_zz',system)
 
 g = Constant(9.81,'g',system)
 b = Constant(1e0,'b',system)
-k = Constant(1e2,'k',system)
+k = Constant(1e3,'k',system)
 
 tinitial = 0
 tfinal = 10
@@ -51,6 +51,7 @@ preload1 = Constant(0*pi/180,'preload1',system)
 preload2 = Constant(0*pi/180,'preload2',system)
 preload3 = Constant(-180*pi/180,'preload3',system)
 preload4 = Constant(0*pi/180,'preload4',system)
+preload5 = Constant(180*pi/180,'preload5',system)
 
 x,x_d,x_dd = Differentiable('x',system)
 y,y_d,y_dd = Differentiable('y',system)
@@ -98,9 +99,11 @@ pOA = pOcm+lO/2*O.x
 pOC = pOcm-lO/2*O.x
 pAB = pOA+lA*A.x
 pBtip = pAB + lB*B.x
+vBtip = pBtip.time_derivative(N,system)
 
 pCD = pOC + lC*C.x
 pDtip = pCD + lD*D.x
+vDtip = pDtip.time_derivative(N,system)
 
 pAcm=pOA+lA/2*A.x
 pBcm=pAB+lB/2*B.x
@@ -111,6 +114,7 @@ wOA = O.getw_(A)
 wAB = A.getw_(B)
 wOC = O.getw_(C)
 wCD = C.getw_(D)
+wBD = B.getw_(D)
 
 I = Dyadic.build(A,I_xx,I_yy,I_zz)
 
@@ -130,12 +134,27 @@ system.addforce(-b*wOA,wOA)
 system.addforce(-b*wAB,wAB)
 system.addforce(-b*wOC,wOC)
 system.addforce(-b*wCD,wCD)
-#system.addforce(-b*wBC,wBC)
+system.addforce(-b*wBD,wBD)
+
+stretch = -pBtip.dot(N.y)
+stretch_s = (stretch+abs(stretch))
+on = stretch_s/(2*stretch+1e-10)
+system.add_spring_force(1e4,-stretch_s*N.y,vBtip)
+system.addforce(-1e2*vBtip*on,vBtip)
+
+v = pBtip-pDtip
+l = (v.dot(v))**.5
+n = 1/l*v
+system.add_spring_force(1e5,l*n,vBtip)
+system.add_spring_force(1e5,-l*n,vDtip)
+system.addforce(-b*(vBtip-vDtip),vBtip)
+system.addforce(b*(vBtip-vDtip),vDtip)
 
 system.add_spring_force(k,(qA-qO-preload1)*N.z,wOA)
-system.add_spring_force(k,(qB-qA-preload2)*A.z,wAB)
+system.add_spring_force(k,(qB-qA-preload2)*N.z,wAB)
 system.add_spring_force(k,(qC-qO-preload3)*N.z,wOC)
-system.add_spring_force(k,(qD-qC-preload4)*C.z,wCD)
+system.add_spring_force(k,(qD-qC-preload4)*N.z,wCD)
+system.add_spring_force(k,(qD-qB-preload5)*N.z,wBD)
 
 system.addforcegravity(-g*N.y)
 
@@ -143,8 +162,8 @@ eq = []
 eq.append(pOcm.dot(N.y)-initialvalues[y])
 eq.append(pOcm.dot(N.x)-initialvalues[x])
 eq.append(qO-initialvalues[qO])
-eq.append((pBtip-pDtip).dot(N.x))
-eq.append((pBtip-pDtip).dot(N.y))
+#eq.append((pBtip-pDtip).dot(N.x))
+#eq.append((pBtip-pDtip).dot(N.y))
 
 
 #eq.append(pBtip.dot(N.y))
@@ -183,29 +202,29 @@ plt.figure()
 for item in y[-2:-1]:
     plt.plot(*(item.T))
 
-eq2 = []
-eq2.append((pBtip-pDtip).dot(N.x))
-eq2.append((pBtip-pDtip).dot(N.y))
-eq2.append((pBtip).dot(N.y))
+#eq2 = []
+#eq2.append((pBtip-pDtip).dot(N.x))
+#eq2.append((pBtip-pDtip).dot(N.y))
+#eq2.append((pBtip).dot(N.y))
 #eq2.append((pBtip).dot(N.x))
 
-eq2_d= [system.derivative(item) for item in eq2]
-eq2_dd= [system.derivative(item) for item in eq2_d]
+#eq2_d= [system.derivative(item) for item in eq2]
+#eq2_dd= [system.derivative(item) for item in eq2_d]
 
-eq2_active = []
-eq2_active.append(1)
-eq2_active.append(1)
-eq2_active.append(0-pBtip.dot(N.y))
+#eq2_active = []
+#eq2_active.append(1)
+#eq2_active.append(1)
+#eq2_active.append(0-pBtip.dot(N.y))
 #eq2_active.append(0-pBtip.dot(N.x))
-eq2_active = [(item+abs(item)) for item in eq2_active]
-
+#eq2_active = [(item+abs(item)) for item in eq2_active]
+#
 ini = states[-1]
 ini[2] = 0
 ini[7:] = 0
 #ini[7] = 10
 ini = list(ini)
 
-func1 = system.state_space_post_invert2(f,ma,eq2_dd,eq2_d,eq2,eq_active=eq2_active,constants = system.constant_values)
+func1 = system.state_space_post_invert(f,ma,constants = system.constant_values)
 states2=scipy.integrate.odeint(func1,ini,numpy.r_[tinitial:tfinal:1/30],hmax = .01,rtol=1e-3,atol=1e-3,args=({'constants':{},'alpha':1e3,'beta':1e1},))
 y = points.calc(states2)
 y = y.reshape((-1,6,2))
@@ -218,7 +237,7 @@ energy = Output([KE-PE])
 energy.calc(states2)
 energy.plot_time()
 
-tip = Output([pBtip.dot(N.y)])
+tip = Output([pBtip.dot(N.y),stretch])
 tip.calc(states2)
 tip.plot_time()
 
@@ -233,8 +252,8 @@ ax.axis('equal')
 for ii,item in enumerate(y):
     [item.remove() for item in ax.lines]
     plt.plot(*(item.T),'ro-')
-    ax.set_xlim((y[:,::2].min(),y[:,::2].max()))
-    ax.set_ylim((y[:,1::2].min(),y[:,1::2].max()))
+    ax.set_xlim((y[:,:,0].min(),y[:,:,0].max()))
+    ax.set_ylim((y[:,:,1].min(),y[:,:,1].max()))
     plt.savefig(os.path.join(folder,'{0:04d}.png'.format(ii)))
 
 idealab_tools.makemovie.render(image_name_format = '%04d.png')
