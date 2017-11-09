@@ -63,7 +63,7 @@ qD,qD_d,qD_dd = Differentiable('qD',system)
 initialvalues = {}
 initialvalues[x]=0
 initialvalues[x_d]=0
-initialvalues[y]=10
+initialvalues[y]=20
 initialvalues[y_d]=0
 initialvalues[qO]=0*pi/180
 initialvalues[qO_d]=0*pi/180
@@ -114,17 +114,17 @@ wCD = C.getw_(D)
 
 I = Dyadic.build(A,I_xx,I_yy,I_zz)
 
-#BodyO = Body('BodyO',O,pOcm,mO,I,system)
-#BodyA = Body('BodyA',A,pAcm,mA,I,system)
-#BodyB = Body('BodyB',B,pBcm,mB,I,system)
-#BodyC = Body('BodyC',C,pCcm,mC,I,system)
-#BodyD = Body('BodyD',D,pDcm,mD,I,system)
+BodyO = Body('BodyO',O,pOcm,mO,I,system)
+BodyA = Body('BodyA',A,pAcm,mA,I,system)
+BodyB = Body('BodyB',B,pBcm,mB,I,system)
+BodyC = Body('BodyC',C,pCcm,mC,I,system)
+BodyD = Body('BodyD',D,pDcm,mD,I,system)
 
-ParticleO = Particle(pOcm,mO,'ParticleO',system)
-ParticleA = Particle(pAcm,mA,'ParticleA',system)
-ParticleB = Particle(pBcm,mB,'ParticleB',system)
-ParticleC = Particle(pCcm,mC,'ParticleC',system)
-ParticleD = Particle(pDcm,mD,'ParticleD',system)
+#ParticleO = Particle(pOcm,mO,'ParticleO',system)
+#ParticleA = Particle(pAcm,mA,'ParticleA',system)
+#ParticleB = Particle(pBcm,mB,'ParticleB',system)
+#ParticleC = Particle(pCcm,mC,'ParticleC',system)
+#ParticleD = Particle(pDcm,mD,'ParticleD',system)
 
 system.addforce(-b*wOA,wOA)
 system.addforce(-b*wAB,wAB)
@@ -187,6 +187,7 @@ eq2 = []
 eq2.append((pBtip-pDtip).dot(N.x))
 eq2.append((pBtip-pDtip).dot(N.y))
 eq2.append((pBtip).dot(N.y))
+#eq2.append((pBtip).dot(N.x))
 
 eq2_d= [system.derivative(item) for item in eq2]
 eq2_dd= [system.derivative(item) for item in eq2_d]
@@ -195,15 +196,17 @@ eq2_active = []
 eq2_active.append(1)
 eq2_active.append(1)
 eq2_active.append(0-pBtip.dot(N.y))
+#eq2_active.append(0-pBtip.dot(N.x))
 eq2_active = [(item+abs(item)) for item in eq2_active]
 
 ini = states[-1]
-#ini[7:] = 0
-ini[7] = 10
+ini[2] = 0
+ini[7:] = 0
+#ini[7] = 10
 ini = list(ini)
 
 func1 = system.state_space_post_invert2(f,ma,eq2_dd,eq2_d,eq2,eq_active=eq2_active,constants = system.constant_values)
-states2=scipy.integrate.odeint(func1,ini,t,rtol=1e-4,atol=1e-4,args=({'constants':{},'alpha':1e3,'beta':1e1},))
+states2=scipy.integrate.odeint(func1,ini,numpy.r_[tinitial:tfinal:1/30],hmax = .01,rtol=1e-3,atol=1e-3,args=({'constants':{},'alpha':1e3,'beta':1e1},))
 y = points.calc(states2)
 y = y.reshape((-1,6,2))
 plt.figure()
@@ -219,3 +222,20 @@ tip = Output([pBtip.dot(N.y)])
 tip.calc(states2)
 tip.plot_time()
 
+import os
+import idealab_tools.makemovie
+idealab_tools.makemovie.clear_folder()
+folder = idealab_tools.makemovie.prep_folder()
+f = plt.figure()
+ax = f.add_subplot(1,1,1)
+ax.axis('equal')
+
+for ii,item in enumerate(y):
+    [item.remove() for item in ax.lines]
+    plt.plot(*(item.T),'ro-')
+    ax.set_xlim((y[:,::2].min(),y[:,::2].max()))
+    ax.set_ylim((y[:,1::2].min(),y[:,1::2].max()))
+    plt.savefig(os.path.join(folder,'{0:04d}.png'.format(ii)))
+
+idealab_tools.makemovie.render(image_name_format = '%04d.png')
+idealab_tools.makemovie.clear_folder()
