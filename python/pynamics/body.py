@@ -9,7 +9,8 @@ import pynamics
 from pynamics.name_generator import NameGenerator
 
 class Body(NameGenerator):
-    def __init__(self,name,frame,pCM,mass,inertia,system = None):
+    def __init__(self,name,frame,pCM,mass,inertia,system = None,about_point = None):
+        self.about_point = about_point or pCM
         system = system or pynamics.get_system()
 
         name = name or self.generate_name()
@@ -22,6 +23,9 @@ class Body(NameGenerator):
         self.inertia= inertia
         self.vCM=self.pCM.diff_in_parts(self.system.newtonian,self.system)
         self.aCM=self.vCM.diff_in_parts(self.system.newtonian,self.system)
+
+        self.about_point_d=self.about_point.diff_in_parts(self.system.newtonian,self.system)
+        self.about_point_dd=self.about_point_d.diff_in_parts(self.system.newtonian,self.system)
         
         self.gravityvector = None
         self.forcegravity = None        
@@ -36,11 +40,15 @@ class Body(NameGenerator):
         pynamics.addself(self,name)
 
     def adddynamics(self):
+        import pynamics.inertia
+        
+        I = pynamics.inertia.shift(self.inertia,self.pCM,self.about_point,self.mass,self.frame)
+        
         self.effectiveforce = self.mass*self.aCM
-        self.momentofeffectiveforce= self.inertia.dot(self.alNBody)+self.wNBody.cross(self.inertia.dot(self.wNBody))
+        self.momentofeffectiveforce= I.dot(self.alNBody)+self.wNBody.cross(I.dot(self.wNBody))+self.mass*(self.pCM-self.about_point).cross(self.about_point_dd)
         self.KE = .5*self.mass*self.vCM.dot(self.vCM) + .5*self.wNBody.dot(self.inertia.dot(self.wNBody))
 
-        self.system.addeffectiveforce(self.effectiveforce,self.vCM)
+        self.system.addeffectiveforce(self.effectiveforce,self.about_point_d)
         self.system.addeffectiveforce(self.momentofeffectiveforce,self.wNBody)
 #        self.system.addmomentum(self.linearmomentum,self.vCM)
 #        self.system.addmomentum(self.angularmomentum,self.wNBody)
