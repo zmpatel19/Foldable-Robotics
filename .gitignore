@@ -7,3 +7,4 @@ python/pynamics/examples/render*
 /build/*
 /dist/pynamics-0.0.1-py2.py3-none-any.whl
 /pynamics.egg-info/*
+/dist/*
