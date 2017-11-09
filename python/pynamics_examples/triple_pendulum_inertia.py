@@ -95,9 +95,9 @@ IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)
 IC = Dyadic.build(C,Ixx_C,Iyy_C,Izz_C)
 
-BodyA = Body('BodyA',A,pAcm,mA,IA,system)
-BodyB = Body('BodyB',B,pBcm,mB,IB,system)
-BodyC = Body('BodyC',C,pCcm,mC,IC,system)
+BodyA = Body('BodyA',A,pAcm,mA,IA,system,about_point=pNA)
+BodyB = Body('BodyB',B,pBcm,mB,IB,system,about_point=pAB)
+BodyC = Body('BodyC',C,pCcm,mC,IC,system,about_point=pBC)
 
 #ParticleA = Particle(pAcm,mA,'ParticleA',system)
 #ParticleB = Particle(pBcm,mB,'ParticleB',system)
