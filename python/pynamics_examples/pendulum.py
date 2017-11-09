@@ -64,8 +64,6 @@ system.addforcegravity(-g*N.y)
 x1 = ParticleA.pCM.dot(N.x)
 y1 = ParticleA.pCM.dot(N.y)
 
-KE = system.KE
-PE = system.getPEGravity(pNA) - system.getPESprings()
     
 pynamics.tic()
 print('solving dynamics...')
@@ -81,6 +79,10 @@ states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=
 
 pynamics.toc()
 print('calculating outputs..')
+
+KE = system.get_KE()
+PE = system.getPEGravity(pNA) - system.getPESprings()
+
 output = Output([x1,y1,KE-PE,qA],system)
 y = output.calc(states)
 pynamics.toc()

@@ -40,6 +40,6 @@ def shift(I_cm,cm,p,m,frame):
     import pynamics.dyadic
     unit_dyadic = pynamics.dyadic.Dyadic.unit(frame)
     rcmp = p-cm
-    I = I_cm+m*(unit_dyadic*(rcmp.dot(rcmp)) - pynamics.dyadic.dyad(rcmp,rcmp))
+    I = I_cm+m*(unit_dyadic*(rcmp.dot(rcmp)) - pynamics.dyadic.Dyad(rcmp,rcmp))
 
     return I

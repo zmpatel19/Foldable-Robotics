@@ -84,9 +84,6 @@ system.add_spring_force(k,(qA-preload1)*N.z,wNA)
 x1 = BodyA.pCM.dot(N.x)
 y1 = BodyA.pCM.dot(N.y)
 
-KE = system.KE
-PE = system.getPEGravity(pNA) - system.getPESprings()
-    
 pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
@@ -96,6 +93,10 @@ print('integrating...')
 states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 pynamics.toc()
 print('calculating outputs..')
+
+KE = system.get_KE()
+PE = system.getPEGravity(pNA) - system.getPESprings()
+
 output = Output([x1,y1,KE-PE,qA],system)
 y = output.calc(states)
 pynamics.toc()
@@ -110,38 +111,3 @@ plt.plot(y[:,2])
 plt.figure(3)
 plt.plot(t,y[:,0])
 plt.show()
-
-import numpy.random
-
-f = f[0].simplify()
-ma = ma[0].simplify()
-
-q = y[:,-1].astype(float)
-q += numpy.random.rand(len(q))*1e-6
-q_d = (q[2:]-q[:-2])/(2*tstep)
-q_dd = (q_d[2:]-q_d[:-2])/(2*tstep)
-
-
-q = q[2:-2]
-t = t[2:-2]
-q_d = q_d[1:-1]
-
-plt.figure()
-plt.plot(t,q)
-plt.figure()
-plt.plot(t,q_d)
-plt.figure()
-plt.plot(t,q_dd)
-
-
-x = numpy.c_[q,numpy.cos(q),q_d]
-m = float((ma/qA_dd).subs(system.constant_values))
-y = m*q_dd
-
-C = numpy.linalg.solve(x.T.dot(x),x.T.dot(y))
-y2 = numpy.r_[[C]].dot(x.T).T
-
-plt.figure()
-plt.plot(t,y)
-plt.plot(t,y2)
-
