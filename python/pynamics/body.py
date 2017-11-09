@@ -9,7 +9,7 @@ import pynamics
 from pynamics.name_generator import NameGenerator
 
 class Body(NameGenerator):
-    def __init__(self,name,frame,pCM,mass,inertia,system = None,about_point = None):
+    def __init__(self,name,frame,pCM,mass,inertia,system = None,about_point = None,vCM = None,aCM=None,wNBody = None, alNBody = None):
         self.about_point = about_point or pCM
         system = system or pynamics.get_system()
 
@@ -21,8 +21,8 @@ class Body(NameGenerator):
         self.pCM = pCM
         self.mass = mass
         self.inertia= inertia
-        self.vCM=self.pCM.diff_in_parts(self.system.newtonian,self.system)
-        self.aCM=self.vCM.diff_in_parts(self.system.newtonian,self.system)
+        self.vCM= vCM or self.pCM.diff_in_parts(self.system.newtonian,self.system)
+        self.aCM= aCM or self.vCM.diff_in_parts(self.system.newtonian,self.system)
 
         self.about_point_d=self.about_point.diff_in_parts(self.system.newtonian,self.system)
         self.about_point_dd=self.about_point_d.diff_in_parts(self.system.newtonian,self.system)
@@ -30,8 +30,8 @@ class Body(NameGenerator):
         self.gravityvector = None
         self.forcegravity = None        
         
-        self.wNBody = self.system.newtonian.getw_(self.frame)
-        self.alNBody=self.wNBody.diff_in_parts(self.system.newtonian,self.system)
+        self.wNBody = wNBody or self.system.newtonian.getw_(self.frame)
+        self.alNBody = alNBody or self.wNBody.diff_in_parts(self.system.newtonian,self.system)
         
 #        self.linearmomentum = self.mass*self.vCM
 #        self.angularmomentum = self.inertia.dot(self.wNBody)
