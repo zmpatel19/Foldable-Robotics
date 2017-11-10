@@ -11,7 +11,7 @@ from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
 from pynamics.body import Body
 from pynamics.dyadic import Dyadic
-from pynamics.output import Output
+from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 
 #import sympy
@@ -31,8 +31,8 @@ mB = Constant(1,'mB',system)
 mC = Constant(1,'mC',system)
 
 g = Constant(9.81,'g',system)
-b = Constant(1e1,'b',system)
-k = Constant(1e2,'k',system)
+b = Constant(1e0,'b',system)
+k = Constant(1e1,'k',system)
 
 tinitial = 0
 tfinal = 5
@@ -110,14 +110,19 @@ system.add_spring_force1(k,(qC-preload3)*N.z,wBC)
 
 system.addforcegravity(-g*N.y)
 
-points = [pNA,BodyA.pCM,BodyB.pCM,BodyC.pCM]
-points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
+vCtip = pCtip.time_derivative(N,system)
+eq = []
+eq.append(pCtip.dot(N.y))
+eq_d=[(system.derivative(item)) for item in eq]
+eq_dd=[(system.derivative(item)) for item in eq_d]
+
 
 pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
 print('creating second order function...')
-func1 = system.state_space_post_invert(f,ma)
+#func1 = system.state_space_post_invert(f,ma)
+func1 = system.state_space_post_invert(f,ma,eq_dd)
 print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 pynamics.toc()
@@ -126,15 +131,17 @@ print('calculating outputs..')
 KE = system.get_KE()
 PE = system.getPEGravity(pNA) - system.getPESprings()
 
-points_output = Output(points,system)
+points = [pNA,pAB,pBC,pCtip]
+#points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
+points_output = PointsOutput(points,system)
 y = points_output.calc(states)
-y.resize(y.shape[0],int(y.shape[1]/2),2)
+#y.resize(y.shape[0],int(y.shape[1]/2),2)
 
 plt.figure()
 plt.plot(t,states[:,:3])
 
 plt.figure()
-plt.plot(*(y.T))
+plt.plot(*(y[::int(len(y)/20)].T))
 plt.axis('equal')
 
 energy_output = Output([KE-PE],system)
@@ -144,20 +151,7 @@ pynamics.toc()
 plt.figure()
 plt.plot(energy_output.y)
 
-import os
-import idealab_tools.makemovie
-idealab_tools.makemovie.clear_folder()
-folder = idealab_tools.makemovie.prep_folder()
-f = plt.figure()
-ax = f.add_subplot(1,1,1)
-ax.set_xlim((y[:,:,0].min(),y[:,:,0].max()))
-ax.set_ylim((y[:,:,1].min(),y[:,:,1].max()))
-#ax.axis('equal')
-
-for ii,item in enumerate(y):
-    [item.remove() for item in ax.lines]
-    ax.plot(item[:,0],item[:,1],'ro-')
-    plt.savefig(os.path.join(folder,'{0:04d}.png'.format(ii)))
-
-idealab_tools.makemovie.make_gif()
-idealab_tools.makemovie.clear_folder()
+#points_output.make_gif()
+#points_output.render_movie()
+points_output.animate(fps = 30,movie_name = 'render.mp4')
+#a()
