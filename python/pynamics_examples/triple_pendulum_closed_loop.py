@@ -139,22 +139,22 @@ system.addforce(-b*wBD,wBD)
 stretch = -pBtip.dot(N.y)
 stretch_s = (stretch+abs(stretch))
 on = stretch_s/(2*stretch+1e-10)
-system.add_spring_force(1e4,-stretch_s*N.y,vBtip)
+system.add_spring_force1(1e4,-stretch_s*N.y,vBtip)
 system.addforce(-1e2*vBtip*on,vBtip)
 
 v = pBtip-pDtip
 l = (v.dot(v))**.5
 n = 1/l*v
-system.add_spring_force(1e5,l*n,vBtip)
-system.add_spring_force(1e5,-l*n,vDtip)
+system.add_spring_force1(1e5,l*n,vBtip)
+system.add_spring_force1(1e5,-l*n,vDtip)
 system.addforce(-b*(vBtip-vDtip),vBtip)
 system.addforce(b*(vBtip-vDtip),vDtip)
 
-system.add_spring_force(k,(qA-qO-preload1)*N.z,wOA)
-system.add_spring_force(k,(qB-qA-preload2)*N.z,wAB)
-system.add_spring_force(k,(qC-qO-preload3)*N.z,wOC)
-system.add_spring_force(k,(qD-qC-preload4)*N.z,wCD)
-system.add_spring_force(k,(qD-qB-preload5)*N.z,wBD)
+system.add_spring_force1(k,(qA-qO-preload1)*N.z,wOA)
+system.add_spring_force1(k,(qB-qA-preload2)*N.z,wAB)
+system.add_spring_force1(k,(qC-qO-preload3)*N.z,wOC)
+system.add_spring_force1(k,(qD-qC-preload4)*N.z,wCD)
+system.add_spring_force1(k,(qD-qB-preload5)*N.z,wBD)
 
 system.addforcegravity(-g*N.y)
 

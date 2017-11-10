@@ -63,8 +63,8 @@ stretch = y
 stretched1 = (stretch+abs(stretch))/2
 stretched2 = -(-stretch+abs(-stretch))/2
 
-#system.add_spring_force(k,(stretched1)*N.y,vAcm) 
-system.add_spring_force(k,(stretched2)*N.y,vAcm) 
+#system.add_spring_force1(k,(stretched1)*N.y,vAcm) 
+system.add_spring_force1(k,(stretched2)*N.y,vAcm) 
 
 system.addforcegravity(-g*N.y)
 

@@ -58,7 +58,7 @@ body1 = Body('body1',f4,p1,mp1,Dyadic.build(f4,1,1,1),system = None)
 
 #system.addforce(-b*v1,v1)
 system.addforcegravity(-g*f1.z)
-#system.add_spring_force(k,(q1)*f1.z,wNA) 
+#system.add_spring_force1(k,(q1)*f1.z,wNA) 
 
 points = [particle1.pCM]
 

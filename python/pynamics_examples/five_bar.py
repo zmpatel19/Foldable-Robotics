@@ -158,11 +158,11 @@ system.addforce(-b*wB2,wB2)
 
 ################################################
 #Add spring forces to two joints
-system.add_spring_force(k,(qA1-pi/180*45)*A1.x,wA1) 
-#system.add_spring_force(k,(qA2)*A2.x,wA2) 
-#system.add_spring_force(k,(qA3)*A3.x,wA3) 
-system.add_spring_force(k,(qB1+pi/180*45)*B1.x,wB1) 
-#system.add_spring_force(k,(qB2)*B2.x,wB2) 
+system.add_spring_force1(k,(qA1-pi/180*45)*A1.x,wA1) 
+#system.add_spring_force1(k,(qA2)*A2.x,wA2) 
+#system.add_spring_force1(k,(qA3)*A3.x,wA3) 
+system.add_spring_force1(k,(qB1+pi/180*45)*B1.x,wB1) 
+#system.add_spring_force1(k,(qB2)*B2.x,wB2) 
 
 ################################################
 #Add gravity

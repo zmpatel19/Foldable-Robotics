@@ -68,9 +68,15 @@ class System(object):
     def addforce(self,force,velocity):
         self.forces.append((force,velocity))
 
-    def add_spring_force(self,k,stretch,velocity):
+    def add_spring_force1(self,k,stretch,velocity):
         force = -k*stretch
         self.forces.append((force,velocity))
+        self.springs.append((k,stretch))
+
+    def add_spring_force2(self,k,stretch,v1,v2):
+        force = -k*stretch
+        self.forces.append((force,v1))
+        self.forces.append((-force,v2))
         self.springs.append((k,stretch))
 
     def addeffectiveforce(self,effectiveforce,velocity):

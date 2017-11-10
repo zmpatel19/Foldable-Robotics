@@ -77,7 +77,7 @@ uab = vAB * (1/(lab2**.5+tol))
 system.addforce(-b_air*vAB,vAB)
 system.addforce(-b_joint*wNA,wNA)
 system.addforcegravity(-g*N.x)
-system.add_spring_force(k,(qA-preload1)*N.z,wNA) 
+system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
 
 #x1 = ParticleA.pCM.dot(N.x)
 #y1 = ParticleA.pCM.dot(N.y)

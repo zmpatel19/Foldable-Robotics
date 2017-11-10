@@ -100,9 +100,9 @@ system.addforce(-b*wBC,wBC)
 #system.addforce(-k*(qA-preload1)*N.z,wNA)
 #system.addforce(-k*(qB-preload2)*A.z,wAB)
 #system.addforce(-k*(qC-preload3)*B.z,wBC)
-system.add_spring_force(k,(qA-preload1)*N.z,wNA) 
-system.add_spring_force(k,(qB-qA-preload2)*N.z,wAB)
-system.add_spring_force(k,(qC-qB-preload3)*N.z,wBC)
+system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
+system.add_spring_force1(k,(qB-qA-preload2)*N.z,wAB)
+system.add_spring_force1(k,(qC-qB-preload3)*N.z,wBC)
 
 system.addforcegravity(-g*N.y)
 

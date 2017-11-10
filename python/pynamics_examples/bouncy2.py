@@ -95,7 +95,7 @@ stretch = l - l0
 ul_ = l_*(l**-1)
 vl = l_.time_derivative(N,system)
 
-system.add_spring_force(k,stretch*ul_,vl)
+system.add_spring_force1(k,stretch*ul_,vl)
 #system.addforce(-k*stretch*ul_,vpm1)
 #system.addforce(k*stretch*ul_,vpm2)
 

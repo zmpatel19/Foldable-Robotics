@@ -29,4 +29,7 @@ class Output(object):
             self.y
         except AttributeError:
             self.calc()
-        plt.plot(self.y)
+        if t is None:
+            plt.plot(self.y)
+        else:
+            plt.plot(t,self.y)
