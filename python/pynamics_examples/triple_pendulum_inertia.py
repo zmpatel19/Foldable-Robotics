@@ -36,7 +36,7 @@ k = Constant(1e2,'k',system)
 
 tinitial = 0
 tfinal = 5
-tstep = .001
+tstep = 1/30
 t = numpy.r_[tinitial:tfinal:tstep]
 
 preload1 = Constant(0*pi/180,'preload1',system)
@@ -95,13 +95,10 @@ IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)
 IC = Dyadic.build(C,Ixx_C,Iyy_C,Izz_C)
 
-BodyA = Body('BodyA',A,pAcm,mA,IA,system,about_point=pNA)
-BodyB = Body('BodyB',B,pBcm,mB,IB,system,about_point=pAB)
-BodyC = Body('BodyC',C,pCcm,mC,IC,system,about_point=pBC)
-
-#ParticleA = Particle(pAcm,mA,'ParticleA',system)
-#ParticleB = Particle(pBcm,mB,'ParticleB',system)
-#ParticleC = Particle(pCcm,mC,'ParticleC',system)
+BodyA = Body('BodyA',A,pAcm,mA,IA,system)
+BodyB = Body('BodyB',B,pBcm,mB,IB,system)
+#BodyC = Body('BodyC',C,pCcm,mC,IC,system)
+BodyC = Particle(pCcm,mC,'ParticleC',system)
 
 system.addforce(-b*wNA,wNA)
 system.addforce(-b*wAB,wAB)
@@ -113,39 +110,54 @@ system.add_spring_force1(k,(qC-preload3)*N.z,wBC)
 
 system.addforcegravity(-g*N.y)
 
-x1 = BodyA.pCM.dot(N.x)
-y1 = BodyA.pCM.dot(N.y)
-x2 = BodyB.pCM.dot(N.x)
-y2 = BodyB.pCM.dot(N.y)
-x3 = BodyC.pCM.dot(N.x)
-y3 = BodyC.pCM.dot(N.y)
-    
+points = [pNA,BodyA.pCM,BodyB.pCM,BodyC.pCM]
+points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
+
 pynamics.tic()
 print('solving dynamics...')
 f,ma = system.getdynamics()
-
-KE = system.get_KE()
-PE = system.getPEGravity(pNA) - system.getPESprings()
-
 print('creating second order function...')
 func1 = system.state_space_post_invert(f,ma)
 print('integrating...')
 states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 pynamics.toc()
 print('calculating outputs..')
-output = Output([x1,y1,x2,y2,x3,y3,KE-PE,qA,qB,qC],system)
-y = output.calc(states)
-pynamics.toc()
 
-plt.figure(1)
-plt.plot(y[:,0],y[:,1])
-plt.plot(y[:,2],y[:,3])
-plt.plot(y[:,4],y[:,5])
+KE = system.get_KE()
+PE = system.getPEGravity(pNA) - system.getPESprings()
+
+points_output = Output(points,system)
+y = points_output.calc(states)
+y.resize(y.shape[0],int(y.shape[1]/2),2)
+
+plt.figure()
+plt.plot(t,states[:,:3])
+
+plt.figure()
+plt.plot(*(y.T))
 plt.axis('equal')
 
-plt.figure(2)
-plt.plot(y[:,6])
+energy_output = Output([KE-PE],system)
+energy_output.calc(states)
+pynamics.toc()
 
-plt.figure(3)
-plt.plot(t,y[:,7:10])
-plt.show()
+plt.figure()
+plt.plot(energy_output.y)
+
+import os
+import idealab_tools.makemovie
+idealab_tools.makemovie.clear_folder()
+folder = idealab_tools.makemovie.prep_folder()
+f = plt.figure()
+ax = f.add_subplot(1,1,1)
+ax.set_xlim((y[:,:,0].min(),y[:,:,0].max()))
+ax.set_ylim((y[:,:,1].min(),y[:,:,1].max()))
+#ax.axis('equal')
+
+for ii,item in enumerate(y):
+    [item.remove() for item in ax.lines]
+    ax.plot(item[:,0],item[:,1],'ro-')
+    plt.savefig(os.path.join(folder,'{0:04d}.png'.format(ii)))
+
+idealab_tools.makemovie.make_gif()
+idealab_tools.makemovie.clear_folder()
