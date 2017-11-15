@@ -11,7 +11,7 @@ from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
 from pynamics.body import Body
 from pynamics.dyadic import Dyadic
-from pynamics.output import Output
+from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 pynamics.script_mode = True
 
@@ -28,7 +28,7 @@ g = Constant(9.81,'g',system)
 
 tinitial = 0
 tfinal = 5
-tstep = .001
+tstep = 1/30
 t = numpy.r_[tinitial:tfinal:tstep]
 
 Differentiable('qA')
@@ -40,22 +40,22 @@ Differentiable('y')
 Differentiable('z')
 
 Constant(1,'mC')
-Constant(1,'Ixx')
-Constant(1,'Iyy')
+Constant(2,'Ixx')
+Constant(3,'Iyy')
 Constant(1,'Izz')
 
 initialvalues = {}
 initialvalues[qA]=0*pi/180
-initialvalues[qA_d]=0*pi/180
+initialvalues[qA_d]=7
 initialvalues[qB]=0*pi/180
-initialvalues[qB_d]=0*pi/180
+initialvalues[qB_d]=.2
 initialvalues[qC]=0*pi/180
-initialvalues[qC_d]=0*pi/180
+initialvalues[qC_d]=.2
 
 initialvalues[x]=0
-initialvalues[x_d]=0
+initialvalues[x_d]=10
 initialvalues[y]=0
-initialvalues[y_d]=0
+initialvalues[y_d]=10
 initialvalues[z]=0
 initialvalues[z_d]=0
 
@@ -82,7 +82,7 @@ IC = Dyadic.build(C,Ixx,Iyy,Izz)
 
 #BodyA = Body('BodyA',A,pAcm,mA,IA,system)
 #BodyB = Body('BodyB',B,pBcm,mB,IB,system)
-BodyC = Body('BodyC',C,pCcm,mC,IC,system)
+Body('BodyC',C,pCcm,mC,IC)
 #
 #ParticleB = Particle(pBcm,mB,'ParticleB',system)
 #ParticleC = Particle(pCcm,mC,'ParticleC',system)
@@ -98,8 +98,15 @@ BodyC = Body('BodyC',C,pCcm,mC,IC,system)
 #system.add_spring_force1(k,(qB-preload2)*N.z,wAB)
 #system.add_spring_force1(k,(qC-preload3)*N.z,wBC)
 #
-#system.addforcegravity(-g*N.y)
+system.addforcegravity(-g*N.y)
 #
+
+
+points = [0*N.x,pCcm]
+
+ang = [wNC.dot(C.x),wNC.dot(C.y),wNC.dot(C.z)]
+#ang = [wNC.dot(N.x),wNC.dot(N.y),wNC.dot(N.z)]
+
 #x1 = ParticleA.pCM.dot(N.x)
 #y1 = ParticleA.pCM.dot(N.y)
 #x2 = ParticleB.pCM.dot(N.x)
@@ -108,19 +115,25 @@ BodyC = Body('BodyC',C,pCcm,mC,IC,system)
 #y3 = ParticleC.pCM.dot(N.y)
 #pynamics.tic()
 #print('solving dynamics...')
-#f,ma = system.getdynamics()
-#print('creating second order function...')
-#func1 = system.state_space_post_invert(f,ma)
+f,ma = system.getdynamics()
+print('creating second order function...')
+func1 = system.state_space_post_invert(f,ma)
 #print('integrating...')
-#states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
+states=scipy.integrate.odeint(func1,ini,t, args=({'constants':system.constant_values},))
 #pynamics.toc()
 #print('calculating outputs..')
 #
 #KE = system.get_KE()
 #PE = system.getPEGravity(pNA) - system.getPESprings()
 #    
-#output = Output([x1,y1,x2,y2,x3,y3,KE-PE,qA,qB,qC],system)
-#y = output.calc(states)
+output = Output(ang,system)
+output.calc(states)
+output.plot_time()
+
+
+po = PointsOutput(points,system)
+po.calc(states)
+po.animate()
 #pynamics.toc()
 #
 #plt.figure(1)
