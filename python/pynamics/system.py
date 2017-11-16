@@ -108,7 +108,7 @@ class System(object):
             if body.gravityvector is not None:
                 d = body.pCM - point
                 F = body.forcegravity
-                PE +=F.dot(d)
+                PE += F.dot(d)
         return PE
 
     def getPESprings(self):
