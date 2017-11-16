@@ -45,7 +45,6 @@ t = numpy.r_[tinitial:tfinal:tstep]
 x,x_d,x_dd = Differentiable('x',system)
 q,q_d,q_dd = Differentiable('q',system)
 
-
 initialvalues = {}
 initialvalues[x]=0.0
 initialvalues[x_d]=0

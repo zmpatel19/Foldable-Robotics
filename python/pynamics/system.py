@@ -143,17 +143,9 @@ class System(object):
             generalized.append(new)
         return generalized
         
-#TODO: fix this!  It doesn't produce the right answer now.    
-    def state_space_pre_invert(self,f,ma,inv_method = 'LU',auto_z= False,constants = None):
-        '''pre-invert A matrix'''
+    
+    def solve_f_ma(self,f,ma,q_dd,inv_method = 'LU',constants = None):
         constants = constants or {}
-        remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
-
-        
-        q_state = self.get_state_variables()
-
-        q_d = self.get_q(1)
-        q_dd = self.get_q(2)
         
         f = sympy.Matrix(f)
         ma = sympy.Matrix(ma)
@@ -163,9 +155,19 @@ class System(object):
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
-#        A_inv = A.inv(method=inv_method)
         var_dd = A.solve(b,method = inv_method)
+        return var_dd
         
+    def state_space_pre_invert(self,f,ma,inv_method = 'LU',constants = None):
+        '''pre-invert A matrix'''
+        constants = constants or {}
+        remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
+
+        q_state = self.get_state_variables()
+        q_d = self.get_q(1)
+        q_dd = self.get_q(2)
+
+        var_dd =self.solve_f_ma(f,ma,q_dd,inv_method,constants)
         state_full = q_state+remaining_constant_keys+[self.t]
         
         f_var_dd = sympy.lambdify(state_full,var_dd)
