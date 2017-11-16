@@ -143,59 +143,56 @@ class System(object):
             generalized.append(new)
         return generalized
         
-# =============================================================================
-# TODO: fix this!  It doesn't produce the right answer now.    
-#     def state_space_pre_invert(self,f,ma,inv_method = 'LU',auto_z= False):
-#         '''pre-invert A matrix'''
-#         
-#         q_state = self.get_state_variables()
-# 
-#         q_d = self.get_q(1)
-#         q_dd = self.get_q(2)
-#         
-#         f = sympy.Matrix(f)
-#         ma = sympy.Matrix(ma)
-#         
-#         Ax_b = ma-f
-#         Ax_b = Ax_b.subs(self.constant_values)
-#         A = Ax_b.jacobian(q_dd)
-#         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
-# 
-#         if auto_z:
-#             def func1(x):
-#                 if x!=pynamics.ZERO:
-#                     return self.generatez(x)
-#                 else:
-#                     return x
-#             AA = A.applyfunc(func1)
-#             AA_inv = AA.inv(method = inv_method)
-#             keys = self.replacements.keys()+[self.t]
-# 
-#             fAA_inv = sympy.lambdify(keys,AA_inv)
-#             A_inv = fAA_inv(*[self.replacements[key] for key in keys])
-# 
-#         else:
-#             A_inv = A.inv(method=inv_method)
-#         var_dd = A_inv*b 
-#         
-#         functions = [sympy.lambdify(q_state,rhs) for rhs in var_dd]
-#         indeces = [q_state.index(element) for element in q_d]
-#         
-#         @static_vars(ii=0)
-#         def func(state,time):
-#             if func.ii%100==0:
-#                 print(time)
-#             func.ii+=1
-#             
-#             x1 = [state[ii] for ii in indeces]
-#             x2 = [f(*(state+[time])) for f in functions]
-#             x3 = numpy.r_[x1,x2]
-#             x4 = x3.flatten().tolist()
-# 
-#             return x4
-# 
-#         return func
-# =============================================================================
+#TODO: fix this!  It doesn't produce the right answer now.    
+    def state_space_pre_invert(self,f,ma,inv_method = 'LU',auto_z= False,constants = None):
+        '''pre-invert A matrix'''
+        constants = constants or {}
+        remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
+
+        
+        q_state = self.get_state_variables()
+
+        q_d = self.get_q(1)
+        q_dd = self.get_q(2)
+        
+        f = sympy.Matrix(f)
+        ma = sympy.Matrix(ma)
+        
+        Ax_b = ma-f
+        Ax_b = Ax_b.subs(constants)
+        A = Ax_b.jacobian(q_dd)
+        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+
+#        A_inv = A.inv(method=inv_method)
+        var_dd = A.solve(b,method = inv_method)
+        
+        state_full = q_state+remaining_constant_keys+[self.t]
+        
+        f_var_dd = sympy.lambdify(state_full,var_dd)
+        indeces = [q_state.index(element) for element in q_d]
+        
+        @static_vars(ii=0)
+        def func(state,time,*args):
+            if func.ii%1000==0:
+                print(time)
+            func.ii+=1
+            
+            try:
+                kwargs = args[0]
+            except IndexError:
+                kwargs = {}
+
+            constant_values = [kwargs['constants'][item] for item in remaining_constant_keys]
+            state_i_full = list(state)+constant_values+[time]
+            
+            x1 = [state[ii] for ii in indeces]
+            x2 = numpy.array(f_var_dd(*(state_i_full))).flatten()
+            x3 = numpy.r_[x1,x2]
+            x4 = x3.flatten().tolist()
+            
+            return x4
+
+        return func
 
     def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,constants = None):
         '''invert A matrix each call'''
