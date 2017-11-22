@@ -40,8 +40,8 @@ def PynamicsObject(object):
     def __init__(self,name):
         addself(self,name)
 
-def addself(self,name,modulename='__main__'):
-    if script_mode:
+def addself(self,name,modulename='__main__',override = False):
+    if script_mode or override:
         module = sys.modules[modulename]
         if hasattr(module,name):
             raise NameError('variable '+name+' exists')
