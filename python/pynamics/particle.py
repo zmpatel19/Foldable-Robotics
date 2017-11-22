@@ -20,8 +20,8 @@ class Particle(NameGenerator):
         self.mass = mass
         self.system = system
 
-        self.vCM=self.pCM.diff_in_parts(self.system.newtonian,self.system)
-        self.aCM=self.vCM.diff_in_parts(self.system.newtonian,self.system)
+        self.vCM=self.pCM.time_derivative(self.system.newtonian,self.system)
+        self.aCM=self.vCM.time_derivative(self.system.newtonian,self.system)
                 
 #        self.linearmomentum = self.mass*self.vCM
         

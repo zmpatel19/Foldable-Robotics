@@ -23,17 +23,17 @@ class Body(NameGenerator):
         self.mass = mass
         self.inertia_CM= inertia_CM
         self.inertia_about_point = inertia_about_point or pynamics.inertia.shift_from_cm(self.inertia_CM,self.pCM,self.about_point,self.mass,self.frame)
-        self.vCM= vCM or self.pCM.diff_in_parts(self.system.newtonian,self.system)
-        self.aCM= aCM or self.vCM.diff_in_parts(self.system.newtonian,self.system)
+        self.vCM= vCM or self.pCM.time_derivative(self.system.newtonian,self.system)
+        self.aCM= aCM or self.vCM.time_derivative(self.system.newtonian,self.system)
 
-        self.about_point_d=self.about_point.diff_in_parts(self.system.newtonian,self.system)
-        self.about_point_dd=self.about_point_d.diff_in_parts(self.system.newtonian,self.system)
+        self.about_point_d=self.about_point.time_derivative(self.system.newtonian,self.system)
+        self.about_point_dd=self.about_point_d.time_derivative(self.system.newtonian,self.system)
         
         self.gravityvector = None
         self.forcegravity = None        
         
         self.wNBody = wNBody or self.system.newtonian.getw_(self.frame)
-        self.alNBody = alNBody or self.wNBody.diff_in_parts(self.system.newtonian,self.system)
+        self.alNBody = alNBody or self.wNBody.time_derivative(self.system.newtonian,self.system)
         
 #        self.linearmomentum = self.mass*self.vCM
 #        self.angularmomentum = self.inertia.dot(self.wNBody)

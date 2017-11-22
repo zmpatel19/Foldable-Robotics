@@ -42,14 +42,14 @@ class Differentiable(sympy.Symbol,NameGenerator):
 
         differentiables = []
 
-        for jj in range(ii,limit):
+        for kk,jj in enumerate(range(ii,limit)):
             
 
-            if jj==0:
+            if kk==0:
                 subname = name
                 variable = sympy.Symbol.__new__(cls,subname)
             else:
-                subname = name+'_'+'d'*jj
+                subname = name+'_'+'d'*kk
                 variable = sympy.Symbol.__new__(cls,subname)
 
             system.add_q(variable,jj)
