@@ -6,7 +6,7 @@ Email: danaukes<at>gmail.com
 Please see LICENSE for full license.
 """
 
-from sympy import pi
+from math import pi
 from danamics import *
 import scipy
 import scipy.integrate

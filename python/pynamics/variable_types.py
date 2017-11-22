@@ -63,3 +63,4 @@ class Differentiable(sympy.Symbol,NameGenerator):
                 system.set_ini(a,ini[kk])
                 
         return differentiables 
+

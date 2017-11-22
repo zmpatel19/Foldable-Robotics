@@ -7,7 +7,7 @@ Please see LICENSE for full license.
 """
 
 
-from sympy import pi
+from math import pi
 import sympy
 import pynamics
 #pynamics.script_mode = True

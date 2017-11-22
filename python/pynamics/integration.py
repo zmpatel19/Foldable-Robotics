@@ -7,6 +7,8 @@ using information from: http://lpsa.swarthmore.edu/NumInt/NumIntFourth.html
 http://depa.fquim.unam.mx/amyd/archivero/DormandPrince_19856.pdf
 """
 import numpy
+import logging
+logger = logging.getLogger('pynamics.integration')
 
 class Integrator(object):
 
@@ -31,7 +33,7 @@ class RK4(Integrator):
         h = self.h
         f = self.f
         
-        args = args or []
+        args = args or ()
         
         x = list(x)
         k1 = numpy.array(f(x,t,*args))
@@ -49,7 +51,7 @@ class DoPri(Integrator):
         h = self.h
         f = self.f
         
-        args = args or []
+        args = args or ()
         
         x = numpy.array(x)
         
@@ -107,3 +109,12 @@ class DoPri(Integrator):
             self.h = hopt
     
         return x1
+    
+def integrate_odeint(*arguments,**keyword_arguments):
+    import scipy.integrate
+    
+    logger.info('beginning integration')
+    result = scipy.integrate.odeint(*arguments,**keyword_arguments)
+    logger.info('finished integration')
+    return result
+    

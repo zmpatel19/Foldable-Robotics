@@ -13,16 +13,15 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
-
+import pynamics.integration
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 import sympy
 import numpy
-import scipy.integrate
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 mp1 = Constant(1,'mp1')
@@ -84,7 +83,7 @@ output_z = Output(points_z)
 f,ma = system.getdynamics()
 func = system.state_space_post_invert(f,ma,eq_dd = eq1_dd)
 t = numpy.r_[0:5:.001]
-states=scipy.integrate.odeint(func,system.get_ini(),t,atol=1e-5,rtol = 1e-5, args=({'constants':system.constant_values},))
+states=pynamics.integration.integrate_odeint(func,system.get_ini(),t,atol=1e-5,rtol = 1e-5, args=({'constants':system.constant_values},))
 
 KE = system.get_KE()
 PE = system.getPEGravity(0*f1.x) - system.getPESprings()

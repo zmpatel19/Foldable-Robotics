@@ -17,10 +17,9 @@ from pynamics.particle import Particle
 
 #import sympy
 import numpy
-import scipy.integrate
 import matplotlib.pyplot as plt
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 error = 1e-12

@@ -7,6 +7,9 @@ Please see LICENSE for full license.
 import numpy
 import pynamics
 
+import logging
+logger = logging.getLogger('pynamics.output')
+
 class Output(object):
     def __init__(self,y_exp, system=None, constant_values = None):
         import sympy
@@ -19,7 +22,9 @@ class Output(object):
         self.fy_expression = sympy.lambdify(system.get_state_variables()+cons_s,self.y_expression)
 
     def calc(self,x):
+        logger.info('calculating outputs')
         self.y = numpy.array([self.fy_expression(*(item.tolist()+self.cons_v)) for item in x]).squeeze()
+        logger.info('done calculating outputs')
         return self.y
 
     def plot_time(self,t=None):

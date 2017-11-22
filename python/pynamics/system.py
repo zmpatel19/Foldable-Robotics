@@ -10,6 +10,9 @@ import pynamics
 import numpy
 import scipy
 
+import logging
+logger = logging.getLogger('pynamics.system')
+
 def static_vars(**kwargs):
     def decorate(func):
         for k in kwargs:
@@ -124,6 +127,8 @@ class System(object):
             particle.addforcegravity(gravityvector)
 
     def getdynamics(self):
+        logger.info('getting dynamic equations')
+        
         for particle in self.particles:
             particle.adddynamics()
         for body in self.bodies:
@@ -159,6 +164,7 @@ class System(object):
         return var_dd
         
     def state_space_pre_invert(self,f,ma,inv_method = 'LU',constants = None):
+        logger.info('solving a = f/m and creating function')
         '''pre-invert A matrix'''
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
@@ -176,7 +182,7 @@ class System(object):
         @static_vars(ii=0)
         def func(state,time,*args):
             if func.ii%1000==0:
-                print(time)
+                logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
             
             try:
@@ -193,11 +199,14 @@ class System(object):
             x4 = x3.flatten().tolist()
             
             return x4
+        logger.info('done solving a = f/m and creating function')
 
         return func
 
     def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,constants = None):
         '''invert A matrix each call'''
+        logger.info('solving a = f/m and creating function')
+        
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
         
@@ -258,7 +267,7 @@ class System(object):
         @static_vars(ii=0)
         def func(state,time,*args):
             if func.ii%1000==0:
-                print(time)
+                logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
             
             try:
@@ -285,11 +294,13 @@ class System(object):
             x4 = x3.flatten().tolist()
             
             return x4
-            
+        logger.info('done solving a = f/m and creating function')
         return func        
 
     def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,constants = None):
         '''invert A matrix each call'''
+        logger.info('solving a = f/m and creating function')
+        
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
 
@@ -356,7 +367,7 @@ class System(object):
         @static_vars(ii=0)
         def func(state,time,*args):
             if func.ii%1000==0:
-                print(time)
+                logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
             
             try:
@@ -389,28 +400,31 @@ class System(object):
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
             return x4
+        logger.info('done solving a = f/m and creating function')
         return func       
 
     @staticmethod
     def assembleconstrained(eq_dyn,eq_con,q_dyn,q_con,method='LU'):
+        logger.info('solving constrained')
         AC1x_b1 = sympy.Matrix(eq_dyn)
         C2x_b2 = sympy.Matrix(eq_con)
-        print('Ax-b')
+        logger.info('solving Ax-b')
         
         q_dyn = sympy.Matrix(q_dyn)
         q_con = sympy.Matrix(q_con)
         x = q_dyn.col_join(q_con)
-        print('x,l')
+        logger.info('finding x, l')
         
         MASS = AC1x_b1.jacobian(q_dyn)
         C1 = AC1x_b1.jacobian(q_con)
         C2 = C2x_b2.jacobian(x)
         AA = sympy.Matrix.col_join(sympy.Matrix.row_join(MASS,C1),C2)
-        print('A,C1,C2')
+        logger.info('finding A,C1,C2')
         
         b1 = -AC1x_b1.subs(zip(x.T.tolist()[0],[0 for item in x]))
         b2 = -C2x_b2.subs(zip(x.T.tolist()[0],[0 for item in x]))
         b = b1.col_join(b2)
+        logger.info('finished solving constrained')
         return AA,b,x    
         
     @classmethod

@@ -13,13 +13,13 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
+import pynamics.integration
 
 #import sympy
 import numpy
-import scipy.integrate
 import matplotlib.pyplot as plt
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 lO = Constant(.5,'lO',system)
@@ -172,15 +172,9 @@ eq.append(qO-initialvalues[qO])
 eq_d= [system.derivative(item) for item in eq]
 eq_dd= [system.derivative(item) for item in eq_d]
 
-pynamics.tic()
-print('solving dynamics...')
 f,ma = system.getdynamics()
-print('creating second order function...')
 func1 = system.state_space_post_invert2(f,ma,eq_dd,eq_d,eq,constants = system.constant_values)
-print('integrating...')
-states=scipy.integrate.odeint(func1,ini,t,rtol=1e-3,atol=1e-3,args=({'constants':{},'alpha':1e2,'beta':1e1},))
-pynamics.toc()
-print('calculating outputs..')
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-3,atol=1e-3,args=({'constants':{},'alpha':1e2,'beta':1e1},))
 
 plt.plot()
 
@@ -225,7 +219,7 @@ ini[7:] = 0
 ini = list(ini)
 
 func1 = system.state_space_post_invert(f,ma,constants = system.constant_values)
-states2=scipy.integrate.odeint(func1,ini,numpy.r_[tinitial:tfinal:1/30],hmax = .01,rtol=1e-3,atol=1e-3,args=({'constants':{},'alpha':1e3,'beta':1e1},))
+states2=pynamics.integration.integrate_odeint(func1,ini,numpy.r_[tinitial:tfinal:1/30],hmax = .01,rtol=1e-3,atol=1e-3,args=({'constants':{},'alpha':1e3,'beta':1e1},))
 y = points.calc(states2)
 y = y.reshape((-1,6,2))
 plt.figure()

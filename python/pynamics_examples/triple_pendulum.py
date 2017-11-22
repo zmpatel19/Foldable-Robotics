@@ -13,13 +13,13 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
+import pynamics.integration
 
 #import sympy
 import numpy
-import scipy.integrate
 import matplotlib.pyplot as plt
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 global_q = False
@@ -129,16 +129,10 @@ eq_d=[(system.derivative(item)) for item in eq]
 eq_dd=[(system.derivative(item)) for item in eq_d]
 
 
-pynamics.tic()
-print('solving dynamics...')
 f,ma = system.getdynamics()
-print('creating second order function...')
 #func1 = system.state_space_post_invert(f,ma)
 func1 = system.state_space_post_invert(f,ma,eq_dd)
-print('integrating...')
-states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
-pynamics.toc()
-print('calculating outputs..')
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 
 KE = system.get_KE()
 PE = system.getPEGravity(pNA) - system.getPESprings()
@@ -158,7 +152,6 @@ plt.axis('equal')
 
 energy_output = Output([KE-PE],system)
 energy_output.calc(states)
-pynamics.toc()
 
 plt.figure()
 plt.plot(energy_output.y)

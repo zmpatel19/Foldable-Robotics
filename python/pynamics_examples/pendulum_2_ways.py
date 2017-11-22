@@ -13,13 +13,13 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
+import pynamics.integration
 
 import sympy
 import numpy
-import scipy.integrate
 import matplotlib.pyplot as plt
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 lA = Constant(1,'lA',system)
@@ -81,15 +81,9 @@ eq1 = [(v.dot(v)) - lA**2]
 eq1_dd=system.derivative(system.derivative(eq1[0]))
 eq = [eq1_dd]
 
-pynamics.tic()
-print('solving dynamics...')
 f,ma = system.getdynamics()
-print('creating second order function...')
 func = system.state_space_post_invert(f,ma,eq)
-print('integrating...')
-states=scipy.integrate.odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
-pynamics.toc()
-print('calculating outputs..')
+states=pynamics.integration.integrate_odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 
 points = [pNA,pAB,pNA,pNA2,pAB2]
 points_output = PointsOutput(points,system)

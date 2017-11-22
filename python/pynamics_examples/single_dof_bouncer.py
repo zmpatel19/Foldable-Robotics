@@ -14,13 +14,13 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
+import pynamics.integration
 
 #import sympy
 import numpy
-import scipy.integrate
 import matplotlib.pyplot as plt
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 mA = Constant(1,'mA',system)
@@ -71,22 +71,15 @@ system.addforcegravity(-g*N.y)
 x1 = ParticleA.pCM.dot(N.x)
 y1 = ParticleA.pCM.dot(N.y)
     
-pynamics.tic()
-print('solving dynamics...')
 f,ma = system.getdynamics()
-print('creating second order function...')
 func1 = system.state_space_post_invert(f,ma)
-print('integrating...')
-states=scipy.integrate.odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
-pynamics.toc()
-print('calculating outputs..')
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 
 KE = system.get_KE()
 PE = system.getPEGravity(pNA)-system.getPESprings()
 
 output = Output([x1,y1,KE-PE,x,y],system)
 y = output.calc(states)
-pynamics.toc()
 
 plt.figure(1)
 plt.plot(y[:,0],y[:,1])

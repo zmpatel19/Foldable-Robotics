@@ -15,6 +15,24 @@ import sys
 ZERO = sympy.Number(0)
 dimension = 3
 script_mode = True
+
+import logging
+logger = logging.getLogger('pynamics')
+logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+if not logger.handlers:
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    
+    fh = logging.FileHandler('pynamics.log')
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+
 systemname = '_system'
 
 def PynamicsObject(object):
@@ -40,6 +58,6 @@ def tic():
     global time0
     time0 = time.time()
 def toc():
-    print(time.time()-time0)
+    logger.info(str(time.time()-time0))
 
 #t = sympy.Symbol('t')

@@ -20,7 +20,7 @@ import numpy
 import scipy.integrate
 import matplotlib.pyplot as plt
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 lA = Constant('lA',1,system)

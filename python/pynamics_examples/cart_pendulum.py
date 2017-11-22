@@ -13,13 +13,13 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
+import pynamics.integration
 
 #import sympy
 import numpy
-import scipy.integrate
 import matplotlib.pyplot as plt
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 l = Constant(.5,'l',system)
@@ -83,16 +83,10 @@ eq = []
 eq_d= [system.derivative(item) for item in eq]
 eq_dd= [system.derivative(item) for item in eq_d]
 
-pynamics.tic()
-print('solving dynamics...')
 f,ma = system.getdynamics()
-print('creating second order function...')
 #func1 = system.state_space_pre_invert(f,ma,constants = system.constant_values)
 func1 = system.state_space_post_invert(f,ma,eq_dd,constants = system.constant_values)
-print('integrating...')
-states=scipy.integrate.odeint(func1,ini,t,rtol=1e-3,atol=1e-3,args=({'constants':{},'alpha':1e2,'beta':1e1},))
-pynamics.toc()
-print('calculating outputs..')
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-3,atol=1e-3,args=({'constants':{},'alpha':1e2,'beta':1e1},))
 
 # =============================================================================
 KE = system.get_KE()
