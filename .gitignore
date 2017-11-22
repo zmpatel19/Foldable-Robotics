@@ -8,3 +8,4 @@ python/pynamics/examples/render*
 /dist/pynamics-0.0.1-py2.py3-none-any.whl
 /pynamics.egg-info/*
 /dist/*
+/python/pynamics_examples/pynamics.log
