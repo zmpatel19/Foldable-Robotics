@@ -117,4 +117,21 @@ def integrate_odeint(*arguments,**keyword_arguments):
     result = scipy.integrate.odeint(*arguments,**keyword_arguments)
     logger.info('finished integration')
     return result
-    
+#TODO: fix    
+def build_step(M_inv_f):
+    def step(y,t):
+        y_d = M_inv_f(*y,t)
+        return y_d  
+    return step
+#TODO: fix    
+def integrate_newton(step, y0, t, args=()):
+    y = []
+    y.append(y0)
+    dt = t[1:] - t[:-1]
+    for t_ii,dt_ii in zip(t,dt):
+        y_d = step(y[-1],t_ii,args)
+        y_d = y_d.flatten().tolist()
+        y_next = y_d*dt_ii
+        y.append(y_next)
+    y = numpy.array(y)    
+    return y

@@ -101,6 +101,8 @@ eq.append(eq0.dot(N.x))
 eq.append(eq0.dot(N.y))
 eq.append(eq0.dot(N.z))
 
+eq_dd = [system.derivative(item) for item in eq]
+
 import sympy
 ind = sympy.Matrix([wx,wy,wz])
 dep = sympy.Matrix([qA_d,qB_d,qC_d])
@@ -123,7 +125,7 @@ points = [0*N.x,pCcm]
 ang = [wNC.dot(C.x),wNC.dot(C.y),wNC.dot(C.z)]
 
 f,ma = system.getdynamics()
-func1 = system.state_space_post_invert(f,ma)
+func1 = system.state_space_post_invert(f,ma,eq_dd)
 states=pynamics.integration.integrate_odeint(func1,ini,t, args=({'constants':system.constant_values},))
 
 output = Output(ang,system)

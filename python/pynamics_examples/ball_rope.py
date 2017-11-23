@@ -67,8 +67,7 @@ u = (v.dot(v))**.5
 
 eq1 = [(v.dot(v)) - lA**2]
 eq1_d=[system.derivative(item) for item in eq1]
-eq1_dd=[system.derivative(system.derivative(item)) for item in eq1]
-eq = eq1_dd
+eq1_dd=[system.derivative(item) for item in eq1_d]
 #
 a=[(v.dot(v)) - lA**2]
 #a=[1]
