@@ -73,8 +73,8 @@ initialvalues[wz_d]=0
 #initialvalues[z]=0
 #initialvalues[z_d]=0
 
-statevariables = system.get_state_variables()
-ini = [initialvalues[item] for item in statevariables]
+#statevariables = system.get_state_variables()
+ini = [initialvalues[item] for item in [wx,wy,wz]]
 
 Frame('N')
 Frame('A')
@@ -124,8 +124,8 @@ points = [0*N.x,pCcm]
 
 ang = [wNC.dot(C.x),wNC.dot(C.y),wNC.dot(C.z)]
 
-f,ma = system.getdynamics()
-func1 = system.state_space_post_invert(f,ma,eq_dd)
+f,ma = system.getdynamics([wx,wy,wz])
+func1 = system.state_space_post_invert(f,ma,eq_dd,q_acceleration = [wx_d,wy_d,wz_d], q_speed = [wx,wy,wz], q_position = [q_A,q_B,q_C])
 states=pynamics.integration.integrate_odeint(func1,ini,t, args=({'constants':system.constant_values},))
 
 output = Output(ang,system)
