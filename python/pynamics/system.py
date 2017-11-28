@@ -163,15 +163,17 @@ class System(object):
         var_dd = A.solve(b,method = inv_method)
         return var_dd
         
-    def state_space_pre_invert(self,f,ma,inv_method = 'LU',constants = None):
+    def state_space_pre_invert(self,f,ma,inv_method = 'LU',constants = None,q_acceleration = None, q_speed = None, q_position = None):
         logger.info('solving a = f/m and creating function')
         '''pre-invert A matrix'''
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
 
-        q_state = self.get_state_variables()
-        q_d = self.get_q(1)
-        q_dd = self.get_q(2)
+        q = q_position or self.get_q(0)
+        q_d = q_speed or self.get_q(1)
+        q_dd = q_acceleration or self.get_q(2)
+        q_state = q+q_d
+        
 
         var_dd =self.solve_f_ma(f,ma,q_dd,inv_method,constants)
         state_full = q_state+remaining_constant_keys+[self.t]
@@ -203,18 +205,18 @@ class System(object):
 
         return func
 
-    def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,constants = None):
+    def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,constants = None,q_acceleration = None, q_speed = None, q_position = None):
         '''invert A matrix each call'''
         logger.info('solving a = f/m and creating function')
         
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
         
-        q_state = self.get_state_variables()
-
-        q_d = self.get_q(1)
-        q_dd = self.get_q(2)
-
+        q = q_position or self.get_q(0)
+        q_d = q_speed or self.get_q(1)
+        q_dd = q_acceleration or self.get_q(2)
+        q_state = q+q_d
+        
         if not not eq_dd:
             eq_active = eq_active or [1]*len(eq_dd)
         else:
@@ -297,18 +299,18 @@ class System(object):
         logger.info('done solving a = f/m and creating function')
         return func        
 
-    def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,constants = None):
+    def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,constants = None,q_acceleration = None, q_speed = None, q_position = None):
         '''invert A matrix each call'''
         logger.info('solving a = f/m and creating function')
         
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
 
-        q_state = self.get_state_variables()
-
-        q_d = self.get_q(1)
-        q_dd = self.get_q(2)
-
+        q = q_position or self.get_q(0)
+        q_d = q_speed or self.get_q(1)
+        q_dd = q_acceleration or self.get_q(2)
+        q_state = q+q_d
+        
         if not not eq_dd:
             eq_active = eq_active or [1]*len(eq_dd)
         else:
