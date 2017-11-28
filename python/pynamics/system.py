@@ -126,7 +126,7 @@ class System(object):
         for particle in self.particles:
             particle.addforcegravity(gravityvector)
 
-    def getdynamics(self):
+    def getdynamics(self,q_speed = None):
         logger.info('getting dynamic equations')
         
         for particle in self.particles:
@@ -134,7 +134,7 @@ class System(object):
         for body in self.bodies:
             body.adddynamics()
 
-        q_d = self.get_q(1)
+        q_d = q_speed or self.get_q(1)
         generalizedforce=self.generalize(self.forces,q_d)
         generalizedeffectiveforce=self.generalize(self.effectiveforces,q_d)
         return generalizedforce,generalizedeffectiveforce
