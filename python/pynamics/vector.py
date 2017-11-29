@@ -90,6 +90,16 @@ class Vector(object):
 #        result = self.product_by_basis_vectors(other,result,'cross',self.frame_cross)
         result.clean()
         return result
+    
+    def length(self):
+        return (self.dot(self))**.5
+    
+    def simplify(self):
+        newvec = Vector()
+        newvec.components = self.components.copy()
+        for frame,vector in newvec.components.items():
+            vector.simplify()
+        return newvec
         
     @staticmethod
     def frame_dot(v1,v2,frame):

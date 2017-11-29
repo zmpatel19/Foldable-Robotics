@@ -10,3 +10,4 @@ python/pynamics/examples/render*
 /dist/*
 /python/pynamics_examples/pynamics.log
 /python/pynamics_examples/in_development/pynamics.log
+/python/pynamics/pynamics.log
