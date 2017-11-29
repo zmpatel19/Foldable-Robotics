@@ -3,6 +3,7 @@
 Spyder Editor
 
 This is a temporary script file.
+confirmed against:https://www.ee.usyd.edu.au/tutorials_online/matlab/examples/motor/motor.html
 """
 
 import pynamics
