@@ -10,6 +10,9 @@ import pynamics
 import numpy
 import scipy
 
+import logging
+logger = logging.getLogger('pynamics.system')
+
 def static_vars(**kwargs):
     def decorate(func):
         for k in kwargs:
@@ -35,7 +38,7 @@ class System(object):
         self.t = sympy.Symbol('t')
         self.ini = {}
         self.error_tolerance = 1e-16
-        pynamics.addself(self,pynamics.systemname)
+        pynamics.addself(self,pynamics.systemname,override = True)
 
     def set_ini(self,name,val):
         self.ini[name]=val
@@ -68,9 +71,15 @@ class System(object):
     def addforce(self,force,velocity):
         self.forces.append((force,velocity))
 
-    def add_spring_force(self,k,stretch,velocity):
+    def add_spring_force1(self,k,stretch,velocity):
         force = -k*stretch
         self.forces.append((force,velocity))
+        self.springs.append((k,stretch))
+
+    def add_spring_force2(self,k,stretch,v1,v2):
+        force = -k*stretch
+        self.forces.append((force,v1))
+        self.forces.append((-force,v2))
         self.springs.append((k,stretch))
 
     def addeffectiveforce(self,effectiveforce,velocity):
@@ -102,7 +111,7 @@ class System(object):
             if body.gravityvector is not None:
                 d = body.pCM - point
                 F = body.forcegravity
-                PE +=F.dot(d)
+                PE += F.dot(d)
         return PE
 
     def getPESprings(self):
@@ -117,13 +126,15 @@ class System(object):
         for particle in self.particles:
             particle.addforcegravity(gravityvector)
 
-    def getdynamics(self):
+    def getdynamics(self,q_speed = None):
+        logger.info('getting dynamic equations')
+        
         for particle in self.particles:
             particle.adddynamics()
         for body in self.bodies:
             body.adddynamics()
 
-        q_d = self.get_q(1)
+        q_d = q_speed or self.get_q(1)
         generalizedforce=self.generalize(self.forces,q_d)
         generalizedeffectiveforce=self.generalize(self.effectiveforces,q_d)
         return generalizedforce,generalizedeffectiveforce
@@ -137,70 +148,77 @@ class System(object):
             generalized.append(new)
         return generalized
         
-# =============================================================================
-# TODO: fix this!  It doesn't produce the right answer now.    
-#     def state_space_pre_invert(self,f,ma,inv_method = 'LU',auto_z= False):
-#         '''pre-invert A matrix'''
-#         
-#         q_state = self.get_state_variables()
-# 
-#         q_d = self.get_q(1)
-#         q_dd = self.get_q(2)
-#         
-#         f = sympy.Matrix(f)
-#         ma = sympy.Matrix(ma)
-#         
-#         Ax_b = ma-f
-#         Ax_b = Ax_b.subs(self.constant_values)
-#         A = Ax_b.jacobian(q_dd)
-#         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
-# 
-#         if auto_z:
-#             def func1(x):
-#                 if x!=pynamics.ZERO:
-#                     return self.generatez(x)
-#                 else:
-#                     return x
-#             AA = A.applyfunc(func1)
-#             AA_inv = AA.inv(method = inv_method)
-#             keys = self.replacements.keys()+[self.t]
-# 
-#             fAA_inv = sympy.lambdify(keys,AA_inv)
-#             A_inv = fAA_inv(*[self.replacements[key] for key in keys])
-# 
-#         else:
-#             A_inv = A.inv(method=inv_method)
-#         var_dd = A_inv*b 
-#         
-#         functions = [sympy.lambdify(q_state,rhs) for rhs in var_dd]
-#         indeces = [q_state.index(element) for element in q_d]
-#         
-#         @static_vars(ii=0)
-#         def func(state,time):
-#             if func.ii%100==0:
-#                 print(time)
-#             func.ii+=1
-#             
-#             x1 = [state[ii] for ii in indeces]
-#             x2 = [f(*(state+[time])) for f in functions]
-#             x3 = numpy.r_[x1,x2]
-#             x4 = x3.flatten().tolist()
-# 
-#             return x4
-# 
-#         return func
-# =============================================================================
+    
+    def solve_f_ma(self,f,ma,q_dd,inv_method = 'LU',constants = None):
+        constants = constants or {}
+        
+        f = sympy.Matrix(f)
+        ma = sympy.Matrix(ma)
+        
+        Ax_b = ma-f
+        Ax_b = Ax_b.subs(constants)
+        A = Ax_b.jacobian(q_dd)
+        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
-    def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,constants = None):
+        var_dd = A.solve(b,method = inv_method)
+        return var_dd
+        
+    def state_space_pre_invert(self,f,ma,inv_method = 'LU',constants = None,q_acceleration = None, q_speed = None, q_position = None):
+        logger.info('solving a = f/m and creating function')
+        '''pre-invert A matrix'''
+        constants = constants or {}
+        remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
+
+        q = q_position or self.get_q(0)
+        q_d = q_speed or self.get_q(1)
+        q_dd = q_acceleration or self.get_q(2)
+        q_state = q+q_d
+        
+
+        var_dd =self.solve_f_ma(f,ma,q_dd,inv_method,constants)
+        state_full = q_state+remaining_constant_keys+[self.t]
+        
+        f_var_dd = sympy.lambdify(state_full,var_dd)
+
+        position_derivatives = [self.derivative(item) for item in q]
+        indeces = [q_state.index(element) for element in position_derivatives]
+        
+        @static_vars(ii=0)
+        def func(state,time,*args):
+            if func.ii%1000==0:
+                logger.info('integration at time {0:07.2f}'.format(time))
+            func.ii+=1
+            
+            try:
+                kwargs = args[0]
+            except IndexError:
+                kwargs = {}
+
+            constant_values = [kwargs['constants'][item] for item in remaining_constant_keys]
+            state_i_full = list(state)+constant_values+[time]
+            
+            x1 = [state[ii] for ii in indeces]
+            x2 = numpy.array(f_var_dd(*(state_i_full))).flatten()
+            x3 = numpy.r_[x1,x2]
+            x4 = x3.flatten().tolist()
+            
+            return x4
+        logger.info('done solving a = f/m and creating function')
+
+        return func
+
+    def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,constants = None,q_acceleration = None, q_speed = None, q_position = None):
         '''invert A matrix each call'''
+        logger.info('solving a = f/m and creating function')
+        
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
         
-        q_state = self.get_state_variables()
-
-        q_d = self.get_q(1)
-        q_dd = self.get_q(2)
-
+        q = q_position or self.get_q(0)
+        q_d = q_speed or self.get_q(1)
+        q_dd = q_acceleration or self.get_q(2)
+        q_state = q+q_d
+        
         if not not eq_dd:
             eq_active = eq_active or [1]*len(eq_dd)
         else:
@@ -221,7 +239,7 @@ class System(object):
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
-        m = len(q_d)
+        m = len(q_dd)
     
         if not eq_dd:
             A_full = A
@@ -248,12 +266,13 @@ class System(object):
         fb = sympy.lambdify(state_full,b_full)
         factive = sympy.lambdify(state_full,eq_active)
 
-        indeces = [q_state.index(element) for element in q_d]
+        position_derivatives = [self.derivative(item) for item in q]
+        indeces = [q_state.index(element) for element in position_derivatives]
     
         @static_vars(ii=0)
         def func(state,time,*args):
             if func.ii%1000==0:
-                print(time)
+                logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
             
             try:
@@ -280,19 +299,21 @@ class System(object):
             x4 = x3.flatten().tolist()
             
             return x4
-            
+        logger.info('done solving a = f/m and creating function')
         return func        
 
-    def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,constants = None):
+    def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,constants = None,q_acceleration = None, q_speed = None, q_position = None):
         '''invert A matrix each call'''
+        logger.info('solving a = f/m and creating function')
+        
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
 
-        q_state = self.get_state_variables()
-
-        q_d = self.get_q(1)
-        q_dd = self.get_q(2)
-
+        q = q_position or self.get_q(0)
+        q_d = q_speed or self.get_q(1)
+        q_dd = q_acceleration or self.get_q(2)
+        q_state = q+q_d
+        
         if not not eq_dd:
             eq_active = eq_active or [1]*len(eq_dd)
         else:
@@ -317,7 +338,7 @@ class System(object):
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
-        m = len(q_d)
+        m = len(q_dd)
 
         if not eq_dd:
             A_full = A
@@ -346,12 +367,13 @@ class System(object):
         feq_d = sympy.lambdify(state_full,eq_d)
         factive = sympy.lambdify(state_full,eq_active)
 
-        indeces = [q_state.index(element) for element in q_d]
+        position_derivatives = [self.derivative(item) for item in q]
+        indeces = [q_state.index(element) for element in position_derivatives]
     
         @static_vars(ii=0)
         def func(state,time,*args):
             if func.ii%1000==0:
-                print(time)
+                logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
             
             try:
@@ -384,28 +406,31 @@ class System(object):
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
             return x4
+        logger.info('done solving a = f/m and creating function')
         return func       
 
     @staticmethod
     def assembleconstrained(eq_dyn,eq_con,q_dyn,q_con,method='LU'):
+        logger.info('solving constrained')
         AC1x_b1 = sympy.Matrix(eq_dyn)
         C2x_b2 = sympy.Matrix(eq_con)
-        print('Ax-b')
+        logger.info('solving Ax-b')
         
         q_dyn = sympy.Matrix(q_dyn)
         q_con = sympy.Matrix(q_con)
         x = q_dyn.col_join(q_con)
-        print('x,l')
+        logger.info('finding x, l')
         
         MASS = AC1x_b1.jacobian(q_dyn)
         C1 = AC1x_b1.jacobian(q_con)
         C2 = C2x_b2.jacobian(x)
         AA = sympy.Matrix.col_join(sympy.Matrix.row_join(MASS,C1),C2)
-        print('A,C1,C2')
+        logger.info('finding A,C1,C2')
         
         b1 = -AC1x_b1.subs(zip(x.T.tolist()[0],[0 for item in x]))
         b2 = -C2x_b2.subs(zip(x.T.tolist()[0],[0 for item in x]))
         b = b1.col_join(b2)
+        logger.info('finished solving constrained')
         return AA,b,x    
         
     @classmethod

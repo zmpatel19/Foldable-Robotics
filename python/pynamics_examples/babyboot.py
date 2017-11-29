@@ -13,13 +13,13 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
+import pynamics.integration
 
 #import sympy
 import numpy
-import scipy.integrate
 import matplotlib.pyplot as plt
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 error = 1e-12
@@ -90,8 +90,6 @@ y1 = BodyA.pCM.dot(N.y)
 x2 = BodyB.pCM.dot(N.x)
 y2 = BodyB.pCM.dot(N.y)
     
-pynamics.tic()
-print('solving dynamics...')
 f,ma = system.getdynamics()
 
 #import sympy
@@ -102,19 +100,14 @@ f,ma = system.getdynamics()
 #qbdd = sol[qB_dd]
 #
 #(Ixx_B*qA_d*qB_d*sin(2*qB) - Iyy_B*qA_d*qB_d*sin(2*qB) - g*lA*mA*sin(qA) - g*lB*mB*sin(qA))/(Ixx_A - Ixx_B*sin(qB)**2 + Ixx_B + Iyy_B*sin(qB)**2 + lA**2*mA + lB**2*mB)
-print('creating second order function...')
 func1 = system.state_space_post_invert(f,ma)
-print('integrating...')
-states=scipy.integrate.odeint(func1,ini,t,rtol=error,atol=error, args=({'constants':system.constant_values},))
-pynamics.toc()
-print('calculating outputs..')
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=error,atol=error, args=({'constants':system.constant_values},))
 
 KE = system.get_KE()
 PE = system.getPEGravity(pNA) - system.getPESprings()
 
 output = Output([x1,y1,x2,y2,KE-PE,qA,qB],system)
 y = output.calc(states)
-pynamics.toc()
 
 plt.figure(1)
 plt.plot(y[:,0],y[:,1])

@@ -13,16 +13,15 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
-
+import pynamics.integration
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 import sympy
 import numpy
-import scipy.integrate
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 mp1 = Constant(1,'mp1')
@@ -58,7 +57,7 @@ body1 = Body('body1',f4,p1,mp1,Dyadic.build(f4,1,1,1),system = None)
 
 #system.addforce(-b*v1,v1)
 system.addforcegravity(-g*f1.z)
-#system.add_spring_force(k,(q1)*f1.z,wNA) 
+#system.add_spring_force1(k,(q1)*f1.z,wNA) 
 
 points = [particle1.pCM]
 
@@ -73,7 +72,7 @@ output_z = Output(points_z)
 f,ma = system.getdynamics()
 func = system.state_space_post_invert(f,ma)
 t = numpy.r_[0:5:.001]
-states=scipy.integrate.odeint(func,system.get_ini(),t,atol=1e-5,rtol = 1e-5, args=({'constants':system.constant_values},))
+states=pynamics.integration.integrate_odeint(func,system.get_ini(),t,atol=1e-5,rtol = 1e-5, args=({'constants':system.constant_values},))
 x = output_x.calc(states)
 y = output_y.calc(states)
 z = output_z.calc(states)

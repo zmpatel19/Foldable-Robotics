@@ -90,6 +90,16 @@ class Vector(object):
 #        result = self.product_by_basis_vectors(other,result,'cross',self.frame_cross)
         result.clean()
         return result
+    
+    def length(self):
+        return (self.dot(self))**.5
+    
+    def simplify(self):
+        newvec = Vector()
+        newvec.components = self.components.copy()
+        for frame,vector in newvec.components.items():
+            vector.simplify()
+        return newvec
         
     @staticmethod
     def frame_dot(v1,v2,frame):
@@ -206,17 +216,15 @@ class Vector(object):
 #        result.clean()
         return result
 
-    def time_derivative(self,frame,sys=None):
-        return self.diff_in_parts(frame,sys)
-        
-    def diff_in_parts(self,other,sys=None):    
+    def time_derivative(self,reference_frame = None,sys=None):    
         sys = sys or pynamics.get_system()
-
+        reference_frame = reference_frame  or sys.newtonian
+        
         result = Vector()
         for frame,vector in self.components.items():
             result+= Vector({frame:sys.derivative(vector)})
             v1 = Vector({frame:vector})
-            w_ = other.getw_(frame).express(frame)
+            w_ = reference_frame.getw_(frame).express(frame)
             result+=w_.cross(v1,frame = 'mid')
         result.clean()
         return result

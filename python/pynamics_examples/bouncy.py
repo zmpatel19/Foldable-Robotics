@@ -13,13 +13,13 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
+import pynamics.integration
 
 import sympy
 import numpy
-import scipy.integrate
 import matplotlib.pyplot as plt
 plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 error = 1e-4
@@ -75,7 +75,7 @@ stretch = l - l0
 ul_ = l_*((l+error_tol)**-1)
 vl = l_.time_derivative(N,system)
 
-system.add_spring_force(k,stretch*ul_,vl)
+system.add_spring_force1(k,stretch*ul_,vl)
 #system.addforce(-k*stretch*ul_,vpm1)
 #system.addforce(k*stretch*ul_,vpm2)
 
@@ -105,17 +105,11 @@ b = [(item+abs(item)) for item in a]
 x1 = Particle1.pCM.dot(N.y)
 x2 = Particle2.pCM.dot(N.y)
 
-pynamics.tic()
-print('solving dynamics...')
 f,ma = system.getdynamics()
-print('creating second order function...')
 #func = system.state_space_post_invert(f,ma,eq)
 func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = b)
-print('integrating...')
-states=scipy.integrate.odeint(func,ini,t,rtol = error, atol = error, args=({'alpha':alpha,'beta':beta, 'constants':system.constant_values},),full_output = 1,mxstep = int(1e5))
+states=pynamics.integration.integrate_odeint(func,ini,t,rtol = error, atol = error, args=({'alpha':alpha,'beta':beta, 'constants':system.constant_values},),full_output = 1,mxstep = int(1e5))
 states = states[0]
-pynamics.toc()
-print('calculating outputs..')
 
 KE = system.get_KE()
 PE = system.getPEGravity(pNA) - system.getPESprings()

@@ -6,7 +6,7 @@ Email: danaukes<at>gmail.com
 Please see LICENSE for full license.
 """
 
-from sympy import pi
+from math import pi
 #import sympy
 from danamics import *
 #import matplotlib.pyplot as plt

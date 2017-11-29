@@ -15,6 +15,7 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
+import pynamics.integration
 
 import matplotlib.pyplot as plt
 plt.ion()
@@ -22,10 +23,9 @@ from mpl_toolkits.mplot3d import Axes3D
 
 #import sympy
 import numpy
-import scipy.integrate
 #import matplotlib.pyplot as plt
 #plt.ion()
-from sympy import pi
+from math import pi
 system = System()
 
 from math import pi,sin,cos
@@ -158,11 +158,11 @@ system.addforce(-b*wB2,wB2)
 
 ################################################
 #Add spring forces to two joints
-system.add_spring_force(k,(qA1-pi/180*45)*A1.x,wA1) 
-#system.add_spring_force(k,(qA2)*A2.x,wA2) 
-#system.add_spring_force(k,(qA3)*A3.x,wA3) 
-system.add_spring_force(k,(qB1+pi/180*45)*B1.x,wB1) 
-#system.add_spring_force(k,(qB2)*B2.x,wB2) 
+system.add_spring_force1(k,(qA1-pi/180*45)*A1.x,wA1) 
+#system.add_spring_force1(k,(qA2)*A2.x,wA2) 
+#system.add_spring_force1(k,(qA3)*A3.x,wA3) 
+system.add_spring_force1(k,(qB1+pi/180*45)*B1.x,wB1) 
+#system.add_spring_force1(k,(qB2)*B2.x,wB2) 
 
 ################################################
 #Add gravity
@@ -210,31 +210,22 @@ eq = eq1_dd
     
 ################################################
 #solve equations
-pynamics.tic()
-print('solving dynamics...')
-
 ################################################
 #This is F and MA
 f,ma = system.getdynamics()
-print('creating second order function...')
 #func1 = system.state_space_post_invert(f,ma,eq1_dd)
-
 ################################################
 #this is the function you integrate
 func1 = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
 
-print('integrating...')
-#states=scipy.integrate.odeint(func1,ini,t,rtol=1e-5,atol=1e-5)
-states=scipy.integrate.odeint(func1,ini,t,rtol=1e-5,atol=1e-5,args=({'alpha':1e4,'beta':1e2,'constants':system.constant_values},))
-pynamics.toc()
-print('calculating outputs..')
+#states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-5,atol=1e-5)
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-5,atol=1e-5,args=({'alpha':1e4,'beta':1e2,'constants':system.constant_values},))
 
 KE = system.get_KE()
 PE = system.getPEGravity(pNO) - system.getPESprings()
 
 output = Output([KE-PE],system)
 y = output.calc(states)
-pynamics.toc()
 
 plt.figure()
 plt.plot(y[:])
