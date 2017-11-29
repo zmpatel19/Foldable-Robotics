@@ -141,7 +141,7 @@ speeds = Output(system.get_q(1), constant_values = constants)
 speeds.calc(states)
 speeds.plot_time()
 
-y= Output([qB_d])
+y= Output([G*qB_d], constant_values=constants)
 y.calc(states)
 y.plot_time()
 
