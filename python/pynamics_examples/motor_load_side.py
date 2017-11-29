@@ -21,6 +21,11 @@ import numpy
 import matplotlib.pyplot as plt
 plt.ion()
 from math import pi
+
+def add_motor_dynamics():
+    pass
+
+
 system = System()
 
 L = Constant(name='L',system=system)
@@ -45,6 +50,7 @@ t = numpy.r_[tinitial:tfinal:tstep]
 qB,qB_d,qB_dd = Differentiable('qB',system)
 #wB,wB_d= Differentiable('wB',ii=1,limit=3,system=system)
 i,i_d= Differentiable('i',ii=1,system=system)
+
 
 constants = {}
 constants[L] = .5
@@ -73,8 +79,9 @@ statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')
-A = Frame('A')
+#A = Frame('A')
 B = Frame('B')
+M = Frame('M')
 
 system.set_newtonian(N)
 #A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
@@ -93,6 +100,8 @@ I_load = Dyadic.build(B,Il,Il,Il)
 
 #Motor = Body('Motor',A,pO,0,I_motor,system)
 Motor = Body('Motor',B,pO,0,I_motor,system,wNBody = wNA,alNBody = aNA)
+Inductor = Particle(0*M.x,L,name='Inductor',vCM = i*M.x,aCM = i_d*M.x)
+
 #Load = Body('Load',B,pO,0,I_load,system,wNBody = wNB,alNBody = aNB)
 Load = Body('Load',B,pO,m,I_load,system)
 
@@ -101,6 +110,7 @@ T = kt*i
 system.addforce(T*N.z,wNA)
 system.addforce(-b*wNA,wNA)
 system.addforce(-Tl*B.z,wNB)
+system.addforce((V-i*R - kv*G*qB_d)*M.x,i*M.x)
 eq_d = []
 #eq_d = [N.getw_(A).dot(N.z) - G*wB]
 #eq_d = [N.getw_(A).dot(N.z) - G*N.getw_(B).dot(N.z)]
@@ -116,10 +126,11 @@ eq_dd= [system.derivative(item) for item in eq_d]
 #B = EQ.jacobian(dep)
 #dep2 = sympy.simplify(B.solve(-(A),method = 'LU'))
 
-f,ma = system.getdynamics([qB_d])
+f,ma = system.getdynamics()
+#f,ma = system.getdynamics([qB_d])
 #f,ma = system.getdynamics([qA_d,wB])
-f.append(V-i*R - kv*G*qB_d)
-ma.append(L*i_d )
+#f.append(V-i*R - kv*G*qB_d)
+#ma.append(L*i_d )
 res = system.solve_f_ma(f,ma,system.get_q(2))
 #func1 = system.state_space_pre_invert(f,ma,constants = system.constant_values)
 func1 = system.state_space_post_invert(f,ma,eq_dd)
