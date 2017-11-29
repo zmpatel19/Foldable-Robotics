@@ -28,14 +28,12 @@ R = Constant(name='R',system=system)
 Im = Constant(name='Im',system=system)
 Il = Constant(name='Il',system=system)
 G = Constant(name='G',system=system)
-m = Constant(name='m',system=system)
 b = Constant(name='b',system=system)
-
-g = Constant(name='g',system=system)
-
 kv = Constant(name='kv',system=system)
 kt = Constant(name='kt',system=system)
 Tl = Constant(name='Tl',system=system)
+m = Constant(name='m',system=system)
+g = Constant(name='g',system=system)
 
 tinitial = 0
 tfinal = 10
@@ -48,18 +46,18 @@ wB,wB_d= Differentiable('wB',ii=1,limit=3,system=system)
 a,a_d,a_dd= Differentiable('a',system=system)
 
 constants = {}
-constants[L] = 1
-constants[V] = 1
+constants[L] = .5
+constants[V] = 12
 constants[R] = 1
-constants[G] = 2
-constants[Im] = 1
-constants[Il] = 1
-constants[m] = 1
+constants[G] = 1
+constants[Im] = .01
+constants[Il] = 0
 constants[b] = .1
+constants[kv] = .01
+constants[kt] = .01
+constants[Tl] = .001
+constants[m] = 1
 constants[g] = 9.81
-constants[kv] = 1
-constants[kt] = 1
-constants[Tl] = 1
 
 initialvalues = {}
 initialvalues[qA]=0*pi/180
@@ -89,15 +87,15 @@ aNB = wB_d*B.z
 I_motor = Dyadic.build(A,Im,Im,Im)
 I_load = Dyadic.build(B,Il,Il,Il)
 
-Motor = Body('Motor',A,pO,m,I_motor,system)
-Load = Body('Load',B,pO,m,I_load,system,wNBody = wNB,alNBody = aNB)
+Motor = Body('Motor',A,pO,0,I_motor,system)
+Load = Body('Load',B,pO,0,I_load,system,wNBody = wNB,alNBody = aNB)
 #Load = Body('Load',B,pO,m,I_load,system)
 
 #T = kt*(V/R)-kv*qA_d
 T = kt*a_d
 system.addforce(T*N.z,wNA)
 system.addforce(-b*wNA,wNA)
-system.addforce(Tl*B.z,wNB)
+system.addforce(-Tl*B.z,wNB)
 eq_d = [N.getw_(A).dot(N.z) - G*wB]
 #eq_d = [N.getw_(A).dot(N.z) - G*N.getw_(B).dot(N.z)]
 eq_dd= [system.derivative(item) for item in eq_d]
@@ -115,7 +113,7 @@ dep2 = sympy.simplify(B.solve(-(A),method = 'LU'))
 f,ma = system.getdynamics([qA_d,wB])
 f.append(V-a_d*R - kv*qA_d)
 ma.append(L*a_dd )
-#res = system.solve_f_ma(f,ma,system.get_q(2))
+res = system.solve_f_ma(f,ma,system.get_q(2))
 #func1 = system.state_space_pre_invert(f,ma,constants = system.constant_values)
 func1 = system.state_space_post_invert(f,ma,eq_dd)
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-3,atol=1e-3,args=({'constants':constants,'alpha':1e2,'beta':1e1},))
@@ -135,3 +133,8 @@ positions.plot_time()
 speeds = Output(system.get_q(1), constant_values = constants)
 speeds.calc(states)
 speeds.plot_time()
+
+y= Output([qA_d])
+y.calc(states)
+y.plot_time()
+
