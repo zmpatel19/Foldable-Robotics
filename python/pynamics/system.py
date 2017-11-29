@@ -179,7 +179,9 @@ class System(object):
         state_full = q_state+remaining_constant_keys+[self.t]
         
         f_var_dd = sympy.lambdify(state_full,var_dd)
-        indeces = [q_state.index(element) for element in q_d]
+
+        position_derivatives = [self.derivative(item) for item in q]
+        indeces = [q_state.index(element) for element in position_derivatives]
         
         @static_vars(ii=0)
         def func(state,time,*args):
@@ -237,7 +239,7 @@ class System(object):
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
-        m = len(q_d)
+        m = len(q_dd)
     
         if not eq_dd:
             A_full = A
@@ -264,7 +266,8 @@ class System(object):
         fb = sympy.lambdify(state_full,b_full)
         factive = sympy.lambdify(state_full,eq_active)
 
-        indeces = [q_state.index(element) for element in q_d]
+        position_derivatives = [self.derivative(item) for item in q]
+        indeces = [q_state.index(element) for element in position_derivatives]
     
         @static_vars(ii=0)
         def func(state,time,*args):
@@ -335,7 +338,7 @@ class System(object):
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
-        m = len(q_d)
+        m = len(q_dd)
 
         if not eq_dd:
             A_full = A
@@ -364,7 +367,8 @@ class System(object):
         feq_d = sympy.lambdify(state_full,eq_d)
         factive = sympy.lambdify(state_full,eq_active)
 
-        indeces = [q_state.index(element) for element in q_d]
+        position_derivatives = [self.derivative(item) for item in q]
+        indeces = [q_state.index(element) for element in position_derivatives]
     
         @static_vars(ii=0)
         def func(state,time,*args):
