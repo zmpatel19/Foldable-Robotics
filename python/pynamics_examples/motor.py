@@ -37,7 +37,7 @@ m = Constant(name='m',system=system)
 g = Constant(name='g',system=system)
 
 tinitial = 0
-tfinal = 10
+tfinal = 3
 tstep = .01
 t = numpy.r_[tinitial:tfinal:tstep]
 
@@ -48,15 +48,15 @@ a,a_d,a_dd= Differentiable('a',system=system)
 
 constants = {}
 constants[L] = .5
-constants[V] = 12
+constants[V] = 1
 constants[R] = 1
-constants[G] = 1
+constants[G] = 10
 constants[Im] = .01
 constants[Il] = 0
 constants[b] = .1
 constants[kv] = .01
 constants[kt] = .01
-constants[Tl] = .001
+constants[Tl] = 0
 constants[m] = 1
 constants[g] = 9.81
 
