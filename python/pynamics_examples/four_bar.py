@@ -135,6 +135,15 @@ eq_dd=[(system.derivative(item)) for item in eq_d]
 f,ma = system.getdynamics()
 dyn = sympy.Matrix(f)-sympy.Matrix(ma)
 eq_dd = sympy.Matrix(eq_dd)
+qi = [qA_dd]
+qd = [qB_dd,qC_dd]
+
+A = dyn.jacobian(qi)
+B = dyn.jacobian(qd)
+C = eq_dd.jacobian(qi)
+D = eq_dd.jacobian(qd)
+
+A_new = A+(B*D.inv()*C)
 func1 = system.state_space_post_invert(f,ma,eq_dd)
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 
