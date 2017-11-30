@@ -9,6 +9,7 @@ import sympy
 import pynamics
 import numpy
 import scipy
+from pynamics.force import Force
 
 import logging
 logger = logging.getLogger('pynamics.system')
@@ -69,21 +70,21 @@ class System(object):
         return z
 
     def addforce(self,force,velocity):
-        self.forces.append((force,velocity))
+        self.forces.append(Force(force,velocity))
 
     def add_spring_force1(self,k,stretch,velocity):
         force = -k*stretch
-        self.forces.append((force,velocity))
+        self.forces.append(Force(force,velocity))
         self.springs.append((k,stretch))
 
     def add_spring_force2(self,k,stretch,v1,v2):
         force = -k*stretch
-        self.forces.append((force,v1))
-        self.forces.append((-force,v2))
+        self.forces.append(Force(force,v1))
+        self.forces.append(Force(-force,v2))
         self.springs.append((k,stretch))
 
     def addeffectiveforce(self,effectiveforce,velocity):
-        self.effectiveforces.append((effectiveforce,velocity))
+        self.effectiveforces.append(Force(effectiveforce,velocity))
 
 #    def addmomentum(self,momentum,velocity):
 #        self.momentum.append((momentum,velocity))
@@ -143,7 +144,9 @@ class System(object):
         generalized=[]
         for speed in q_d:
             new = pynamics.ZERO
-            for expression,velocity in list1:
+            for item in list1:
+                expression = item.f
+                velocity = item.v
                 new+=expression.dot(velocity.diff_partial_local(speed))
             generalized.append(new)
         return generalized
