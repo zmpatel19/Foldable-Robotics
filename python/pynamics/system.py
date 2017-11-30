@@ -69,6 +69,9 @@ class System(object):
         self._z+=1
         return z
 
+    def addforce_direct(self,f):
+        self.forces.append(f)
+
     def addforce(self,force,velocity):
         self.forces.append(Force(force,velocity))
 
