@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Nov 30 08:36:33 2017
-
-@author: daukes
-"""
-
 import numpy
 import logging
 logger = logging.getLogger('pynamics.integration')
