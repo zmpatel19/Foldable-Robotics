@@ -74,8 +74,8 @@ a=[(v.dot(v)) - lA**2]
 b = [(item+abs(item)) for item in a]
 
 f,ma = system.getdynamics()
-func = system.state_space_post_invert(f,ma,eq1_dd,eq_active = b)
-#func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = b)
+#func = system.state_space_post_invert(f,ma,eq1_dd,eq_active = b)
+func = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1,eq_active = b)
 states=pynamics.integration.integrate_odeint(func,ini,t,args=({'alpha':1e4,'beta':1e2,'constants':system.constant_values},))
 
 KE = system.get_KE()
