@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jun  6 08:59:11 2017
-
-@author: danaukes
 using information from: http://lpsa.swarthmore.edu/NumInt/NumIntFourth.html
 http://depa.fquim.unam.mx/amyd/archivero/DormandPrince_19856.pdf
+Written by Daniel M. Aukes
+Email: danaukes<at>gmail.com
+Please see LICENSE for full license.
 """
 import numpy
 import logging

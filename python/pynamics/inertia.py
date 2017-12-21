@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed May 24 14:17:36 2017
-
-@author: daukes
+Written by Daniel M. Aukes
+Email: danaukes<at>gmail.com
+Please see LICENSE for full license.
 """
 
 def solid_parallelepiped(lx,ly=None,lz=None,density = 1,mass = None):

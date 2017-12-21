@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
-
-This is a temporary script file.
 confirmed against:https://www.ee.usyd.edu.au/tutorials_online/matlab/examples/motor/motor.html
+Written by Daniel M. Aukes
+Email: danaukes<at>gmail.com
+Please see LICENSE for full license.
 """
 
 import pynamics
