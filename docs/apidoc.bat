@@ -1,0 +1,1 @@
+sphinx-apidoc -f -o source/pynamics  %HOMEDRIVE%%HOMEPATH%\code\code_pynamics\python\pynamics

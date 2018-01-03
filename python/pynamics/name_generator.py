@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jun  5 17:35:06 2017
-
-@author: danaukes
+Written by Daniel M. Aukes
+Email: danaukes<at>gmail.com
+Please see LICENSE for full license.
 """
 
 class NameGenerator(object):
