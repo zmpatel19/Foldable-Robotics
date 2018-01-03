@@ -132,6 +132,10 @@ eq_dd=[(system.derivative(item)) for item in eq_d]
 f,ma = system.getdynamics()
 #func1 = system.state_space_post_invert(f,ma)
 func1 = system.state_space_post_invert(f,ma,eq_dd)
+import pynamics.dynamics_solvers
+
+#A,b = pynamics.dynamics_solvers.solve_bayo_ledesma(system,f,ma,system.get_state_variables(),system.constant_values)
+
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
 
 KE = system.get_KE()
