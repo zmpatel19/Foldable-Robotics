@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jun  6 12:29:54 2017
-
-@author: danaukes
+Written by Daniel M. Aukes
+Email: danaukes<at>gmail.com
+Please see LICENSE for full license.
 """
 import pynamics
 pynamics.script_mode = False

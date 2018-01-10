@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
-
-This is a temporary script file.
+Written by Daniel M. Aukes
+Email: danaukes<at>gmail.com
+Please see LICENSE for full license.
 """
 
 import pynamics

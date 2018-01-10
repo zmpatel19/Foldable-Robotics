@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 15 10:40:35 2016
-
-@author: daukes
+Written by Daniel M. Aukes
+Email: danaukes<at>gmail.com
+Please see LICENSE for full license.
 """
 
 import pynamics

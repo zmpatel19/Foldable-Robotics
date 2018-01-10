@@ -9,3 +9,4 @@ python/pynamics/examples/render*
 /pynamics.egg-info/*
 /dist/*
 *.log
+/docs/build/*

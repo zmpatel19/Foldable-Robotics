@@ -15,12 +15,16 @@ from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle
 import pynamics.integration
-
+import pynamics.motor
 #import sympy
 import numpy
 import matplotlib.pyplot as plt
 plt.ion()
 from math import pi
+
+
+
+
 system = System()
 
 L = Constant(name='L',system=system)
@@ -41,10 +45,9 @@ tfinal = 3
 tstep = .01
 t = numpy.r_[tinitial:tfinal:tstep]
 
-qA,qA_d,qA_dd = Differentiable('qA',system)
-#qB,qB_d,qB_dd = Differentiable('qB',system)
-wB,wB_d= Differentiable('wB',ii=1,limit=3,system=system)
-a,a_d,a_dd= Differentiable('a',system=system)
+qB,qB_d,qB_dd = Differentiable('qB',system)
+i,i_d= Differentiable('i',ii=1,system=system)
+
 
 constants = {}
 constants[L] = .5
@@ -52,7 +55,7 @@ constants[V] = 1
 constants[R] = 1
 constants[G] = 10
 constants[Im] = .01
-constants[Il] = 0
+constants[Il] = .1
 constants[b] = .1
 constants[kv] = .01
 constants[kt] = .01
@@ -61,63 +64,37 @@ constants[m] = 1
 constants[g] = 9.81
 
 initialvalues = {}
-initialvalues[qA]=0*pi/180
-initialvalues[qA_d]=0*pi/180
-#initialvalues[qB]=0*pi/180
-#initialvalues[qB_d]=0*pi/180
-initialvalues[wB]=0*pi/180
-initialvalues[a]=0
-initialvalues[a_d]=0
+initialvalues[qB]=0*pi/180
+initialvalues[qB_d]=0*pi/180
+initialvalues[i]=0
 
 statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')
-A = Frame('A')
 B = Frame('B')
 
 system.set_newtonian(N)
-A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
-#B.rotate_fixed_axis_directed(N,[0,0,1],qB,system)
+B.rotate_fixed_axis_directed(N,[0,0,1],qB,system)
 
 pO = 0*N.x
-wNA = N.getw_(A)
-wNB = wB*B.z
-aNB = wB_d*B.z
+wNB = N.getw_(B)
 
-I_motor = Dyadic.build(A,Im,Im,Im)
 I_load = Dyadic.build(B,Il,Il,Il)
+Load = Body('Load',B,pO,m,I_load,system)
 
-Motor = Body('Motor',A,pO,0,I_motor,system)
-Load = Body('Load',B,pO,0,I_load,system,wNBody = wNB,alNBody = aNB)
-#Load = Body('Load',B,pO,m,I_load,system)
-
-#T = kt*(V/R)-kv*qA_d
-T = kt*a_d
-system.addforce(T*N.z,wNA)
-system.addforce(-b*wNA,wNA)
+axis = N.z
+#T = kt*(V/R)
+#T = kt*(V/R)-kv*G*qB_d
+#system.addforce(T*axis,G*qB_d*axis)
 system.addforce(-Tl*B.z,wNB)
-eq_d = [N.getw_(A).dot(N.z) - G*wB]
-#eq_d = [N.getw_(A).dot(N.z) - G*N.getw_(B).dot(N.z)]
+eq_d = []
 eq_dd= [system.derivative(item) for item in eq_d]
 
-
-import sympy
-ind = sympy.Matrix([wB])
-dep = sympy.Matrix([qA_d])
-
-EQ = sympy.Matrix(eq_d)
-A = EQ.jacobian(ind)
-B = EQ.jacobian(dep)
-dep2 = sympy.simplify(B.solve(-(A),method = 'LU'))
-
-f,ma = system.getdynamics([qA_d,wB])
-f.append(V-a_d*R - kv*qA_d)
-ma.append(L*a_dd )
-res = system.solve_f_ma(f,ma,system.get_q(2))
-#func1 = system.state_space_pre_invert(f,ma,constants = system.constant_values)
+pynamics.motor.add_motor_dynamics(B,Im,G,L,i,i_d,kt,kv,b,V,R,qB_d,axis,system)
+f,ma = system.getdynamics()
 func1 = system.state_space_post_invert(f,ma,eq_dd)
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-3,atol=1e-3,args=({'constants':constants,'alpha':1e2,'beta':1e1},))
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-10,atol=1e-10,args=({'constants':constants,'alpha':1e2,'beta':1e1},))
 
 # =============================================================================
 KE = system.get_KE()
@@ -135,7 +112,7 @@ speeds = Output(system.get_q(1), constant_values = constants)
 speeds.calc(states)
 speeds.plot_time()
 
-y= Output([qA_d])
+y= Output([G*qB_d], constant_values=constants)
 y.calc(states)
 y.plot_time()
 

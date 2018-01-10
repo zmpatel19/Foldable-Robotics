@@ -9,6 +9,8 @@ import sympy
 import pynamics
 import numpy
 import scipy
+from pynamics.force import Force
+from pynamics.spring import Spring
 
 import logging
 logger = logging.getLogger('pynamics.system')
@@ -27,7 +29,6 @@ class System(object):
         self.constants = []
         self.constant_values = {}
         self.forces = []
-        self.effectiveforces = []
 #        self.momentum = []
 #        self.KE = sympy.Number(0)
         self.bodies = []
@@ -68,22 +69,31 @@ class System(object):
         self._z+=1
         return z
 
+    def addforce_direct(self,f):
+        self.forces.append(f)
+
     def addforce(self,force,velocity):
-        self.forces.append((force,velocity))
+        f=Force(force,velocity)
+        self.forces.append(f)
+        return f
 
     def add_spring_force1(self,k,stretch,velocity):
         force = -k*stretch
-        self.forces.append((force,velocity))
-        self.springs.append((k,stretch))
+        f=Force(force,velocity)
+        s = Spring(k,stretch)
+        self.forces.append(f)
+        self.springs.append(s)
+        return f,s
 
     def add_spring_force2(self,k,stretch,v1,v2):
         force = -k*stretch
-        self.forces.append((force,v1))
-        self.forces.append((-force,v2))
-        self.springs.append((k,stretch))
-
-    def addeffectiveforce(self,effectiveforce,velocity):
-        self.effectiveforces.append((effectiveforce,velocity))
+        f1=Force(force,v1)
+        f2=Force(force,v2)
+        s = Spring(k,stretch)
+        self.forces.append(f1)
+        self.forces.append(f2)
+        self.springs.append(s)
+        return f1,f2,s
 
 #    def addmomentum(self,momentum,velocity):
 #        self.momentum.append((momentum,velocity))
@@ -116,7 +126,9 @@ class System(object):
 
     def getPESprings(self):
         PE = pynamics.ZERO
-        for k,stretch in self.springs:
+        for item in self.springs:
+            k = item.k
+            stretch = item.s
             PE+=.5*k*stretch.dot(stretch)
         return PE
         
@@ -129,21 +141,24 @@ class System(object):
     def getdynamics(self,q_speed = None):
         logger.info('getting dynamic equations')
         
+        effectiveforces = []
         for particle in self.particles:
-            particle.adddynamics()
+            effectiveforces.extend(particle.adddynamics())
         for body in self.bodies:
-            body.adddynamics()
+            effectiveforces.extend(body.adddynamics())
 
         q_d = q_speed or self.get_q(1)
         generalizedforce=self.generalize(self.forces,q_d)
-        generalizedeffectiveforce=self.generalize(self.effectiveforces,q_d)
+        generalizedeffectiveforce=self.generalize(effectiveforces,q_d)
         return generalizedforce,generalizedeffectiveforce
 
     def generalize(self,list1,q_d):
         generalized=[]
         for speed in q_d:
             new = pynamics.ZERO
-            for expression,velocity in list1:
+            for item in list1:
+                expression = item.f
+                velocity = item.v
                 new+=expression.dot(velocity.diff_partial_local(speed))
             generalized.append(new)
         return generalized
