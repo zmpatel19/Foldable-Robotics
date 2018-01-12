@@ -11,7 +11,7 @@ from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
 from pynamics.body import Body
 from pynamics.dyadic import Dyadic
-from pynamics.output import Output
+from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 import pynamics.integration
 
@@ -124,12 +124,6 @@ BodyB = Body('BodyB',B,pBcm,mB,I,system)
 BodyC = Body('BodyC',C,pCcm,mC,I,system)
 BodyD = Body('BodyD',D,pDcm,mD,I,system)
 
-#ParticleO = Particle(pOcm,mO,'ParticleO',system)
-#ParticleA = Particle(pAcm,mA,'ParticleA',system)
-#ParticleB = Particle(pBcm,mB,'ParticleB',system)
-#ParticleC = Particle(pCcm,mC,'ParticleC',system)
-#ParticleD = Particle(pDcm,mD,'ParticleD',system)
-
 system.addforce(-b*wOA,wOA)
 system.addforce(-b*wAB,wAB)
 system.addforce(-b*wOC,wOC)
@@ -162,12 +156,6 @@ eq = []
 eq.append(pOcm.dot(N.y)-initialvalues[y])
 eq.append(pOcm.dot(N.x)-initialvalues[x])
 eq.append(qO-initialvalues[qO])
-#eq.append((pBtip-pDtip).dot(N.x))
-#eq.append((pBtip-pDtip).dot(N.y))
-
-
-#eq.append(pBtip.dot(N.y))
-#eq.append(pDtip.dot(N.y))
 
 eq_d= [system.derivative(item) for item in eq]
 eq_dd= [system.derivative(item) for item in eq_d]
@@ -181,51 +169,27 @@ plt.plot()
 KE = system.get_KE()
 PE = system.getPEGravity(0*N.x) - system.getPESprings()
 
-
 energy = Output([KE-PE])
 energy.calc(states)
 energy.plot_time()
 
 
 points = [pDtip,pCD,pOC,pOA,pAB,pBtip]
-points = [item2 for item in points for item2 in [item.dot(N.x),item.dot(N.y)]]
-points = Output(points)
+points = PointsOutput(points)
 y = points.calc(states)
 y = y.reshape((-1,6,2))
 plt.figure()
 for item in y[::30]:
     plt.plot(*(item.T))
 
-#eq2 = []
-#eq2.append((pBtip-pDtip).dot(N.x))
-#eq2.append((pBtip-pDtip).dot(N.y))
-#eq2.append((pBtip).dot(N.y))
-#eq2.append((pBtip).dot(N.x))
 
-#eq2_d= [system.derivative(item) for item in eq2]
-#eq2_dd= [system.derivative(item) for item in eq2_d]
-
-#eq2_active = []
-#eq2_active.append(1)
-#eq2_active.append(1)
-#eq2_active.append(0-pBtip.dot(N.y))
-#eq2_active.append(0-pBtip.dot(N.x))
-#eq2_active = [(item+abs(item)) for item in eq2_active]
-#
 ini = states[-1]
 ini[2] = 0
 ini[7:] = 0
-#ini[7] = 10
 ini = list(ini)
 
 func1 = system.state_space_post_invert(f,ma,constants = system.constant_values)
 states2=pynamics.integration.integrate_odeint(func1,ini,numpy.r_[tinitial:tfinal:1/30],hmax = .01,rtol=1e-3,atol=1e-3,args=({'constants':{},'alpha':1e3,'beta':1e1},))
-y = points.calc(states2)
-y = y.reshape((-1,6,2))
-plt.figure()
-for item in y[::25]:
-    plt.plot(*(item.T))
-plt.axis('equal')
 
 energy = Output([KE-PE])
 energy.calc(states2)
@@ -235,20 +199,5 @@ tip = Output([pBtip.dot(N.y),stretch])
 tip.calc(states2)
 tip.plot_time()
 
-import os
-import idealab_tools.makemovie
-idealab_tools.makemovie.clear_folder()
-folder = idealab_tools.makemovie.prep_folder()
-f = plt.figure()
-ax = f.add_subplot(1,1,1)
-ax.axis('equal')
-
-for ii,item in enumerate(y):
-    [item.remove() for item in ax.lines]
-    plt.plot(*(item.T),'ro-')
-    ax.set_xlim((y[:,:,0].min(),y[:,:,0].max()))
-    ax.set_ylim((y[:,:,1].min(),y[:,:,1].max()))
-    plt.savefig(os.path.join(folder,'{0:04d}.png'.format(ii)))
-
-idealab_tools.makemovie.render(image_name_format = '%04d.png')
-idealab_tools.makemovie.clear_folder()
+points.calc(states2)
+points.animate(fps = 30, movie_name='render.mp4')
