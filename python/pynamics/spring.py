@@ -6,7 +6,8 @@ Please see LICENSE for full license.
 """
 
 class Spring(object):
-    def __init__(self,k,s):
+    def __init__(self,k,s,*forces):
         self.k = k
         self.s = s
+        self.forces = forces
         
