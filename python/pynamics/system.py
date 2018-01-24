@@ -80,7 +80,7 @@ class System(object):
     def add_spring_force1(self,k,stretch,velocity):
         force = -k*stretch
         f=Force(force,velocity)
-        s = Spring(k,stretch)
+        s = Spring(k,stretch,f)
         self.forces.append(f)
         self.springs.append(s)
         return f,s
@@ -89,11 +89,16 @@ class System(object):
         force = -k*stretch
         f1=Force(force,v1)
         f2=Force(force,v2)
-        s = Spring(k,stretch)
+        s = Spring(k,stretch,f1,f2)
         self.forces.append(f1)
         self.forces.append(f2)
         self.springs.append(s)
         return f1,f2,s
+
+    def remove_spring(self,spring):
+        self.springs.remove(spring)
+        for f in spring.forces:
+            self.forces.remove(f)
 
 #    def addmomentum(self,momentum,velocity):
 #        self.momentum.append((momentum,velocity))
