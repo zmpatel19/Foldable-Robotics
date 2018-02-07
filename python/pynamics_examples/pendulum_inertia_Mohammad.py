@@ -22,22 +22,22 @@ plt.ion()
 from sympy import pi
 system = System()
 tol = 1e-10
-lA = Constant(0.05699,'lA',system)
+lA = Constant(0.051,'lA',system)
 
-mA = Constant(0.0054531675,'mA',system)
+mA = Constant(0.034853148,'mA',system)
 
 g = Constant(9.81,'g',system)
 b_air = Constant(0,'b_air',system)
-b_joint = Constant(0.000023855338,'b_joint',system)
-k = Constant(0.016705166667,'k',system)
+b_joint = Constant(0.00000491211809596029,'b_joint',system)
+k = Constant(0.0095,'k',system)
 
 Ixx_A = Constant(1,'Ixx_A',system)
 Iyy_A = Constant(1,'Iyy_A',system)
-Izz_A = Constant(0.00000428720184,'Izz_A',system)
+Izz_A = Constant(0.0000285831001,'Izz_A',system)
 
 
 tinitial = 0
-tfinal = 5
+tfinal = 20
 tstep = .001
 t = numpy.r_[tinitial:tfinal:tstep]
 
@@ -46,7 +46,7 @@ preload1 = Constant(0*pi/180,'preload1',system)
 qA,qA_d,qA_dd = Differentiable('qA',system)
 
 initialvalues = {}
-initialvalues[qA]=10*pi/180
+initialvalues[qA]= 0.3619
 initialvalues[qA_d]=0*pi/180
 
 statevariables = system.get_state_variables()
@@ -76,7 +76,7 @@ uab = vAB * (1/(lab2**.5+tol))
 #linear term
 system.addforce(-b_air*vAB,vAB)
 system.addforce(-b_joint*wNA,wNA)
-system.addforcegravity(-g*N.x)
+system.addforcegravity(-g*N.z)
 system.add_spring_force(k,(qA-preload1)*N.z,wNA) 
 
 #x1 = ParticleA.pCM.dot(N.x)
