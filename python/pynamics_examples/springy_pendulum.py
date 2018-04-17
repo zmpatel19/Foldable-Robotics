@@ -13,7 +13,7 @@ from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
 from pynamics.body import Body
 from pynamics.dyadic import Dyadic
-from pynamics.output import Output
+from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 import pynamics.integration
 
@@ -38,7 +38,7 @@ Izz_A = Constant(.3,'Izz_A',system)
 
 tinitial = 0
 tfinal = 10
-tstep = .001
+tstep = 1/100
 t = numpy.r_[tinitial:tfinal:tstep]
 
 preload1 = Constant(0*pi/180,'preload1',system)
@@ -108,3 +108,9 @@ plt.plot(y[:,3])
 #plt.figure(3)
 #plt.plot(t,y[:,0])
 #plt.show()
+
+points = [pNA,pAB]
+#points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
+points_output = PointsOutput(points,system)
+y = points_output.calc(states)
+points_output.animate(fps = 100,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')

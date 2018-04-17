@@ -13,7 +13,7 @@ from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
 from pynamics.body import Body
 from pynamics.dyadic import Dyadic
-from pynamics.output import Output
+from pynamics.output import Output, PointsOutput3D
 from pynamics.particle import Particle
 import pynamics.integration
 
@@ -65,7 +65,7 @@ k = Constant(1e2,'k',system)
 #time parameters
 tinitial = 0
 tfinal = 5
-tstep = .05
+tstep = 1/100
 t = numpy.r_[tinitial:tfinal:tstep]
 
 ################################################
@@ -79,11 +79,11 @@ qB2,qB2_d,qB2_dd = Differentiable('qB2',system)
 ################################################
 #Define initial values for state variables
 initialvalues = {}
-initialvalues[qA1]=.1*pi/180
-initialvalues[qA2]=.1*pi/180
-initialvalues[qA3]=.1*pi/180
-initialvalues[qB1]=-.1*pi/180
-initialvalues[qB2]=-.1*pi/180
+initialvalues[qA1]=1*pi/180
+initialvalues[qA2]=1*pi/180
+initialvalues[qA3]=1*pi/180
+initialvalues[qB1]=-1*pi/180
+initialvalues[qB2]=-1*pi/180
 
 initialvalues[qA1_d]=0*pi/180
 initialvalues[qA2_d]=0*pi/180
@@ -231,7 +231,7 @@ plt.figure()
 plt.plot(y[:])
 plt.show()
 
-o2 = [A1.x,A2.x,A3.x,B1.x,B2.x,B23.x,A34.x]
+o2 = [pNO,A1.x,pNO,A2.x,pNO,A3.x,pNO,B1.x,pNO,B2.x,pNO,B23.x,pNO,A34.x]
 o2 = [item2 for item in o2 for item2 in [item.dot(N.x),item.dot(N.y),item.dot(N.z)]]
 o2 = Output(o2,system)
 y2 = o2.calc(states)
@@ -257,3 +257,7 @@ for item in y2:
 
 idealab_tools.makemovie.render(image_name_format='%04d.png')
 idealab_tools.makemovie.clear_folder(rmdir=True)
+
+#points_output = PointsOutput3D(o2,system)
+#y = points_output.calc(states)
+#points_output.animate(fps = 100,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
