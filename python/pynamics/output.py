@@ -96,7 +96,7 @@ class PointsOutput(Output):
         idealab_tools.makemovie.render()
         idealab_tools.makemovie.clear_folder(folder)    
 
-    def animate(self,fps = 30,stepsize=1, movie_name = None):
+    def animate(self,fps = 30,stepsize=1, movie_name = None,*args,**kwargs):
         import numpy as np
         import matplotlib.pyplot as plt
         
@@ -112,7 +112,7 @@ class PointsOutput(Output):
 
 #        y = self.y[::stepsize]
         
-        line, = ax.plot([], [], lw=2)
+        line, = ax.plot([], [], *args,**kwargs)
         
         def init():
             line.set_data([], [])

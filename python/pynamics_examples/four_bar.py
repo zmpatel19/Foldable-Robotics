@@ -171,5 +171,5 @@ plt.plot(energy_output.y)
 
 #points_output.make_gif()
 #points_output.render_movie()
-points_output.animate(fps = 30,movie_name = 'render.mp4')
+points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2)
 #a()
