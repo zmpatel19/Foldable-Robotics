@@ -12,7 +12,7 @@ from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
 from pynamics.body import Body
 from pynamics.dyadic import Dyadic
-from pynamics.output import Output
+from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 import pynamics.integration
 
@@ -27,11 +27,11 @@ mA = Constant(1,'mA',system)
 
 g = Constant(9.81,'g',system)
 b = Constant(1e0,'b',system)
-k = Constant(1e5,'k',system)
+k = Constant(1e6,'k',system)
 
 tinitial = 0
 tfinal = 5
-tstep = .001
+tstep = 1/100
 t = numpy.r_[tinitial:tfinal:tstep]
 
 x,x_d,x_dd = Differentiable('x',system)
@@ -39,7 +39,7 @@ y,y_d,y_dd = Differentiable('y',system)
 
 initialvalues = {}
 initialvalues[x]=0
-initialvalues[x_d]=.1
+initialvalues[x_d]=1
 initialvalues[y]=.1
 initialvalues[y_d]=0
 
@@ -91,3 +91,16 @@ plt.plot(y[:,2])
 plt.figure(3)
 plt.plot(t,y[:,4])
 plt.show()
+
+plt.figure(4)
+plt.plot(t,states[:,2])
+plt.show()
+
+
+
+points = [pNA,pAcm]
+#points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
+points_output = PointsOutput(points,system)
+y = points_output.calc(states)
+points_output.animate(fps = 100,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='')
+

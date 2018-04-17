@@ -200,4 +200,4 @@ tip.calc(states2)
 tip.plot_time()
 
 points.calc(states2)
-points.animate(fps = 30, movie_name='render.mp4')
+points.animate(fps = 30, movie_name='render.mp4',lw=2)

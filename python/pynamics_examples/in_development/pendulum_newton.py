@@ -95,4 +95,4 @@ states = pynamics.integration.integrate_newton(f,ini,t)
 points = [pNA,pAB,pNA]
 points_output = PointsOutput(points,system)
 points_output.calc(states)
-points_output.animate(fps = 30)
+points_output.animate(fps = 30,lw=2)
