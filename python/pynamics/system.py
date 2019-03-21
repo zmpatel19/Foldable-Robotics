@@ -227,9 +227,11 @@ class System(object):
 
         return func
 
-    def state_space_post_invert(self,f,ma,eq_dd = None,eq_active = None,constants = None,q_acceleration = None, q_speed = None, q_position = None):
+    def state_space_post_invert(self,f,ma,eq_dd = None,constants = None,q_acceleration = None, q_speed = None, q_position = None):
         '''invert A matrix each call'''
         logger.info('solving a = f/m and creating function')
+        
+        eq_active = None        
         
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))

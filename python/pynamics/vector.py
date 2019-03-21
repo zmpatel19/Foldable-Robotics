@@ -324,5 +324,11 @@ class Vector(object):
     def frames(self):
         nonzero_frames = [frame for frame,vector in self.components.items() if vector.is_zero==False]
         return nonzero_frames
+    
+    def subs(self,*args,**kwargs):
+        new = self.copy()
+        for key in self.components:
+            new.components[key] = self.components[key].subs(*args,**kwargs)
+        return new    
                 
         

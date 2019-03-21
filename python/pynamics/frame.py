@@ -36,6 +36,7 @@ class Frame(TreeNode,NameGenerator):
         self.x.add_component(self,[1,0,0])
         self.y.add_component(self,[0,1,0])
         self.z.add_component(self,[0,0,1])
+        
         self.add_rotation(Rotation(self,self,sympy.Matrix.eye(3),sympy.Number(0)*self.x))
         pynamics.addself(self,name)
         
@@ -44,6 +45,10 @@ class Frame(TreeNode,NameGenerator):
         
     def add_precomputed(self,rotation):
         self.precomputed[rotation.other(self)] = rotation
+    
+    @property
+    def principal_axes(self):
+        return [self.x,self.y,self.z]
     
     def __str__(self):
         return self.name
