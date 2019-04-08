@@ -10,3 +10,4 @@ python/pynamics/examples/render*
 /dist/*
 *.log
 /docs/build/*
+*.mp4
