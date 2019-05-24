@@ -12,6 +12,7 @@ from pynamics.system import System
 from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
+from pynamics.output import PointsOutput
 from pynamics.particle import Particle
 import pynamics.integration
 
@@ -39,7 +40,7 @@ g = Constant(9.81,'g',system)
 
 tinitial = 0
 tfinal = 10
-tstep = .01
+tstep = 1/30
 t = numpy.r_[tinitial:tfinal:tstep]
 
 x1,x1_d,x1_dd = Differentiable('x1',system)
@@ -48,8 +49,8 @@ x2,x2_d,x2_dd = Differentiable('x2',system)
 initialvalues = {}
 initialvalues[x1]=2
 initialvalues[x1_d]=0
-initialvalues[x2]=1
-initialvalues[x2_d]=0
+initialvalues[x2]=0
+initialvalues[x2_d]=1
 
 statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
@@ -130,3 +131,7 @@ plt.axis('equal')
 plt.figure(2)
 plt.plot(t,y[:,3])
 #plt.axis('equal')
+points = [Particle1.pCM,Particle2.pCM]
+points = PointsOutput(points)
+points.calc(states)
+points.animate(fps = 30, movie_name='bouncy.mp4',lw=2)
