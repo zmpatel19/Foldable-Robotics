@@ -106,7 +106,7 @@ angle_of_attack_E = sympy.atan2(vey,vex)
 #fd = .5*rho*vcp2*cd*A
 
 f_aero_C = rho*vcp2*sympy.sin(angle_of_attack_C)*Sw*C.y
-f_aero_E = rho*ve2*sympy.sin(angle_of_attack_E)*Sw*C.y
+f_aero_E = rho*ve2*sympy.sin(angle_of_attack_E)*Sw*E.y
 
 system.addforcegravity(-g*N.y)
 system.addforce(f_aero_C,vcp)
