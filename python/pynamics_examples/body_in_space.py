@@ -32,63 +32,72 @@ tfinal = 2.5
 tstep = 1/30
 t = numpy.r_[tinitial:tfinal:tstep]
 
-Differentiable('x',ini=[0,10*cos(45*pi/180)])
-Differentiable('y',ini=[1,10*sin(45*pi/180)])
-#Differentiable('z',ini=[0,0])
+ang_ini = 0
 
-#Differentiable('qA',ini=[0,0])
-#Differentiable('qB',ini=[0,0])
-Differentiable('qC',ini=[45*pi/180,0])
+Differentiable('x',ini=[0,10*cos(ang_ini*pi/180)])
+Differentiable('y',ini=[1,10*sin(ang_ini*pi/180)])
+Differentiable('z',ini=[0,0])
+
+Differentiable('qA',ini=[0,0])
+Differentiable('qB',ini=[0,0])
+Differentiable('qC',ini=[ang_ini*pi/180,0])
 
 
-Constant(9.81,'g')
 Constant(.05,'mC')
-Constant(6e-3,'Ixx')
-Constant(6e-3,'Iyy')
-Constant(6e-3,'Izz')
-Constant(.35,'l')
+Constant(9.81,'g')
+Constant(6e-3,'I_11')
 Constant(1.292,'rho')
 Constant(.1,'Sw')
-Constant(.1,'lw')
+Constant(.025,'Se')
+Constant(.35,'l')
+Constant(-.03,'lw')
 Constant(.04,'le')
-Constant(0,'hw')
-Constant(-30*pi/180,'qE')
+Constant(3*pi/180,'qE')
 
 ini = system.get_ini()
 
 Frame('N')
-#Frame('A')
-#Frame('B')
+Frame('A')
+Frame('B')
 Frame('C')
 Frame('E')
 
 system.set_newtonian(N)
-#A.rotate_fixed_axis_directed(N,[1,0,0],qA)
-#B.rotate_fixed_axis_directed(A,[0,1,0],qB)
-C.rotate_fixed_axis_directed(N,[0,0,1],qC)
-E.rotate_fixed_axis_directed(C,[0,0,1],qE)
+A.rotate_fixed_axis_directed(N,[1,0,0],qA)
+B.rotate_fixed_axis_directed(A,[0,1,0],qB)
+C.rotate_fixed_axis_directed(B,[0,0,1],qC)
+E.rotate_fixed_axis_directed(C,[0,0,1],-qE)
 
-#pCcm=x*N.x+y*N.y+z*N.z
-pCcm=x*N.x+y*N.y
-pCcp=pCcm-lw*C.x+hw*C.y
+pCcm=x*N.x+y*N.y+z*N.z
+#pCcm=x*N.x+y*N.y
+pCcp=pCcm-lw*C.x
 
 pC1 = pCcm
 pC2 = pCcm-l*C.x
 pE = pC2-le*E.x
-wNC = N.getw_(C)
+#wNC = N.getw_(C)
 
 vcm = pCcm.time_derivative()
+
 vcp=pCcp.time_derivative()
 vcp2 = vcp.dot(vcp)
 
-IC = Dyadic.build(C,Ixx,Iyy,Izz)
+ve=pE.time_derivative()
+ve2 = ve.dot(ve)
+
+IC = Dyadic.build(C,I_11,I_11,I_11)
 
 Body('BodyC',C,pCcm,mC,IC)
 
 
 vcx = vcp.dot(C.x)
-vcy = vcp.dot(C.y)
-angle_of_attack = -sympy.atan2(vcy,vcx)
+vcy = vcp.dot(-C.y)
+angle_of_attack_C = sympy.atan2(vcy,vcx)
+
+
+vex = ve.dot(E.x)
+vey = ve.dot(-E.y)
+angle_of_attack_E = sympy.atan2(vey,vex)
 
 #cl = 2*sin(angle_of_attack)*cos(angle_of_attack)
 #cd = 2*sin(angle_of_attack)**2
@@ -96,14 +105,16 @@ angle_of_attack = -sympy.atan2(vcy,vcx)
 #fl = .5*rho*vcp2*cl*A
 #fd = .5*rho*vcp2*cd*A
 
-f_aero = rho*vcp2*sympy.sin(angle_of_attack)*Sw*C.y
+f_aero_C = rho*vcp2*sympy.sin(angle_of_attack_C)*Sw*C.y
+f_aero_E = rho*ve2*sympy.sin(angle_of_attack_E)*Sw*C.y
 
 system.addforcegravity(-g*N.y)
-system.addforce(f_aero,vcp)
+system.addforce(f_aero_C,vcp)
+system.addforce(f_aero_E,ve)
 
 points = [pC1,pC2]
 
-ang = [wNC.dot(C.x),wNC.dot(C.y),wNC.dot(C.z)]
+#ang = [wNC.dot(C.x),wNC.dot(C.y),wNC.dot(C.z)]
 
 f,ma = system.getdynamics()
 func1 = system.state_space_post_invert(f,ma)
