@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 plt.ion()
 from math import pi, sin, cos
 system = System()
+pynamics.set_system(__name__,system)
 
 
 tinitial = 0

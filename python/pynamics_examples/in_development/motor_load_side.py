@@ -27,6 +27,7 @@ def add_motor_dynamics():
 
 
 system = System()
+pynamics.set_system(__name__,system)
 
 L = Constant(name='L',system=system)
 V = Constant(name='V',system=system)

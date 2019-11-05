@@ -20,6 +20,7 @@ from pynamics.output import Output
 from pynamics.particle import Particle
 
 s = System()
+pynamics.set_system(__name__,system)
 x,x_d,x_dd=pynamics.variable_types.Differentiable('x',s)
 q1,q1_d,q1_dd=pynamics.variable_types.Differentiable('q1',s)
 

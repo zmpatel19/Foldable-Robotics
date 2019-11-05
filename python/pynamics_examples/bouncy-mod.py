@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 plt.ion()
 from math import pi
 system = System()
+pynamics.set_system(__name__,system)
 
 error = 1e-4
 error_tol = 1e-10

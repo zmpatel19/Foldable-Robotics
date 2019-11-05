@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 plt.ion()
 from math import pi
 system = System()
+pynamics.set_system(__name__,system)
 
 L = Constant(name='L',system=system)
 V = Constant(name='V',system=system)

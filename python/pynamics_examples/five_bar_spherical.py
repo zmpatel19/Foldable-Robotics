@@ -27,6 +27,7 @@ import numpy
 #plt.ion()
 from math import pi
 system = System()
+pynamics.set_system(__name__,system)
 
 from math import pi,sin,cos
 

@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 plt.ion()
 from math import pi
 system = System()
+pynamics.set_system(__name__,system)
 
 l = Constant(.5,'l',system)
 xO = Constant(1.0, 'xO',system)

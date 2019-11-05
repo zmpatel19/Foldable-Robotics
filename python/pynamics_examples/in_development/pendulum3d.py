@@ -23,6 +23,7 @@ import numpy
 plt.ion()
 from math import pi
 system = System()
+pynamics.set_system(__name__,system)
 
 mp1 = Constant(1,'mp1')
 g = Constant(9.81,'g')
