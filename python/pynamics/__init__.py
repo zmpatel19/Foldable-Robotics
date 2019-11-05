@@ -27,6 +27,8 @@ logger.setLevel(logging.DEBUG)
 
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+#modulename = '__main__'
+
 if not logger.handlers:
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
@@ -46,15 +48,24 @@ def PynamicsObject(object):
         addself(self,name)
 
 def addself(self,name,modulename='__main__',override = False):
-    if script_mode or override:
-        module = sys.modules[modulename]
-        if hasattr(module,name):
-            raise NameError('variable '+name+' exists')
-        else:
-            setattr(module, name, self)
+    pass
+#    print(__file__)
+#    if script_mode or override:
+#        module = sys.modules[modulename]
+#        if hasattr(module,name):
+#            raise NameError('variable '+name+' exists')
+#        else:
+#            setattr(module, name, self)
 
+def set_system(modulename,system):
+    import pynamics
+    pynamics.modulename = modulename
+    module = sys.modules[modulename]
+    setattr(module,systemname,system)
+    
 def get_system():
-    module = sys.modules['__main__']
+    import pynamics
+    module = sys.modules[pynamics.modulename]
     return getattr(module,systemname)
             
 import time

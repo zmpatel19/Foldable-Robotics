@@ -26,7 +26,7 @@ class Constant(sympy.Symbol,NameGenerator):
         system = system or pynamics.get_system()
 
         obj = sympy.Symbol.__new__(self,name)
-        obj.value = value
+#        obj.value = value
         system.add_constant(obj)
         if value is not None:
             system.add_constant_value(obj,value)

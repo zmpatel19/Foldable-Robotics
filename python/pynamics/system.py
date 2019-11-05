@@ -39,7 +39,7 @@ class System(object):
         self.t = sympy.Symbol('t')
         self.ini = {}
         self.error_tolerance = 1e-16
-        pynamics.addself(self,pynamics.systemname,override = True)
+        pynamics.addself(self,pynamics.systemname)
 
     def set_ini(self,name,val):
         self.ini[name]=val

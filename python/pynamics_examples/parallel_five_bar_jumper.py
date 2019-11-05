@@ -21,49 +21,75 @@ import matplotlib.pyplot as plt
 plt.ion()
 from math import pi
 system = System()
+pynamics.set_system(__name__,system)
 tol=1e-9
 
+lO = Constant(name='lO',system=system)
+lA = Constant(name='lA',system=system)
+lB = Constant(name='lB',system=system)
+lC = Constant(name='lC',system=system)
+lD = Constant(name='lD',system=system)
 
-lO = Constant(.5,'lO',system)
-lA = Constant(.75,'lA',system)
-lB = Constant(1,'lB',system)
-lC = Constant(.75,'lC',system)
-lD = Constant(1,'lD',system)
+mO = Constant(name='mO',system=system)
+mA = Constant(name='mA',system=system)
+mB = Constant(name='mB',system=system)
+mC = Constant(name='mC',system=system)
+mD = Constant(name='mD',system=system)
 
-mO = Constant(2,'mO',system)
-mA = Constant(.1,'mA',system)
-mB = Constant(.1,'mB',system)
-mC = Constant(.1,'mC',system)
-mD = Constant(.1,'mD',system)
+I_main = Constant(name='I_main',system=system)
 
-I_main = Constant(1,'I_main',system)
+g = Constant(name='g',system=system)
+b = Constant(name='b',system=system)
+k = Constant(name='k',system=system)
+stall_torque = Constant(name='stall_torque',system=system)
 
-g = Constant(9.81,'g',system)
-b = Constant(1e0,'b',system)
-k = Constant(1e2,'k',system)
-stall_torque = Constant(1e2,'stall_torque',system)
-
-k_constraint = Constant(1e5,'k_constraint',system)
-b_constraint = Constant(1e3,'b_constraint',system)
+k_constraint = Constant(name='k_constraint',system=system)
+b_constraint = Constant(name='b_constraint',system=system)
 
 tinitial = 0
 tfinal = 10
 tstep = 1/30
 t = numpy.r_[tinitial:tfinal:tstep]
 
-preload1 = Constant(0*pi/180,'preload1',system)
-preload2 = Constant(0*pi/180,'preload2',system)
-preload3 = Constant(-180*pi/180,'preload3',system)
-preload4 = Constant(0*pi/180,'preload4',system)
-preload5 = Constant(180*pi/180,'preload5',system)
+preload1 = Constant(name='preload1',system=system)
+preload2 = Constant(name='preload2',system=system)
+preload3 = Constant(name='preload3',system=system)
+preload4 = Constant(name='preload4',system=system)
+preload5 = Constant(name='preload5',system=system)
 
-x,x_d,x_dd = Differentiable('x',system)
-y,y_d,y_dd = Differentiable('y',system)
-qO,qO_d,qO_dd = Differentiable('qO',system)
-qA,qA_d,qA_dd = Differentiable('qA',system)
-qB,qB_d,qB_dd = Differentiable('qB',system)
-qC,qC_d,qC_dd = Differentiable('qC',system)
-qD,qD_d,qD_dd = Differentiable('qD',system)
+
+constants = {}
+constants[lO]=.5
+constants[lA] = .75
+constants[lB] = 1
+constants[lC] = .75
+constants[lD] = 1
+constants[mO] = 3
+constants[mA] = .1
+constants[mB] = .1
+constants[mC] = .1
+constants[mD] = .1
+constants[I_main] = 1
+constants[g] = 9.81
+constants[b] = 1e0
+constants[k] = 1e2
+constants[stall_torque] = 1e2
+constants[k_constraint] = 1e5
+constants[b_constraint] = 1e3
+constants[preload1] = 0*pi/180
+constants[preload2] = 0*pi/180
+constants[preload3] = -180*pi/180
+constants[preload4] = 0*pi/180
+constants[preload5] = 180*pi/180
+
+
+x,x_d,x_dd = Differentiable(name='x',system=system)
+y,y_d,y_dd = Differentiable(name='y',system=system)
+qO,qO_d,qO_dd = Differentiable(name='qO',system=system)
+qA,qA_d,qA_dd = Differentiable(name='qA',system=system)
+qB,qB_d,qB_dd = Differentiable(name='qB',system=system)
+qC,qC_d,qC_dd = Differentiable(name='qC',system=system)
+qD,qD_d,qD_dd = Differentiable(name='qD',system=system)
 
 initialvalues={
         x: 0,
@@ -115,7 +141,7 @@ def gen_init():
     eqs.append(pBtip-pDtip)
 #    eqs.append(pBtip-pOrigin)
     a=[(item).express(N) for item in eqs]
-    b=[item.subs(system.constant_values) for item in a]
+    b=[item.subs(constants) for item in a]
     c = numpy.array([vec.dot(item) for vec in b for item in list(N.principal_axes)])
     d = (c**2).sum()
     e = system.get_state_variables()
@@ -130,7 +156,7 @@ result = scipy.optimize.minimize(fun,ini)
 
 if result.fun<1e-7:
     points = [pDtip,pCD,pOC,pOA,pAB,pBtip]
-    points = PointsOutput(points)
+    points = PointsOutput(points, constant_values=constants)
     state = numpy.array([ini,result.x])
     ini1 = list(result.x)
     y = points.calc(state)
@@ -197,7 +223,7 @@ eq_d= [system.derivative(item) for item in eq]
 eq_dd= [system.derivative(item) for item in eq_d]
 #
 f,ma = system.getdynamics()
-func1 = system.state_space_post_invert(f,ma,eq_dd,constants = system.constant_values)
+func1 = system.state_space_post_invert(f,ma,eq_dd,constants = constants)
 states=pynamics.integration.integrate_odeint(func1,ini1,t,rtol=tol,atol=tol)
 
 KE = system.get_KE()
