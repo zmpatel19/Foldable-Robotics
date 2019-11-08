@@ -37,11 +37,12 @@ mC = Constant(name='mC',system=system)
 mD = Constant(name='mD',system=system)
 #m_motor = Constant(name='m_motor',system=system)
 
-I_main = Constant(name='I_main',system=system)
+#I_main = Constant(name='I_main',system=system)
 
 g = Constant(name='g',system=system)
-b = Constant(name='b',system=system)
+b_joint = Constant(name='b_joint',system=system)
 k_joint = Constant(name='k_joint',system=system)
+b_beam = Constant(name='b_beam',system=system)
 k_beam = Constant(name='k_beam',system=system)
 stall_torque = Constant(name='stall_torque',system=system)
 
@@ -61,23 +62,24 @@ preload5 = Constant(name='preload5',system=system)
 
 
 constants = {}
-constants[lO]=.5
-constants[lA] = .75
-constants[lB] = 1
-constants[lC] = .75
-constants[lD] = 1
-constants[mO] = 3
-constants[mA] = .1
-constants[mB] = .1
-constants[mC] = .1
-constants[mD] = .1
+constants[lO]=.03
+constants[lA] = .12
+constants[lB] = .12
+constants[lC] = .12
+constants[lD] = .12
+constants[mO] = .0369
+constants[mA] = .003
+constants[mB] = .003
+constants[mC] = .003
+constants[mD] = .003
 #constants[m_motor] = .1
-constants[I_main] = 1
+#constants[I_main] = 1
 constants[g] = 9.81
-constants[b] = 1e0
-constants[k_joint] = 1e2
-constants[k_beam] = 1e4
-constants[stall_torque] = 1e2
+constants[b_joint] = .00025
+constants[k_joint] = .0229183
+constants[b_beam] = 0
+constants[k_beam] = 14.0224
+constants[stall_torque] = .00016*5.7/4.3586
 constants[k_constraint] = 1e5
 constants[b_constraint] = 1e3
 constants[preload1] = 0*pi/180
@@ -217,11 +219,13 @@ wC2D1 = C2.getw_(D1)
 wD1D2 = D1.getw_(D2)
 wB2D2 = B2.getw_(D2)
 
-BodyO = Body('BodyO',O,pOcm,mO,Dyadic.build(O,I_main,I_main,I_main),system)
+#BodyO = Body('BodyO',O,pOcm,mO,Dyadic.build(O,I_main,I_main,I_main),system)
 #BodyA = Body('BodyA',A,pAcm,mA,Dyadic.build(A,I_leg,I_leg,I_leg),system)
 #BodyB = Body('BodyB',B,pBcm,mB,Dyadic.build(B,I_leg,I_leg,I_leg),system)
 #BodyC = Body('BodyC',C,pCcm,mC,Dyadic.build(C,I_leg,I_leg,I_leg),system)
 #BodyD = Body('BodyD',D,pDcm,mD,Dyadic.build(D,I_leg,I_leg,I_leg),system)
+
+Particle0 = Particle(pOcm,mO,'ParticleO')
 
 ParticleA1 = Particle(pA1cm,mA/2,'ParticleA1')
 ParticleB1 = Particle(pB1cm,mB/2,'ParticleB1')
@@ -233,15 +237,17 @@ ParticleB2 = Particle(pB2cm,mB/2,'ParticleB2')
 ParticleC2 = Particle(pC2cm,mC/2,'ParticleC2')
 ParticleD2 = Particle(pD2cm,mD/2,'ParticleD2')
 
-system.addforce(-b*wOA1,wOA1)
-system.addforce(-b*wA1A2,wA1A2)
-system.addforce(-b*wA2B1,wA2B1)
-system.addforce(-b*wB1B2,wB1B2)
-system.addforce(-b*wOC1,wOC1)
-system.addforce(-b*wC1C2,wC1C2)
-system.addforce(-b*wC2D1,wC2D1)
-system.addforce(-b*wD1D2,wD1D2)
-system.addforce(-b*wB2D2,wB2D2)
+system.addforce(-b_joint*wOA1,wOA1)
+system.addforce(-b_joint*wA2B1,wA2B1)
+system.addforce(-b_joint*wOC1,wOC1)
+system.addforce(-b_joint*wC2D1,wC2D1)
+system.addforce(-b_joint*wB2D2,wB2D2)
+
+#system.addforce(-b_beam*wA1A2,wA1A2)
+#system.addforce(-b_beam*wB1B2,wB1B2)
+#system.addforce(-b_beam*wC1C2,wC1C2)
+#system.addforce(-b_beam*wD1D2,wD1D2)
+
 #
 stretch = -pBtip.dot(N.y)
 stretch_s = (stretch+abs(stretch))
