@@ -42,7 +42,7 @@ b_constraint = Constant(1e5,'b_constraint',system)
 
 tinitial = 0
 tfinal = 10
-tstep = .01
+tstep = 1/30
 t = numpy.r_[tinitial:tfinal:tstep]
 
 x1,x1_d,x1_dd = Differentiable('x1',system)

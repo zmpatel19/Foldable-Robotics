@@ -228,7 +228,7 @@ states=pynamics.integration.integrate_odeint(func1,ini1,t,rtol=tol,atol=tol)
 
 KE = system.get_KE()
 PE = system.getPEGravity(0*N.x) - system.getPESprings()
-energy = Output([KE-PE])
+energy = Output([KE-PE], constant_values=constants)
 energy.calc(states)
 energy.plot_time()
 
@@ -237,11 +237,11 @@ energy.plot_time()
 #torque_plot.plot_time()
 
 points = [pDtip,pCD,pOC,pOA,pAB,pBtip]
-points = PointsOutput(points)
+points = PointsOutput(points, constant_values=constants)
 y = points.calc(states)
 y = y.reshape((-1,6,2))
 plt.figure()
 for item in y[::30]:
     plt.plot(*(item.T))
 
-points.animate(fps = 30, movie_name='parallel_five_bar_jumper_foot.mp4',lw=2)
+points.animate(fps = 30, movie_name='parallel_five_bar_jumper.mp4',lw=2)
