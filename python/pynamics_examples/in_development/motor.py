@@ -53,7 +53,7 @@ constants[V] = 1
 constants[R] = 1
 constants[G] = 10
 constants[Im] = .01
-constants[Il] = 0
+constants[Il] = .1
 constants[b] = .1
 constants[kv] = .01
 constants[kt] = .01
@@ -118,7 +118,7 @@ ma.append(L*a_dd )
 res = system.solve_f_ma(f,ma,system.get_q(2))
 #func1 = system.state_space_pre_invert(f,ma,constants = system.constant_values)
 func1 = system.state_space_post_invert(f,ma,eq_dd)
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-3,atol=1e-3,args=({'constants':constants,'alpha':1e2,'beta':1e1},))
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-10,atol=1e-10,args=({'constants':constants,'alpha':1e2,'beta':1e1},))
 
 # =============================================================================
 KE = system.get_KE()

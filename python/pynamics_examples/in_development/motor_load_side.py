@@ -6,6 +6,8 @@ Email: danaukes<at>gmail.com
 Please see LICENSE for full license.
 """
 
+'''This code uses motor equations using the output shaft from a gear motor as the reference for motor speeds.  this prevents two frames from eneding to be defined.'''
+
 import pynamics
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant,Variable
@@ -13,7 +15,7 @@ from pynamics.system import System
 from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output
-from pynamics.particle import Particle
+from pynamics.particle import Particle, PseudoParticle
 import pynamics.integration
 
 #import sympy
@@ -101,7 +103,7 @@ I_load = Dyadic.build(B,Il,Il,Il)
 
 #Motor = Body('Motor',A,pO,0,I_motor,system)
 Motor = Body('Motor',B,pO,0,I_motor,system,wNBody = wNA,alNBody = aNA)
-Inductor = Particle(0*M.x,L,name='Inductor',vCM = i*M.x,aCM = i_d*M.x)
+Inductor = PseudoParticle(0*M.x,L,name='Inductor',vCM = i*M.x,aCM = i_d*M.x)
 
 #Load = Body('Load',B,pO,0,I_load,system,wNBody = wNB,alNBody = aNB)
 Load = Body('Load',B,pO,m,I_load,system)
