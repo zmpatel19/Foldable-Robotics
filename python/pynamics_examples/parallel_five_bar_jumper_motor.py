@@ -72,23 +72,23 @@ preload5 = Constant(name='preload5',system=system)
 
 
 constants = {}
-constants[lO]=.5
-constants[lA] = .75
-constants[lB] = 1
-constants[lC] = .75
-constants[lD] = 1
-constants[mO] = 3
-constants[mA] = .1
-constants[mB] = .1
-constants[mC] = .1
-constants[mD] = .1
-constants[I_main] = 1
+constants[lO]=.15
+constants[lA] = .15
+constants[lB] = .2
+constants[lC] = .15
+constants[lD] = .2
+constants[mO] = .1
+constants[mA] = .01
+constants[mB] = .01
+constants[mC] = .01
+constants[mD] = .01
+constants[I_main] = .1
 constants[g] = 9.81
-constants[b] = 1e0
-constants[k] = 1e2
-constants[stall_torque] = 1e2
-constants[k_constraint] = 1e5
-constants[b_constraint] = 1e3
+constants[b] = 1e-1
+constants[k] = 1e1
+constants[stall_torque] = 1e1
+constants[k_constraint] = 1e2
+constants[b_constraint] = 1e0
 constants[preload1] = 0*pi/180
 constants[preload2] = 0*pi/180
 constants[preload3] = -180*pi/180
@@ -126,7 +126,7 @@ iC,iC_d= Differentiable('iC',ii=1,system=system)
 initialvalues={
         x: 0,
         x_d: 0,
-        y: 1.25,
+        y: .3,
         y_d: 0,
         qO: 0,
         qO_d: 0,
