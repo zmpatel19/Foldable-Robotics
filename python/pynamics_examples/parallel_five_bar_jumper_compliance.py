@@ -22,7 +22,7 @@ plt.ion()
 from math import pi
 system = System()
 pynamics.set_system(__name__,system)
-tol=1e-4
+tol=1e-3
 
 lO = Constant(name='lO',system=system)
 lA = Constant(name='lA',system=system)
@@ -80,8 +80,8 @@ constants[k_joint] = .0229183
 constants[b_beam] = 0
 constants[k_beam] = 14.0224
 constants[stall_torque] = .00016*5.7/4.3586
-constants[k_constraint] = 1e5
-constants[b_constraint] = 1e3
+constants[k_constraint] = 1e3
+constants[b_constraint] = 1e1
 constants[preload1] = 0*pi/180
 constants[preload2] = 0*pi/180
 constants[preload3] = -180*pi/180
@@ -104,7 +104,7 @@ qD2,qD2_d,qD2_dd = Differentiable(name='qD2',system=system)
 initialvalues={
         x: 0,
         x_d: 0,
-        y: 2,
+        y: .5,
         y_d: 0,
         qO: 0,
         qO_d: 0,

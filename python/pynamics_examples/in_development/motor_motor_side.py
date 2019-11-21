@@ -6,7 +6,7 @@ Email: danaukes<at>gmail.com
 Please see LICENSE for full license.
 """
 
-'''This code uses motor equations using the output shaft from a gear motor as the reference for motor speeds.  this prevents two frames from eneding to be defined.'''
+'''This code uses motor equations using the input shaft of a gear motor as the reference for motor speeds.  this prevents two frames from eneding to be defined.'''
 
 import pynamics
 from pynamics.frame import Frame
@@ -45,7 +45,7 @@ tfinal = 3
 tstep = .01
 t = numpy.r_[tinitial:tfinal:tstep]
 
-#qA,qA_d,qA_dd = Differentiable('qA',system)
+qA,qA_d,qA_dd = Differentiable('qA',system)
 qB,qB_d,qB_dd = Differentiable('qB',system)
 #wB,wB_d= Differentiable('wB',ii=1,limit=3,system=system)
 i,i_d= Differentiable('i',ii=1,system=system)
@@ -66,8 +66,8 @@ constants[m] = 1
 constants[g] = 9.81
 
 initialvalues = {}
-#initialvalues[qA]=0*pi/180
-#initialvalues[qA_d]=0*pi/180
+initialvalues[qA]=0*pi/180
+initialvalues[qA_d]=0*pi/180
 initialvalues[qB]=0*pi/180
 initialvalues[qB_d]=0*pi/180
 #initialvalues[wB]=0*pi/180
@@ -78,27 +78,27 @@ statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')
-#A = Frame('A')
+A = Frame('A')
 B = Frame('B')
 M = Frame('M')
 
 system.set_newtonian(N)
-#A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
+A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
 B.rotate_fixed_axis_directed(N,[0,0,1],qB,system)
 
 pO = 0*N.x
-#wNA = N.getw_(A)
+wNA = N.getw_(A)
 wNB = N.getw_(B)
-wNA = G*wNB
-aNA = wNA.time_derivative()
+#wNA = G*wNB
+#aNA = wNA.time_derivative()
 #wNB = wB*B.z
 #aNB = wB_d*B.z
 
-I_motor = Dyadic.build(B,Im,Im,Im)
+I_motor = Dyadic.build(A,Im,Im,Im)
 I_load = Dyadic.build(B,Il,Il,Il)
 
-#Motor = Body('Motor',A,pO,0,I_motor,system)
-Motor = Body('Motor',B,pO,0,I_motor,system,wNBody = wNA,alNBody = aNA)
+Motor = Body('Motor',A,pO,0,I_motor,system)
+#Motor = Body('Motor',B,pO,0,I_motor,system,wNBody = wNA,alNBody = aNA)
 Inductor = PseudoParticle(0*M.x,L,name='Inductor',vCM = i*M.x,aCM = i_d*M.x)
 
 #Load = Body('Load',B,pO,0,I_load,system,wNBody = wNB,alNBody = aNB)
@@ -111,7 +111,7 @@ system.addforce(-b*wNA,wNA)
 system.addforce(-Tl*B.z,wNB)
 system.addforce((V-i*R - kv*G*qB_d)*M.x,i*M.x)
 eq_d = []
-#eq_d = [N.getw_(A).dot(N.z) - G*wB]
+eq_d = [wNA.dot(N.z) - G*wNB.dot(N.z)]
 #eq_d = [N.getw_(A).dot(N.z) - G*N.getw_(B).dot(N.z)]
 eq_dd= [system.derivative(item) for item in eq_d]
 
