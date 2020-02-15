@@ -35,22 +35,22 @@ tfinal = 5
 tstep = 1/30
 t = numpy.r_[tinitial:tfinal:tstep]
 
-Differentiable('qA',limit=2)
-Differentiable('qB',limit=2)
-Differentiable('qC',limit=2)
+qA,qA_d = Differentiable('qA',limit=2)
+qB,qB_d = Differentiable('qB',limit=2)
+qC,qC_d = Differentiable('qC',limit=2)
 
-Differentiable('wx',ii = 1,limit=3)
-Differentiable('wy',ii = 1,limit=3)
-Differentiable('wz',ii = 1,limit=3)
+wx,wx_d= Differentiable('wx',ii = 1,limit=3)
+wy,wy_d= Differentiable('wy',ii = 1,limit=3)
+wz,wz_d= Differentiable('wz',ii = 1,limit=3)
 
 #Differentiable('x')
 #Differentiable('y')
 #Differentiable('z')
 
-Constant(1,'mC')
-Constant(2,'Ixx')
-Constant(3,'Iyy')
-Constant(1,'Izz')
+mC = Constant(1,'mC')
+Ixx = Constant(2,'Ixx')
+Iyy = Constant(3,'Iyy')
+Izz = Constant(1,'Izz')
 
 initialvalues = {}
 initialvalues[qA]=0*pi/180
@@ -77,10 +77,10 @@ initialvalues[wz_d]=0
 #statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in [wx,wy,wz]]
 
-Frame('N')
-Frame('A')
-Frame('B')
-Frame('C')
+N = Frame('N')
+A = Frame('A')
+B = Frame('B')
+C = Frame('C')
 
 system.set_newtonian(N)
 A.rotate_fixed_axis_directed(N,[1,0,0],qA,system)

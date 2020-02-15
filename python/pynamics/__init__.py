@@ -19,7 +19,7 @@ import sys
 
 ZERO = sympy.Number(0)
 dimension = 3
-script_mode = True
+script_mode = False
 
 import logging
 logger = logging.getLogger('pynamics')

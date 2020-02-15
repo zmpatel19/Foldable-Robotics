@@ -14,7 +14,6 @@ from pynamics.dyadic import Dyadic
 from pynamics.output import Output,PointsOutput
 #from pynamics.particle import Particle
 import pynamics.integration
-pynamics.script_mode = True
 import sympy
 #import logging
 #pynamics.logger.setLevel(logging.ERROR)
@@ -35,33 +34,33 @@ t = numpy.r_[tinitial:tfinal:tstep]
 
 ang_ini = 0
 
-Differentiable('x',ini=[0,10*cos(ang_ini*pi/180)])
-Differentiable('y',ini=[1,10*sin(ang_ini*pi/180)])
-Differentiable('z',ini=[0,0])
+x,x_d,x_dd = Differentiable('x',ini=[0,10*cos(ang_ini*pi/180)])
+y,y_d,y_dd = Differentiable('y',ini=[1,10*sin(ang_ini*pi/180)])
+z,z_d,z_dd = Differentiable('z',ini=[0,0])
 
-Differentiable('qA',ini=[0,0])
-Differentiable('qB',ini=[0,0])
-Differentiable('qC',ini=[ang_ini*pi/180,0])
+qA,qA_d,qA_dd = Differentiable('qA',ini=[0,0])
+qB,qB_d,qB_dd = Differentiable('qB',ini=[0,0])
+qC,qC_d,qC_dd = Differentiable('qC',ini=[ang_ini*pi/180,0])
 
 
-Constant(.05,'mC')
-Constant(9.81,'g')
-Constant(6e-3,'I_11')
-Constant(1.292,'rho')
-Constant(.1,'Sw')
-Constant(.025,'Se')
-Constant(.35,'l')
-Constant(-.03,'lw')
-Constant(.04,'le')
-Constant(3*pi/180,'qE')
+mC = Constant(.05,'mC')
+g = Constant(9.81,'g')
+I_11=Constant(6e-3,'I_11')
+rho = Constant(1.292,'rho')
+Sw = Constant(.1,'Sw')
+Se = Constant(.025,'Se')
+l = Constant(.35,'l')
+lw = Constant(-.03,'lw')
+le = Constant(.04,'le')
+qE = Constant(3*pi/180,'qE')
 
 ini = system.get_ini()
 
-Frame('N')
-Frame('A')
-Frame('B')
-Frame('C')
-Frame('E')
+N = Frame('N')
+A = Frame('A')
+B = Frame('B')
+C = Frame('C')
+E = Frame('E')
 
 system.set_newtonian(N)
 A.rotate_fixed_axis_directed(N,[1,0,0],qA)
