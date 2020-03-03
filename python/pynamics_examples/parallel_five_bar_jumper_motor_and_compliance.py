@@ -375,4 +375,4 @@ plt.figure()
 for item in y[::30]:
     plt.plot(*(item.T))
 
-points_output.animate(fps = 30, movie_name='parallel_five_bar_jumper.mp4',lw=2)
+points_output.animate(fps = 30, movie_name='parallel_five_bar_jumper_motor_compliance.mp4',lw=2)

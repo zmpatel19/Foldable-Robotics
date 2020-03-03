@@ -28,14 +28,16 @@ pynamics.set_system(__name__,system)
 
 
 tinitial = 0
-tfinal = 2.5
+tfinal = 5
 tstep = 1/30
 t = numpy.r_[tinitial:tfinal:tstep]
 
 ang_ini = 0
 
-x,x_d,x_dd = Differentiable('x',ini=[0,10*cos(ang_ini*pi/180)])
-y,y_d,y_dd = Differentiable('y',ini=[1,10*sin(ang_ini*pi/180)])
+v=1
+
+x,x_d,x_dd = Differentiable('x',ini=[0,v*cos(ang_ini*pi/180)])
+y,y_d,y_dd = Differentiable('y',ini=[1,v*sin(ang_ini*pi/180)])
 z,z_d,z_dd = Differentiable('z',ini=[0,0])
 
 qA,qA_d,qA_dd = Differentiable('qA',ini=[0,0])
@@ -132,4 +134,4 @@ plt.figure()
 for item in y:
     plt.plot(*(item.T),lw=2,marker='o')
 #
-po.animate(fps = 30, movie_name='body_in_space.mp4',lw=2,marker='o')
+po.animate(fps = 30, movie_name='glider.mp4',lw=2,marker='o')
