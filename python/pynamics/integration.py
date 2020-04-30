@@ -9,3 +9,11 @@ def integrate_odeint(*arguments,**keyword_arguments):
     result = scipy.integrate.odeint(*arguments,**keyword_arguments)
     logger.info('finished integration')
     return result
+
+def integrate_RK(*arguments,**keyword_arguments):
+    import scipy.integrate
+    
+    logger.info('beginning integration')
+    result = scipy.integrate.RK45(*arguments,**keyword_arguments)
+    logger.info('finished integration')
+    return result
