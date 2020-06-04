@@ -37,7 +37,9 @@ class Frame(TreeNode,NameGenerator):
         self.y.add_component(self,[0,1,0])
         self.z.add_component(self,[0,0,1])
         
-        self.add_rotation(Rotation(self,self,sympy.Matrix.eye(3),sympy.Number(0)*self.x))
+        r = Rotation(self,self,sympy.Matrix.eye(3))
+        r.set_w(sympy.Number(0)*self.x)
+        self.add_rotation(r)
         pynamics.addself(self,name)
         
     def add_rotation(self,rotation):
@@ -72,7 +74,8 @@ class Frame(TreeNode,NameGenerator):
             for R,w_,to_frame in zip(Rs,w_s,to_frames[1:]):
                 R_final = R*R_final
                 w_final += w_
-                rotation = Rotation(self,to_frame,R_final,w_final)
+                rotation = Rotation(self,to_frame,R_final)
+                rotation.set_w(w_final)
                 self.add_precomputed(rotation)
                 to_frame.add_precomputed(rotation)
 #            rotation = Rotation(self,to_frame,R_final,w_final)

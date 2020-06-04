@@ -6,11 +6,13 @@ Please see LICENSE for full license.
 """
 
 import sympy
+sympy.init_printing(use_latex=False)
 import pynamics
 import numpy
 import scipy
 from pynamics.force import Force
 from pynamics.spring import Spring
+from pynamics.variable_types import Differentiable
 
 import logging
 logger = logging.getLogger('pynamics.system')
@@ -111,7 +113,7 @@ class System(object):
 #    def addKE(self,KE):
 #        self.KE+=KE
 
-    def add_derivative(self,expression,variable):
+    def set_derivative(self,expression,variable):
         self.derivatives[expression]=variable
 
     def add_constant(self,constant):
@@ -465,11 +467,21 @@ class System(object):
         return x_dyn,x_con    
 
     def derivative(self,expression):
-        for ii,a in enumerate(self.derivatives.keys()):
-            if ii==0:
-                result = expression.diff(a)*self.derivatives[a]
-            else:
-                result += expression.diff(a)*self.derivatives[a]
+        # for ii,a in enumerate(self.derivatives.keys()):
+        #     if ii==0:
+        #         result = expression.diff(a)*self.derivatives[a]
+        #     else:
+        #         result += expression.diff(a)*self.derivatives[a]
+        # return result
+        import sympy
+        all_differentiables = list(expression.atoms(Differentiable))
+        result = expression*0
+        for ii,a in enumerate(all_differentiables):
+            # if ii==0:
+                # result = expression.diff(a)*self.derivatives[a]
+            # else:
+                # result += expression.diff(a)*self.derivatives[a]
+             result += expression.diff(a)*self.derivatives[a]
         return result
 
     def get_ini(self):

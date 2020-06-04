@@ -77,3 +77,5 @@ def toc():
     logger.info(str(time.time()-time0))
 
 #t = sympy.Symbol('t')
+
+automatic_differentiate = True
