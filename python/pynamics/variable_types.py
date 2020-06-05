@@ -54,20 +54,20 @@ class Differentiable(sympy.Symbol,NameGenerator):
                 variable = sympy.Symbol.__new__(cls,subname)
             else:
                 subname = name+'_'+'d'*kk
-                if jj==2:
+                if jj==limit-1:
                     variable = Variable(subname)
                 else:
                     variable = sympy.Symbol.__new__(cls,subname)
 
-            system.add_q(variable,jj)
             pynamics.addself(variable,subname)
 
             output.append(variable)
-            if jj!=2:
+            if jj!=limit-1:
                 differentiables.append(variable)
-            
-        for item in differentiables:
-            system.set_derivative(item,None)
+                system.add_q(variable,jj)
+
+        # for item in differentiables:
+        #     system.set_derivative(item,None)
 
         for kk,(a,a_d) in enumerate(zip(output[:-1],output[1:])):
             system.set_derivative(a,a_d)

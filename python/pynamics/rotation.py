@@ -30,7 +30,7 @@ def build_fixed_axis(axis,q,frame,sys = None):
 
     return R,axis
 
-def w_from_fixed_axis(axis,q,frame,sys=None)
+def w_from_fixed_axis(axis,q,frame,sys=None):
     sys = sys or pynamics.get_system()
 
     axis = sympy.Matrix(axis)
@@ -74,6 +74,7 @@ def w_from_der(R,f,sys):
     w = wx*f.x + wy*f.y + wz*f.z
     return w
 
+
 class Rotation(object):
     def __init__(self,f1,f2,R):
         self.f1 = f1
@@ -81,8 +82,8 @@ class Rotation(object):
         self._R = R
         # self.w_ = w_
 
-    def set_w(self,w):
-        self.w_ = w
+    # def set_w(self,w):
+    #     self.w_ = w
  
     def to_other(self,f):
         if f==self.f1:
@@ -91,6 +92,54 @@ class Rotation(object):
             return self._R.T
         else:
             raise(Exception('frame not in this rotation'))
+
+    # def w__from(self,f):
+    #     if f==self.f1:
+    #         return self.w_
+    #     elif f==self.f2:
+    #         return -self.w_
+    #     else:
+    #         raise(Exception('frame not in this rotation'))
+
+    def other(self,f):
+        if f==self.f1:
+            return self.f2
+        elif f==self.f2:
+            return self.f1
+        else:
+            raise(Exception('frame not in this rotation'))
+            
+    @classmethod
+    def build_fixed_axis(cls,f1,f2,axis,q,sys = None):
+        R,fixedaxis = build_fixed_axis(axis,q,f1,sys)
+        # w = w_from_fixed_axis(axis,q,f1,sys)
+        new = cls(f1,f2,R)
+        # if pynamics.automatic_differentiate:
+            # new.set_w(w)
+        return new
+        
+    # def w_from_der(self,sys):
+    #     return w_from_der(self.R.T,self.f2,sys)
+    
+
+
+class RotationalVelocity(object):
+    def __init__(self,f1,f2,w):
+        self.f1 = f1
+        self.f2 = f2
+        self.w_ = w
+        # self.w_ = w_
+
+    # def set_w(self,w):
+    #     self.w_ = w
+ 
+    # def to_other(self,f):
+    #     if f==self.f1:
+    #         return self._R
+    #     elif f==self.f2:
+    #         return self._R.T
+    #     else:
+    #         raise(Exception('frame not in this rotation'))
 
     def w__from(self,f):
         if f==self.f1:
@@ -110,14 +159,16 @@ class Rotation(object):
             
     @classmethod
     def build_fixed_axis(cls,f1,f2,axis,q,sys = None):
-        R,fixedaxis = build_fixed_axis(axis,q,f1,sys)
+        # R,fixedaxis = build_fixed_axis(axis,q,f1,sys)
         w = w_from_fixed_axis(axis,q,f1,sys)
-        new = cls(f1,f2,R)
-        new.set_w(w)
+        new = cls(f1,f2,w)
+        # if pynamics.automatic_differentiate:
+            # new.set_w(w)
         return new
+
         
-    def w_from_der(self,sys):
-        return w_from_der(self.R.T,self.f2,sys)
+    # def w_from_der(self,sys):
+    #     return w_from_der(self.R.T,self.f2,sys)    
 
 # class FixedAxisRotation(Rotation):
 #     def __init__(self,f1,f2,R,q,axis):

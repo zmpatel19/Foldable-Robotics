@@ -6,6 +6,7 @@ Please see LICENSE for full license.
 """
 
 import pynamics
+pynamics.automatic_differentiate=False
 #pynamics.script_mode = False
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
@@ -89,49 +90,52 @@ C.rotate_fixed_axis_directed(B,[0,0,1],qC,system)
 
 #pCcm=x*N.x+y*N.y+z*N.z
 pCcm=0*N.x
-wNC = N.getw_(C)
+
+# wNC = N.getw_(C)
 
 IC = Dyadic.build(C,Ixx,Iyy,Izz)
 
 w1 = N.getw_(C)
 w2 = wx*C.x+wy*C.y+wz*C.z
+# C.set_w(N, w2)
+N.set_w(C,w2)
 
-eq0 = w1-w2
-eq = []
-eq.append(eq0.dot(N.x))
-eq.append(eq0.dot(N.y))
-eq.append(eq0.dot(N.z))
+# eq0 = w1-w2
+# eq = []
+# eq.append(eq0.dot(N.x))
+# eq.append(eq0.dot(N.y))
+# eq.append(eq0.dot(N.z))
 
-eq_dd = [system.derivative(item) for item in eq]
+# eq_dd = [system.derivative(item) for item in eq]
 
-import sympy
-ind = sympy.Matrix([wx,wy,wz])
-dep = sympy.Matrix([qA_d,qB_d,qC_d])
+# import sympy
+# ind = sympy.Matrix([wx,wy,wz])
+# dep = sympy.Matrix([qA_d,qB_d,qC_d])
 
-EQ = sympy.Matrix(eq)
-A = EQ.jacobian(ind)
-B = EQ.jacobian(dep)
+# EQ = sympy.Matrix(eq)
+# A = EQ.jacobian(ind)
+# B = EQ.jacobian(dep)
 ## 
 #C = EQ - A*ind - B*dep
 
-dep2 = sympy.simplify(B.solve(-(A),method = 'LU'))
+# dep2 = sympy.simplify(B.solve(-(A),method = 'LU'))
 #eq_d = [item.time_derivative() for item in eq]
 
-Body('BodyC',C,pCcm,mC,IC,wNBody=w2)
+BodyC = Body('BodyC',C,pCcm,mC,IC,wNBody=w2)
 
 system.addforcegravity(-g*N.y)
 
 points = [0*N.x,pCcm]
 
-ang = [wNC.dot(C.x),wNC.dot(C.y),wNC.dot(C.z)]
+# ang = [wNC.dot(C.x),wNC.dot(C.y),wNC.dot(C.z)]
 
 f,ma = system.getdynamics([wx,wy,wz])
-func1 = system.state_space_post_invert(f,ma,eq_dd)
+func1 = system.state_space_post_invert(f,ma,q_acceleration=[wx_d,wy_d,wz_d])
 states=pynamics.integration.integrate_odeint(func1,ini,t, args=({'constants':system.constant_values},))
 
-output = Output(ang,system)
-output.calc(states)
-output.plot_time()
+# output = Output(ang,system)
+# output.calc(states)
+# output.plot_time()
 
 po = PointsOutput(points,system)
 po.calc(states)
