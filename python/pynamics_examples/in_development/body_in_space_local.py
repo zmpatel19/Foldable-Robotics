@@ -18,6 +18,7 @@ from pynamics.particle import Particle
 import pynamics.integration
 pynamics.script_mode = True
 
+import sympy
 #import logging
 #pynamics.logger.setLevel(logging.ERROR)
 #pynamics.system.logger.setLevel(logging.ERROR)
@@ -100,25 +101,27 @@ w2 = wx*C.x+wy*C.y+wz*C.z
 # C.set_w(N, w2)
 N.set_w(C,w2)
 
-# eq0 = w1-w2
-# eq = []
-# eq.append(eq0.dot(N.x))
-# eq.append(eq0.dot(N.y))
-# eq.append(eq0.dot(N.z))
+
+eq0 = w1-w2
+eq = []
+eq.append(eq0.dot(B.x))
+eq.append(eq0.dot(B.y))
+eq.append(eq0.dot(B.z))
 
 # eq_dd = [system.derivative(item) for item in eq]
 
-# import sympy
-# ind = sympy.Matrix([wx,wy,wz])
-# dep = sympy.Matrix([qA_d,qB_d,qC_d])
 
-# EQ = sympy.Matrix(eq)
-# A = EQ.jacobian(ind)
-# B = EQ.jacobian(dep)
-## 
-#C = EQ - A*ind - B*dep
+import sympy
+ind = sympy.Matrix([wx,wy,wz])
+dep = sympy.Matrix([qA_d,qB_d,qC_d])
 
-# dep2 = sympy.simplify(B.solve(-(A),method = 'LU'))
+EQ = sympy.Matrix(eq)
+AA = EQ.jacobian(ind)
+BB = EQ.jacobian(dep)
+
+CC = EQ - AA*ind - BB*dep
+
+# dep2 = sympy.simplify(BB.solve(-(AA),method = 'LU'))
 #eq_d = [item.time_derivative() for item in eq]
 
 BodyC = Body('BodyC',C,pCcm,mC,IC,wNBody=w2)
@@ -130,8 +133,8 @@ points = [0*N.x,pCcm]
 # ang = [wNC.dot(C.x),wNC.dot(C.y),wNC.dot(C.z)]
 
 f,ma = system.getdynamics([wx,wy,wz])
-func1 = system.state_space_post_invert(f,ma,q_acceleration=[wx_d,wy_d,wz_d])
-states=pynamics.integration.integrate_odeint(func1,ini,t, args=({'constants':system.constant_values},))
+func1 = system.state_space_post_invert(f,ma,q_acceleration=[wx_d,wy_d,wz_d],eq_dd=eq,constants = system.constant_values)
+states=pynamics.integration.integrate_odeint(func1,ini,t)
 
 # output = Output(ang,system)
 # output.calc(states)
