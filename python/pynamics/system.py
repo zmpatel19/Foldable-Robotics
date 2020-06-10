@@ -171,40 +171,74 @@ class System(object):
         return generalized
         
     
-    def solve_f_ma(self,f,ma,q_dd,inv_method = 'LU',constants = None):
-        constants = constants or {}
+    # def solve_f_ma(self,f,ma,q_dd,inv_method = 'LU',constants = None):
+    #     constants = constants or {}
         
-        f = sympy.Matrix(f)
-        ma = sympy.Matrix(ma)
+    #     f = sympy.Matrix(f)
+    #     ma = sympy.Matrix(ma)
         
-        Ax_b = ma-f
-        Ax_b = Ax_b.subs(constants)
-        A = Ax_b.jacobian(q_dd)
-        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+    #     Ax_b = ma-f
+    #     Ax_b = Ax_b.subs(constants)
+    #     A = Ax_b.jacobian(q_dd)
+    #     b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
-        var_dd = A.solve(b,method = inv_method)
-        return var_dd
+    #     var_dd = A.solve(b,method = inv_method)
+    #     return var_dd
         
-    def state_space_pre_invert(self,f,ma,inv_method = 'LU',constants = None,q_acceleration = None, q_speed = None, q_position = None):
+    def state_space_pre_invert(self,f,ma,inv_method = 'LU',constants = None,q_acceleration = None, q_speed = None, q_position = None,eq= None,q_ind = None,q_dep = None):
         logger.info('solving a = f/m and creating function')
         '''pre-invert A matrix'''
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
-
+        
         q = q_position or self.get_q(0)
         q_d = q_speed or self.get_q(1)
         q_dd = q_acceleration or self.get_q(2)
         q_state = q+q_d
+        q_ind = q_ind or []
+        q_dep = q_dep or []
+        eq = eq or []
+        
+        if len(eq)>0:
+            EQ = sympy.Matrix(eq)
+            AA = EQ.jacobian(sympy.Matrix(q_ind))
+            BB = EQ.jacobian(sympy.Matrix(q_dep))
+        
+            CC = EQ - AA*(sympy.Matrix(q_ind)) - BB*(sympy.Matrix(q_dep))
+            assert(sum(CC)==0)
+        
+            dep2 = sympy.simplify(BB.solve(-(AA),method = inv_method))
         
 
-        var_dd =self.solve_f_ma(f,ma,q_dd,inv_method,constants)
-        state_full = q_state+remaining_constant_keys+[self.t]
+        f = sympy.Matrix(f)
+        ma = sympy.Matrix(ma)
         
-        f_var_dd = sympy.lambdify(state_full,var_dd)
+        Ax_b = ma-f
+        if not not constants:
+            Ax_b = Ax_b.subs(constants)
 
-        position_derivatives = [self.derivative(item) for item in q]
-        indeces = [q_state.index(element) for element in position_derivatives]
+        if len(eq)>0:
+            subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
+            Ax_b = Ax_b.subs(subs1)
+        Ax_b = sympy.simplify(Ax_b)
         
+        A = Ax_b.jacobian(q_dd)
+        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+        
+        acc = A.solve(b,method = inv_method)
+        #         # return var_dd
+            
+        state_augmented = q_state+remaining_constant_keys+[self.t]
+        
+        f_acc = sympy.lambdify(state_augmented,acc)
+        
+        position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
+        if len(eq)>0:
+            position_derivatives = position_derivatives.subs(subs1)
+        if not not constants:
+            position_derivatives = position_derivatives.subs(constants)
+        f_position_derivatives = sympy.lambdify(state_augmented,position_derivatives)
+
         @static_vars(ii=0)
         def func(state,time,*args):
             if func.ii%1000==0:
@@ -217,10 +251,10 @@ class System(object):
                 kwargs = {}
 
             constant_values = [kwargs['constants'][item] for item in remaining_constant_keys]
-            state_i_full = list(state)+constant_values+[time]
+            state_i_augmented = list(state)+constant_values+[time]
             
-            x1 = [state[ii] for ii in indeces]
-            x2 = numpy.array(f_var_dd(*(state_i_full))).flatten()
+            x1 = numpy.array(f_position_derivatives(*state_i_augmented),dtype=float).flatten()
+            x2 = numpy.array(f_acc(*(state_i_augmented))).flatten()
             x3 = numpy.r_[x1,x2]
             x4 = x3.flatten().tolist()
             
@@ -290,8 +324,11 @@ class System(object):
         fb = sympy.lambdify(state_full,b_full)
         factive = sympy.lambdify(state_full,eq_active)
 
-        position_derivatives = [self.derivative(item) for item in q]
-        indeces = [q_state.index(element) for element in position_derivatives]
+        position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
+        if not not constants:
+            position_derivatives = position_derivatives.subs(constants)
+        f_position_derivatives = sympy.lambdify(state_full,position_derivatives)
+        
     
         @static_vars(ii=0)
         def func(state,time,*args):
@@ -317,7 +354,7 @@ class System(object):
             Ai=(f2.dot(Ai)).dot(f2.T)
             bi=f2.dot(bi)
             
-            x1 = [state[ii] for ii in indeces]
+            x1 = numpy.array(f_position_derivatives(*state_i_full),dtype=float).flatten()
             x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
@@ -391,9 +428,11 @@ class System(object):
         feq_d = sympy.lambdify(state_full,eq_d)
         factive = sympy.lambdify(state_full,eq_active)
 
-        position_derivatives = [self.derivative(item) for item in q]
-        indeces = [q_state.index(element) for element in position_derivatives]
-    
+        position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
+        if not not constants:
+            position_derivatives = position_derivatives.subs(constants)
+        f_position_derivatives = sympy.lambdify(state_full,position_derivatives)
+
         @static_vars(ii=0)
         def func(state,time,*args):
             if func.ii%1000==0:
@@ -425,7 +464,7 @@ class System(object):
             Ai=(f2.dot(Ai)).dot(f2.T)
             bi=f2.dot(bi)
             
-            x1 = [state[ii] for ii in indeces]
+            x1 = numpy.array(f_position_derivatives(*state_i_full),dtype=float).flatten()
             x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
@@ -434,7 +473,7 @@ class System(object):
         return func       
 
     @staticmethod
-    def assembleconstrained(eq_dyn,eq_con,q_dyn,q_con,method='LU'):
+    def assembleconstrained(eq_dyn,eq_con,q_dyn,q_con):
         logger.info('solving constrained')
         AC1x_b1 = sympy.Matrix(eq_dyn)
         C2x_b2 = sympy.Matrix(eq_con)
@@ -459,7 +498,7 @@ class System(object):
         
     @classmethod
     def solveconstraineddynamics(cls,eq_dyn,eq_con,q_dyn,q_con,method='LU'):
-        AA,b,x = cls.assembleconstrained(eq_dyn,eq_con,q_dyn,q_con,method=method)
+        AA,b,x = cls.assembleconstrained(eq_dyn,eq_con,q_dyn,q_con)
         AA_inv = AA.inv(method = method)
         xx = AA_inv*b
         x_dyn = xx[0:len(q_dyn),:]

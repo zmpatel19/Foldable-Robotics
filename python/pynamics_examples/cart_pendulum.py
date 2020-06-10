@@ -87,7 +87,6 @@ eq_d= [system.derivative(item) for item in eq]
 eq_dd= [system.derivative(item) for item in eq_d]
 
 f,ma = system.getdynamics()
-#func1 = system.state_space_pre_invert(f,ma,constants = system.constant_values)
 func1 = system.state_space_post_invert(f,ma,eq_dd,constants = system.constant_values)
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,args=({'constants':{},'alpha':1e2,'beta':1e1},))
 
