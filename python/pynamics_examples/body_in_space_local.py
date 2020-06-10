@@ -113,7 +113,6 @@ points = [1*C.x,0*C.x,1*C.y,0*C.y,1*C.z]
 
 # ang = [wNC.dot(C.x),wNC.dot(C.y),wNC.dot(C.z)]
 
-f,ma = system.getdynamics([wx,wy,wz])
 # func1 = system.state_space_post_invert(f,ma,q_acceleration=[wx_d,wy_d,wz_d],eq_dd=eq,constants = system.constant_values)
 
 # logger.info('solving a = f/m and creating function')
@@ -124,6 +123,7 @@ q_speed = [wx, wy, wz]
 q_acceleration = None
 # inv_method = 'LU'
 # q_dd = q_acceleration=[wx_d,wy_d,wz_d]
+f,ma = system.getdynamics(q_speed)
 
 func1 = system.state_space_pre_invert(f,ma,constants = constants,q_position=q_position,q_speed=q_speed,q_acceleration=q_acceleration,q_ind = q_ind,q_dep = q_dep,eq = eq)
 
