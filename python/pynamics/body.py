@@ -11,8 +11,7 @@ import pynamics.inertia
 from pynamics.force import Force
 
 class Body(NameGenerator):
-    def __init__(self,name,frame,pCM,mass,inertia_CM,system = None,about_point = None,vCM = None,aCM=None,wNBody = None, alNBody = None,inertia_about_point = None):
-        self.about_point = about_point or pCM
+    def __init__(self,name,frame,pCM,mass,inertia_CM,system = None,about_point = None,about_point_d = None,about_point_dd = None,vCM = None,aCM=None,wNBody = None, alNBody = None,inertia_about_point = None):
         system = system or pynamics.get_system()
 
         name = name or self.generate_name()
@@ -23,13 +22,21 @@ class Body(NameGenerator):
         self.pCM = pCM
         self.mass = mass
         self.inertia_CM= inertia_CM
-        self.inertia_about_point = inertia_about_point or pynamics.inertia.shift_from_cm(self.inertia_CM,self.pCM,self.about_point,self.mass,self.frame)
         self.vCM= vCM or self.pCM.time_derivative(self.system.newtonian,self.system)
         self.aCM= aCM or self.vCM.time_derivative(self.system.newtonian,self.system)
 
-        self.about_point_d=self.about_point.time_derivative(self.system.newtonian,self.system)
-        self.about_point_dd=self.about_point_d.time_derivative(self.system.newtonian,self.system)
+
+        if about_point is None:
+            self.about_point = pCM
+            self.about_point_d = self.vCM
+            self.about_point_dd =self.aCM
+        else:
+            self.about_point = about_point
+            self.about_point_d = about_point_d or self.about_point.time_derivative(self.system.newtonian,self.system)
+            self.about_point_dd = about_point_dd or self.about_point_d.time_derivative(self.system.newtonian,self.system)
         
+        self.inertia_about_point = inertia_about_point or pynamics.inertia.shift_from_cm(self.inertia_CM,self.pCM,self.about_point,self.mass,self.frame)
+
         self.gravityvector = None
         self.forcegravity = None        
         

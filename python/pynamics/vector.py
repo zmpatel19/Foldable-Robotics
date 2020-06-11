@@ -71,23 +71,23 @@ class Vector(object):
         newvec.clean()
         return newvec
     
-    def dot(self,other,frame='source'):
+    def dot(self,other,frame='mid'):
         from pynamics.dyadic import Dyad,Dyadic
         result = sympy.Number(0)
         if isinstance(other,Dyad) or isinstance(other,Dyadic):
             return other.rdot(self)
-        return self.product_simplest(other,result,'dot',self.frame_dot,frame='mid')
-#        return self.product_simple(other,result,'dot',self.frame_dot)
-#        return self.product_by_basis_vectors(other,result,'dot',self.frame_dot)
+        return self.product_simplest(other,result,'dot',self.frame_dot,frame=frame)
+        # return self.product_simple(other,result,'dot',self.frame_dot)
+        # return self.product_by_basis_vectors(other,result,'dot',self.frame_dot)
 
-    def cross(self,other,frame='source'):
+    def cross(self,other,frame='mid'):
         from pynamics.dyadic import Dyad,Dyadic
         result = Vector()
         if isinstance(other,Dyad) or isinstance(other,Dyadic):
             return other.rcross(self)
-        result = self.product_simplest(other,result,'cross',self.frame_cross,frame='mid')
-#        result = self.product_simple(other,result,'cross',self.frame_cross)
-#        result = self.product_by_basis_vectors(other,result,'cross',self.frame_cross)
+        result = self.product_simplest(other,result,'cross',self.frame_cross,frame=frame)
+        # result = self.product_simple(other,result,'cross',self.frame_cross)
+        # result = self.product_by_basis_vectors(other,result,'cross',self.frame_cross)
         result.clean()
         return result
     
@@ -172,7 +172,7 @@ class Vector(object):
 #            return  result2
                 
 
-    def product_simplest(self,other,result_seed,function,inner_function,frame = 'source'):
+    def product_simplest(self,other,result_seed,function,inner_function,frame = 'mid'):
         result = result_seed.copy()
         for frame2,vec2 in other.components.items():
             vector2 = Vector({frame2:vec2})
@@ -190,7 +190,7 @@ class Vector(object):
                         ii = int(m/2)
                     expressed_frame = path[ii].myclass
                 else:
-                    expressed_frame = frame1                    
+                    expressed_frame = frame                    
 
                 vector1 = Vector({frame1:vec1})
                 localresult = inner_function(vector1.express(expressed_frame),vector2.express(expressed_frame),expressed_frame)

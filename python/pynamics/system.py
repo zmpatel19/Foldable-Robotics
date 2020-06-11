@@ -31,6 +31,7 @@ class System(object):
         self.constants = []
         self.constant_values = {}
         self.forces = []
+        self.constraints = []
 #        self.momentum = []
 #        self.KE = sympy.Number(0)
         self.bodies = []
@@ -52,9 +53,18 @@ class System(object):
         else:
             self.q[ii] = [q]
 
+    def get_dependent_solved(self):
+        q_dep = []
+        for constraint in self.constraints:
+            if constraint.solved:
+                q_dep.extend(constraint.q_dep)
+        return q_dep
+
     def get_q(self,ii):
+        q_dep = self.get_dependent_solved()
         if ii in self.q:
-            return self.q[ii]
+            q_ind = [item for item in self.q[ii] if item not in q_dep]
+            return q_ind
         else:
             return []
         
@@ -185,7 +195,7 @@ class System(object):
     #     var_dd = A.solve(b,method = inv_method)
     #     return var_dd
         
-    def state_space_pre_invert(self,f,ma,inv_method = 'LU',constants = None,q_acceleration = None, q_speed = None, q_position = None,eq= None,q_ind = None,q_dep = None):
+    def state_space_pre_invert(self,f,ma,inv_method = 'LU',constants = None,q_acceleration = None, q_speed = None, q_position = None):
         logger.info('solving a = f/m and creating function')
         '''pre-invert A matrix'''
         constants = constants or {}
@@ -195,36 +205,66 @@ class System(object):
         q_d = q_speed or self.get_q(1)
         q_dd = q_acceleration or self.get_q(2)
         q_state = q+q_d
-        q_ind = q_ind or []
-        q_dep = q_dep or []
-        eq = eq or []
+        # q_ind = q_ind or []
+        # q_dep = q_dep or []
+        # eq = eq or []
+# 
+        # logger.info('solving constraints')
         
-        if len(eq)>0:
-            EQ = sympy.Matrix(eq)
-            AA = EQ.jacobian(sympy.Matrix(q_ind))
-            BB = EQ.jacobian(sympy.Matrix(q_dep))
+        # for constra
+        # if len(eq)>0:
+        #     EQ = sympy.Matrix(eq)
+        #     AA = EQ.jacobian(sympy.Matrix(q_ind))
+        #     BB = EQ.jacobian(sympy.Matrix(q_dep))
         
-            CC = EQ - AA*(sympy.Matrix(q_ind)) - BB*(sympy.Matrix(q_dep))
-            assert(sum(CC)==0)
+        #     CC = EQ - AA*(sympy.Matrix(q_ind)) - BB*(sympy.Matrix(q_dep))
+        #     CC = sympy.simplify(CC)
+        #     assert(sum(CC)==0)
         
-            dep2 = sympy.simplify(BB.solve(-(AA),method = inv_method))
+        #     dep2 = sympy.simplify(BB.solve(-(AA),method = inv_method))
         
+        # logger.info('solved constraints.')
 
         f = sympy.Matrix(f)
         ma = sympy.Matrix(ma)
         
         Ax_b = ma-f
-        if not not constants:
-            Ax_b = Ax_b.subs(constants)
 
-        if len(eq)>0:
-            subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
-            Ax_b = Ax_b.subs(subs1)
-        Ax_b = sympy.simplify(Ax_b)
+        logger.info('substituting constants in Ma-f. ')
+        # if not not constants:
+        Ax_b = Ax_b.subs(constants)
+        # f = f.subs(constants)
+        # ma = ma.subs(constants)
+
+        logger.info('substituting constrained in Ma-f.' )
+        for constraint in self.constraints:
+            if constraint.solved:
+                # subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
+                Ax_b = Ax_b.subs(constraint.subs)
+                # ma = ma.subs(constraint.subs)
+                # f = f.subs(constraint.subs)
+
+        # logger.info('simplifying Ax-b')
+
+        # Ax_b = sympy.simplify(Ax_b)
+
+        logger.info('finding A')
         
         A = Ax_b.jacobian(q_dd)
+        # M = ma.jacobian(q_dd)
+
+        logger.info('finding b')
+
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+
+        # logger.info('simplifying A')
         
+        A = sympy.simplify(A)
+        # M = sympy.simplify(M)
+        
+        logger.info('solving M')
+        
+        # acc = M.solve(f,method = inv_method)
         acc = A.solve(b,method = inv_method)
         #         # return var_dd
             
@@ -233,10 +273,9 @@ class System(object):
         f_acc = sympy.lambdify(state_augmented,acc)
         
         position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
-        if len(eq)>0:
-            position_derivatives = position_derivatives.subs(subs1)
-        if not not constants:
-            position_derivatives = position_derivatives.subs(constants)
+        for constraint in self.constraints:
+            position_derivatives = position_derivatives.subs(constraint.subs)
+        position_derivatives = position_derivatives.subs(constants)
         f_position_derivatives = sympy.lambdify(state_augmented,position_derivatives)
 
         @static_vars(ii=0)
@@ -523,6 +562,9 @@ class System(object):
              result += expression.diff(a)*self.derivatives[a]
         return result
 
-    def get_ini(self):
-        return [self.ini[item] for item in self.get_state_variables()]
-                        
+    def get_ini(self,state_variables = None):
+        state_variables = state_variables or self.get_state_variables()
+        return [self.ini[item] for item in state_variables]
+    
+    def add_constraint(self, constraint):
+        self.constraints.append(constraint)
