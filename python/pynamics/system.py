@@ -568,3 +568,12 @@ class System(object):
     
     def add_constraint(self, constraint):
         self.constraints.append(constraint)
+    def merge_from(self,other):
+        
+        assert(not set(self.constants).intersection(set(other.constants)))
+        self.constants.extend(other.constants)
+        self.constant_values.update(other.constants)
+
+        assert(not set(self.derivatives.keys()).intersection(self.derivatives.keys()))
+        self.derivatives.update(other.derivatives)
+        
