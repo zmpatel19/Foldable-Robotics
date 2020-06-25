@@ -218,13 +218,13 @@ class Vector(object):
 #        result.clean()
         return result
 
-    def time_derivative(self,reference_frame = None,sys=None):    
-        sys = sys or pynamics.get_system()
-        reference_frame = reference_frame  or sys.newtonian
+    def time_derivative(self,reference_frame = None,system=None):    
+        system = system or pynamics.get_system()
+        reference_frame = reference_frame  or system.newtonian
         
         result = Vector()
         for frame,vector in self.components.items():
-            result+= Vector({frame:sys.derivative(vector)})
+            result+= Vector({frame:system.derivative(vector)})
             v1 = Vector({frame:vector})
             w_ = reference_frame.getw_(frame).express(frame)
             result+=w_.cross(v1,frame = 'mid')

@@ -21,7 +21,6 @@ class Constraint(object):
     def solve(self,inv_method = 'LU'):
         # eq = sympy.Matrix(eq)
         
-        
         logger.info('solving constraint')
 
         EQ = sympy.Matrix(self.eq)

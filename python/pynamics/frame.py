@@ -134,11 +134,11 @@ class Frame(NameGenerator):
         self.w_tree.add_branch(other.w_tree)        
 
 
-    def rotate_fixed_axis(self,fromframe,axis,q,sys = None):
-        sys = sys or pynamics.get_system()
+    def rotate_fixed_axis(self,fromframe,axis,q,system = None):
+        system = system or pynamics.get_system()
 
-        rotation = Rotation.build_fixed_axis(fromframe,self,axis,q,sys)
-        rotational_velocity = RotationalVelocity.build_fixed_axis(fromframe,self,axis,q,sys)
+        rotation = Rotation.build_fixed_axis(fromframe,self,axis,q,system)
+        rotational_velocity = RotationalVelocity.build_fixed_axis(fromframe,self,axis,q,system)
         self.add_rotation(rotation)
         self.add_w(rotational_velocity)
         fromframe.add_rotation(rotation)
@@ -146,8 +146,8 @@ class Frame(NameGenerator):
         fromframe.R_tree.add_branch(self.R_tree)        
         fromframe.w_tree.add_branch(self.w_tree)        
 
-    def rotate_fixed_axis_directed(self,fromframe,axis,q,sys=None):
-        self.rotate_fixed_axis(fromframe,axis,q,sys)
+    def rotate_fixed_axis_directed(self,fromframe,axis,q,system=None):
+        self.rotate_fixed_axis(fromframe,axis,q,system)
         
     def efficient_rep(self,other,functionname):
         key = (other,functionname)
