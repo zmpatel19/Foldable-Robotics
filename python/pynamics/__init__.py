@@ -41,6 +41,7 @@ if not logger.handlers:
     logger.addHandler(fh)
 
 systemname = '_system'
+integrator = 0
 
 def PynamicsObject(object):
     
