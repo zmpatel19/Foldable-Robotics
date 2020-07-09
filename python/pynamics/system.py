@@ -279,7 +279,15 @@ class System(object):
         f_position_derivatives = sympy.lambdify(state_augmented,position_derivatives)
 
         @static_vars(ii=0)
-        def func(state,time,*args):
+        def func(arg0,arg1,*args):
+        
+            if pynamics.integrator==0:
+                state = arg0
+                time = arg1
+            if pynamics.integrator==1:
+                time = arg0
+                state = arg1
+        
             if func.ii%1000==0:
                 logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
@@ -370,7 +378,15 @@ class System(object):
         
     
         @static_vars(ii=0)
-        def func(state,time,*args):
+        def func(arg0,arg1,*args):
+        
+            if pynamics.integrator==0:
+                time = arg1
+                state = arg0
+            if pynamics.integrator==1:
+                time = arg0
+                state = arg1
+        
             if func.ii%1000==0:
                 logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
@@ -473,7 +489,15 @@ class System(object):
         f_position_derivatives = sympy.lambdify(state_full,position_derivatives)
 
         @static_vars(ii=0)
-        def func(state,time,*args):
+        def func(arg0,arg1,*args):
+        
+            if pynamics.integrator==0:
+                state = arg0
+                time = arg1
+            if pynamics.integrator==1:
+                time = arg0
+                state = arg1
+
             if func.ii%1000==0:
                 logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
