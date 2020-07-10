@@ -340,6 +340,17 @@ class System(object):
             Ax_b = Ax_b.subs(constants)
             eq_active = eq_active.subs(constants)
             eq_dd = eq_dd.subs(constants)
+
+        logger.info('substituting constrained in Ma-f.' )
+        for constraint in self.constraints:
+            if constraint.solved:
+                # subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
+                Ax_b = Ax_b.subs(constraint.subs)
+                eq_active = eq_active.subs(constraint.subs)
+                eq_dd = eq_dd.subs(constraint.subs)
+                # ma = ma.subs(constraint.subs)
+                # f = f.subs(constraint.subs)
+
             
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
@@ -374,6 +385,11 @@ class System(object):
         position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
         if not not constants:
             position_derivatives = position_derivatives.subs(constants)
+        for constraint in self.constraints:
+            if constraint.solved:
+                # subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
+                position_derivatives = position_derivatives.subs(constraint.subs)
+            
         f_position_derivatives = sympy.lambdify(state_full,position_derivatives)
         
     
