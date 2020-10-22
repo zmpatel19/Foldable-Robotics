@@ -11,15 +11,15 @@ import logging
 logger = logging.getLogger('pynamics.output')
 
 class Output(object):
-    def __init__(self,y_exp, system=None, constant_values = None):
+    def __init__(self,y_exp, system=None, constant_values = None,state_variables = None):
         import sympy
         system = system or pynamics.get_system()
-
+        state_variables = state_variables or system.get_state_variables()
         constant_values = constant_values or system.constant_values
         self.y_expression = sympy.Matrix(y_exp)
         cons_s = list(constant_values.keys())
         self.cons_v = [constant_values[key] for key in cons_s]
-        self.fy_expression = sympy.lambdify(system.get_state_variables()+cons_s,self.y_expression)
+        self.fy_expression = sympy.lambdify(state_variables+cons_s,self.y_expression)
 
     def calc(self,x):
         logger.info('calculating outputs')
@@ -40,10 +40,11 @@ class Output(object):
             plt.plot(t,self.y)
 
 class PointsOutput(Output):
-    def __init__(self,y_exp, system=None, constant_values = None):
+    def __init__(self,y_exp, system=None, constant_values = None,state_variables = None,dot = None):
+        dot = dot or [system.newtonian.x,system.newtonian.y]
         system = system or pynamics.get_system()
-        y_exp = [item for item2 in y_exp for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
-        Output.__init__(self,y_exp, system, constant_values)
+        y_exp = [item for item2 in y_exp for item in [item2.dot(dotitem) for dotitem in dot]]
+        Output.__init__(self,y_exp, system, constant_values,state_variables)
 
     def calc(self,x):
         Output.calc(self,x)
@@ -127,3 +128,15 @@ class PointsOutput(Output):
         self.anim = animation.FuncAnimation(f, run, init_func=init,frames=y[::stepsize], interval=1/fps*1000, blit=True,repeat = True,repeat_delay=3000)        
         if movie_name is not None:
             self.anim.save(movie_name, fps=fps,writer='ffmpeg')
+            
+    def plot_time(self,stepsize=1):
+        import matplotlib.pyplot as plt
+        plt.figure()
+        try:
+            self.y
+        except AttributeError:
+            self.calc()
+
+        plt.plot(self.y[::stepsize,:,0].T,self.y[::stepsize,:,1].T)
+        plt.axis('equal')
+            

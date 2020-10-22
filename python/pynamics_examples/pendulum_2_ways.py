@@ -6,6 +6,7 @@ Please see LICENSE for full license.
 """
 
 import pynamics
+pynamics.integrator = 1
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant,Variable
 from pynamics.system import System
@@ -83,8 +84,8 @@ eq1_dd=system.derivative(system.derivative(eq1[0]))
 eq = [eq1_dd]
 
 f,ma = system.getdynamics()
-func = system.state_space_post_invert(f,ma,eq)
-states=pynamics.integration.integrate_odeint(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
+func = system.state_space_post_invert(f,ma,eq,constants=system.constant_values)
+states=pynamics.integration.integrate(func,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14)
 
 points = [pNA,pAB,pNA,pNA2,pAB2]
 points_output = PointsOutput(points,system)

@@ -6,11 +6,13 @@ Please see LICENSE for full license.
 """
 
 import sympy
+sympy.init_printing(use_latex=False)
 import pynamics
 import numpy
 import scipy
 from pynamics.force import Force
 from pynamics.spring import Spring
+from pynamics.variable_types import Differentiable
 
 import logging
 logger = logging.getLogger('pynamics.system')
@@ -29,6 +31,7 @@ class System(object):
         self.constants = []
         self.constant_values = {}
         self.forces = []
+        self.constraints = []
 #        self.momentum = []
 #        self.KE = sympy.Number(0)
         self.bodies = []
@@ -50,9 +53,18 @@ class System(object):
         else:
             self.q[ii] = [q]
 
+    def get_dependent_solved(self):
+        q_dep = []
+        for constraint in self.constraints:
+            if constraint.solved:
+                q_dep.extend(constraint.q_dep)
+        return q_dep
+
     def get_q(self,ii):
+        q_dep = self.get_dependent_solved()
         if ii in self.q:
-            return self.q[ii]
+            q_ind = [item for item in self.q[ii] if item not in q_dep]
+            return q_ind
         else:
             return []
         
@@ -111,7 +123,7 @@ class System(object):
 #    def addKE(self,KE):
 #        self.KE+=KE
 
-    def add_derivative(self,expression,variable):
+    def set_derivative(self,expression,variable):
         self.derivatives[expression]=variable
 
     def add_constant(self,constant):
@@ -169,42 +181,113 @@ class System(object):
         return generalized
         
     
-    def solve_f_ma(self,f,ma,q_dd,inv_method = 'LU',constants = None):
-        constants = constants or {}
+    # def solve_f_ma(self,f,ma,q_dd,inv_method = 'LU',constants = None):
+    #     constants = constants or {}
         
-        f = sympy.Matrix(f)
-        ma = sympy.Matrix(ma)
+    #     f = sympy.Matrix(f)
+    #     ma = sympy.Matrix(ma)
         
-        Ax_b = ma-f
-        Ax_b = Ax_b.subs(constants)
-        A = Ax_b.jacobian(q_dd)
-        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+    #     Ax_b = ma-f
+    #     Ax_b = Ax_b.subs(constants)
+    #     A = Ax_b.jacobian(q_dd)
+    #     b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
-        var_dd = A.solve(b,method = inv_method)
-        return var_dd
+    #     var_dd = A.solve(b,method = inv_method)
+    #     return var_dd
         
     def state_space_pre_invert(self,f,ma,inv_method = 'LU',constants = None,q_acceleration = None, q_speed = None, q_position = None):
         logger.info('solving a = f/m and creating function')
         '''pre-invert A matrix'''
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
-
+        
         q = q_position or self.get_q(0)
         q_d = q_speed or self.get_q(1)
         q_dd = q_acceleration or self.get_q(2)
         q_state = q+q_d
+        # q_ind = q_ind or []
+        # q_dep = q_dep or []
+        # eq = eq or []
+# 
+        # logger.info('solving constraints')
         
+        # for constra
+        # if len(eq)>0:
+        #     EQ = sympy.Matrix(eq)
+        #     AA = EQ.jacobian(sympy.Matrix(q_ind))
+        #     BB = EQ.jacobian(sympy.Matrix(q_dep))
+        
+        #     CC = EQ - AA*(sympy.Matrix(q_ind)) - BB*(sympy.Matrix(q_dep))
+        #     CC = sympy.simplify(CC)
+        #     assert(sum(CC)==0)
+        
+        #     dep2 = sympy.simplify(BB.solve(-(AA),method = inv_method))
+        
+        # logger.info('solved constraints.')
 
-        var_dd =self.solve_f_ma(f,ma,q_dd,inv_method,constants)
-        state_full = q_state+remaining_constant_keys+[self.t]
+        f = sympy.Matrix(f)
+        ma = sympy.Matrix(ma)
         
-        f_var_dd = sympy.lambdify(state_full,var_dd)
+        Ax_b = ma-f
 
-        position_derivatives = [self.derivative(item) for item in q]
-        indeces = [q_state.index(element) for element in position_derivatives]
+        logger.info('substituting constants in Ma-f. ')
+        # if not not constants:
+        Ax_b = Ax_b.subs(constants)
+        # f = f.subs(constants)
+        # ma = ma.subs(constants)
+
+        logger.info('substituting constrained in Ma-f.' )
+        for constraint in self.constraints:
+            if constraint.solved:
+                # subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
+                Ax_b = Ax_b.subs(constraint.subs)
+                # ma = ma.subs(constraint.subs)
+                # f = f.subs(constraint.subs)
+
+        # logger.info('simplifying Ax-b')
+
+        # Ax_b = sympy.simplify(Ax_b)
+
+        logger.info('finding A')
         
+        A = Ax_b.jacobian(q_dd)
+        # M = ma.jacobian(q_dd)
+
+        logger.info('finding b')
+
+        b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
+
+        # logger.info('simplifying A')
+        
+        A = sympy.simplify(A)
+        # M = sympy.simplify(M)
+        
+        logger.info('solving M')
+        
+        # acc = M.solve(f,method = inv_method)
+        acc = A.solve(b,method = inv_method)
+        #         # return var_dd
+            
+        state_augmented = q_state+remaining_constant_keys+[self.t]
+        
+        f_acc = sympy.lambdify(state_augmented,acc)
+        
+        position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
+        for constraint in self.constraints:
+            position_derivatives = position_derivatives.subs(constraint.subs)
+        position_derivatives = position_derivatives.subs(constants)
+        f_position_derivatives = sympy.lambdify(state_augmented,position_derivatives)
+
         @static_vars(ii=0)
-        def func(state,time,*args):
+        def func(arg0,arg1,*args):
+        
+            if pynamics.integrator==0:
+                state = arg0
+                time = arg1
+            if pynamics.integrator==1:
+                time = arg0
+                state = arg1
+        
             if func.ii%1000==0:
                 logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
@@ -215,10 +298,10 @@ class System(object):
                 kwargs = {}
 
             constant_values = [kwargs['constants'][item] for item in remaining_constant_keys]
-            state_i_full = list(state)+constant_values+[time]
+            state_i_augmented = list(state)+constant_values+[time]
             
-            x1 = [state[ii] for ii in indeces]
-            x2 = numpy.array(f_var_dd(*(state_i_full))).flatten()
+            x1 = numpy.array(f_position_derivatives(*state_i_augmented),dtype=float).flatten()
+            x2 = numpy.array(f_acc(*(state_i_augmented))).flatten()
             x3 = numpy.r_[x1,x2]
             x4 = x3.flatten().tolist()
             
@@ -257,6 +340,17 @@ class System(object):
             Ax_b = Ax_b.subs(constants)
             eq_active = eq_active.subs(constants)
             eq_dd = eq_dd.subs(constants)
+
+        logger.info('substituting constrained in Ma-f.' )
+        for constraint in self.constraints:
+            if constraint.solved:
+                # subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
+                Ax_b = Ax_b.subs(constraint.subs)
+                eq_active = eq_active.subs(constraint.subs)
+                eq_dd = eq_dd.subs(constraint.subs)
+                # ma = ma.subs(constraint.subs)
+                # f = f.subs(constraint.subs)
+
             
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
@@ -288,11 +382,27 @@ class System(object):
         fb = sympy.lambdify(state_full,b_full)
         factive = sympy.lambdify(state_full,eq_active)
 
-        position_derivatives = [self.derivative(item) for item in q]
-        indeces = [q_state.index(element) for element in position_derivatives]
+        position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
+        if not not constants:
+            position_derivatives = position_derivatives.subs(constants)
+        for constraint in self.constraints:
+            if constraint.solved:
+                # subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
+                position_derivatives = position_derivatives.subs(constraint.subs)
+            
+        f_position_derivatives = sympy.lambdify(state_full,position_derivatives)
+        
     
         @static_vars(ii=0)
-        def func(state,time,*args):
+        def func(arg0,arg1,*args):
+        
+            if pynamics.integrator==0:
+                time = arg1
+                state = arg0
+            if pynamics.integrator==1:
+                time = arg0
+                state = arg1
+        
             if func.ii%1000==0:
                 logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
@@ -315,7 +425,7 @@ class System(object):
             Ai=(f2.dot(Ai)).dot(f2.T)
             bi=f2.dot(bi)
             
-            x1 = [state[ii] for ii in indeces]
+            x1 = numpy.array(f_position_derivatives(*state_i_full),dtype=float).flatten()
             x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
@@ -389,11 +499,21 @@ class System(object):
         feq_d = sympy.lambdify(state_full,eq_d)
         factive = sympy.lambdify(state_full,eq_active)
 
-        position_derivatives = [self.derivative(item) for item in q]
-        indeces = [q_state.index(element) for element in position_derivatives]
-    
+        position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
+        if not not constants:
+            position_derivatives = position_derivatives.subs(constants)
+        f_position_derivatives = sympy.lambdify(state_full,position_derivatives)
+
         @static_vars(ii=0)
-        def func(state,time,*args):
+        def func(arg0,arg1,*args):
+        
+            if pynamics.integrator==0:
+                state = arg0
+                time = arg1
+            if pynamics.integrator==1:
+                time = arg0
+                state = arg1
+
             if func.ii%1000==0:
                 logger.info('integration at time {0:07.2f}'.format(time))
             func.ii+=1
@@ -423,7 +543,7 @@ class System(object):
             Ai=(f2.dot(Ai)).dot(f2.T)
             bi=f2.dot(bi)
             
-            x1 = [state[ii] for ii in indeces]
+            x1 = numpy.array(f_position_derivatives(*state_i_full),dtype=float).flatten()
             x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
@@ -432,7 +552,7 @@ class System(object):
         return func       
 
     @staticmethod
-    def assembleconstrained(eq_dyn,eq_con,q_dyn,q_con,method='LU'):
+    def assembleconstrained(eq_dyn,eq_con,q_dyn,q_con):
         logger.info('solving constrained')
         AC1x_b1 = sympy.Matrix(eq_dyn)
         C2x_b2 = sympy.Matrix(eq_con)
@@ -457,7 +577,7 @@ class System(object):
         
     @classmethod
     def solveconstraineddynamics(cls,eq_dyn,eq_con,q_dyn,q_con,method='LU'):
-        AA,b,x = cls.assembleconstrained(eq_dyn,eq_con,q_dyn,q_con,method=method)
+        AA,b,x = cls.assembleconstrained(eq_dyn,eq_con,q_dyn,q_con)
         AA_inv = AA.inv(method = method)
         xx = AA_inv*b
         x_dyn = xx[0:len(q_dyn),:]
@@ -465,13 +585,26 @@ class System(object):
         return x_dyn,x_con    
 
     def derivative(self,expression):
-        for ii,a in enumerate(self.derivatives.keys()):
-            if ii==0:
-                result = expression.diff(a)*self.derivatives[a]
-            else:
-                result += expression.diff(a)*self.derivatives[a]
+        # for ii,a in enumerate(self.derivatives.keys()):
+        #     if ii==0:
+        #         result = expression.diff(a)*self.derivatives[a]
+        #     else:
+        #         result += expression.diff(a)*self.derivatives[a]
+        # return result
+        import sympy
+        all_differentiables = list(expression.atoms(Differentiable))
+        result = expression*0
+        for ii,a in enumerate(all_differentiables):
+            # if ii==0:
+                # result = expression.diff(a)*self.derivatives[a]
+            # else:
+                # result += expression.diff(a)*self.derivatives[a]
+             result += expression.diff(a)*self.derivatives[a]
         return result
 
-    def get_ini(self):
-        return [self.ini[item] for item in self.get_state_variables()]
-                        
+    def get_ini(self,state_variables = None):
+        state_variables = state_variables or self.get_state_variables()
+        return [self.ini[item] for item in state_variables]
+    
+    def add_constraint(self, constraint):
+        self.constraints.append(constraint)

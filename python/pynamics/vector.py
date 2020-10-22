@@ -71,23 +71,23 @@ class Vector(object):
         newvec.clean()
         return newvec
     
-    def dot(self,other,frame='source'):
+    def dot(self,other,frame='mid'):
         from pynamics.dyadic import Dyad,Dyadic
         result = sympy.Number(0)
         if isinstance(other,Dyad) or isinstance(other,Dyadic):
             return other.rdot(self)
-        return self.product_simplest(other,result,'dot',self.frame_dot,frame='mid')
-#        return self.product_simple(other,result,'dot',self.frame_dot)
-#        return self.product_by_basis_vectors(other,result,'dot',self.frame_dot)
+        return self.product_simplest(other,result,'dot',self.frame_dot,frame=frame)
+        # return self.product_simple(other,result,'dot',self.frame_dot)
+        # return self.product_by_basis_vectors(other,result,'dot',self.frame_dot)
 
-    def cross(self,other,frame='source'):
+    def cross(self,other,frame='mid'):
         from pynamics.dyadic import Dyad,Dyadic
         result = Vector()
         if isinstance(other,Dyad) or isinstance(other,Dyadic):
             return other.rcross(self)
-        result = self.product_simplest(other,result,'cross',self.frame_cross,frame='mid')
-#        result = self.product_simple(other,result,'cross',self.frame_cross)
-#        result = self.product_by_basis_vectors(other,result,'cross',self.frame_cross)
+        result = self.product_simplest(other,result,'cross',self.frame_cross,frame=frame)
+        # result = self.product_simple(other,result,'cross',self.frame_cross)
+        # result = self.product_by_basis_vectors(other,result,'cross',self.frame_cross)
         result.clean()
         return result
     
@@ -172,7 +172,7 @@ class Vector(object):
 #            return  result2
                 
 
-    def product_simplest(self,other,result_seed,function,inner_function,frame = 'source'):
+    def product_simplest(self,other,result_seed,function,inner_function,frame = 'mid'):
         result = result_seed.copy()
         for frame2,vec2 in other.components.items():
             vector2 = Vector({frame2:vec2})
@@ -182,15 +182,15 @@ class Vector(object):
                 elif frame == 'dest':
                     expressed_frame = frame2
                 elif frame == 'mid':
-                    path = frame1.path_to(frame2)
+                    path = frame1.R_tree.path_to(frame2.R_tree)
                     m = len(path)
                     if m%2==0:
                         ii = int(m/2)-1
                     else:
                         ii = int(m/2)
-                    expressed_frame = path[ii]
+                    expressed_frame = path[ii].myclass
                 else:
-                    expressed_frame = frame1                    
+                    expressed_frame = frame                    
 
                 vector1 = Vector({frame1:vec1})
                 localresult = inner_function(vector1.express(expressed_frame),vector2.express(expressed_frame),expressed_frame)
@@ -204,7 +204,9 @@ class Vector(object):
         frames_other = other.components.keys()
         for frame1 in frames_self:
             for frame2 in frames_other:
-                allframes.extend(frame1.path_to(frame2))
+                path = frame1.R_tree.path_to(frame2.R_tree)
+                frames = [item.myclass for item in path]
+                allframes.extend(frames)
         results = []
         for frame in allframes:
             v1 = self.express(frame)
@@ -216,13 +218,13 @@ class Vector(object):
 #        result.clean()
         return result
 
-    def time_derivative(self,reference_frame = None,sys=None):    
-        sys = sys or pynamics.get_system()
-        reference_frame = reference_frame  or sys.newtonian
+    def time_derivative(self,reference_frame = None,system=None):    
+        system = system or pynamics.get_system()
+        reference_frame = reference_frame  or system.newtonian
         
         result = Vector()
         for frame,vector in self.components.items():
-            result+= Vector({frame:sys.derivative(vector)})
+            result+= Vector({frame:system.derivative(vector)})
             v1 = Vector({frame:vector})
             w_ = reference_frame.getw_(frame).express(frame)
             result+=w_.cross(v1,frame = 'mid')

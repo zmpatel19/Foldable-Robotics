@@ -41,6 +41,7 @@ if not logger.handlers:
     logger.addHandler(fh)
 
 systemname = '_system'
+integrator = 0
 
 def PynamicsObject(object):
     
@@ -77,3 +78,5 @@ def toc():
     logger.info(str(time.time()-time0))
 
 #t = sympy.Symbol('t')
+
+automatic_differentiate = True
