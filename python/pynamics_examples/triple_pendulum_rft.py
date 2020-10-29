@@ -163,7 +163,6 @@ points_output = PointsOutput(points,system,constant_values = constants0)
 y = points_output.calc(states0)
 points_output.plot_time()
 
-
 def my_error(x):
     b1,k1 = x
     constants = system.constant_values
@@ -172,13 +171,12 @@ def my_error(x):
     states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':constants},))
     error = ((states-states0)**2).sum()
     return error
-    return 
 
 
-states,constants = myfunc([1e2,1e1])
-points_output = PointsOutput(points,system,constant_values = constants)
-y = points_output.calc(states)
-points_output.plot_time()
+# states,constants = myfunc([1e2,1e1])
+# points_output = PointsOutput(points,system,constant_values = constants)
+# y = points_output.calc(states)
+# points_output.plot_time()
 
 import cma
 
