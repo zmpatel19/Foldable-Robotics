@@ -40,7 +40,11 @@ class Differentiable(sympy.Symbol,NameGenerator):
 
         name = name or cls.generate_name()
 
+        
+        output = []
         differentiables = []
+        
+        
 
         for kk,jj in enumerate(range(ii,limit)):
             
@@ -50,17 +54,33 @@ class Differentiable(sympy.Symbol,NameGenerator):
                 variable = sympy.Symbol.__new__(cls,subname)
             else:
                 subname = name+'_'+'d'*kk
+                # if jj==limit-1:
+                    # variable = Variable(subname)
+                # else:
+                    # variable = sympy.Symbol.__new__(cls,subname)
                 variable = sympy.Symbol.__new__(cls,subname)
 
-            system.add_q(variable,jj)
-            differentiables.append(variable)
             pynamics.addself(variable,subname)
 
-        for kk,(a,a_d) in enumerate(zip(differentiables[:-1],differentiables[1:])):
-            system.add_derivative(a,a_d)
+            output.append(variable)
+            # if jj!=limit-1:
+            #     differentiables.append(variable)
+            #     system.add_q(variable,jj)
+            differentiables.append(variable)
+            system.add_q(variable,jj)
+
+        # for item in differentiables:
+        #     system.set_derivative(item,None)
+
+        for kk,(a,a_d) in enumerate(zip(output[:-1],output[1:])):
+            system.set_derivative(a,a_d)
 
             if ini is not None:
                 system.set_ini(a,ini[kk])
-                
-        return differentiables 
+        
+        if len(output)==1:
+            return output[0]
+        else:
+            return output
+        # return output
 
