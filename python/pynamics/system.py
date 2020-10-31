@@ -310,11 +310,13 @@ class System(object):
 
         return func
 
-    def state_space_post_invert(self,f,ma,eq_dd = None,constants = None,q_acceleration = None, q_speed = None, q_position = None,return_lambda = False):
+    def state_space_post_invert(self,f,ma,eq_dd = None,constants = None,q_acceleration = None, q_speed = None, q_position = None,return_lambda = False,variable_functions = None):
         '''invert A matrix each call'''
         logger.info('solving a = f/m and creating function')
         
         constants = constants or {}
+        variable_functios = variable_functions or {}
+        
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
         
         q = q_position or self.get_q(0)
@@ -365,8 +367,9 @@ class System(object):
             b_full[:m,0]=b
             b_full[m:,0]=c
 
-           
-        state_full = q_state+remaining_constant_keys+[self.t]
+        variables = list(variable_functions.keys())
+
+        state_full = q_state+remaining_constant_keys+[self.t]+variables
 
         fA = sympy.lambdify(state_full,A_full)
         fb = sympy.lambdify(state_full,b_full)
@@ -401,8 +404,12 @@ class System(object):
             except IndexError:
                 kwargs = {}
 
+
             constant_values = [kwargs['constants'][item] for item in remaining_constant_keys]
-            state_i_full = list(state)+constant_values+[time]
+            vi = [variable_functions[key](time) for key in variables]
+
+            state_i_full = list(state)+constant_values+[time]+vi
+
                 
             Ai = numpy.array(fA(*state_i_full),dtype=float)
             bi = numpy.array(fb(*state_i_full),dtype=float)
