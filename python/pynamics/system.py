@@ -314,8 +314,6 @@ class System(object):
         '''invert A matrix each call'''
         logger.info('solving a = f/m and creating function')
         
-        eq_active = None        
-        
         constants = constants or {}
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
         
@@ -324,12 +322,6 @@ class System(object):
         q_dd = q_acceleration or self.get_q(2)
         q_state = q+q_d
         
-        if not not eq_dd:
-            eq_active = eq_active or [1]*len(eq_dd)
-        else:
-            eq_active = eq_active or []
-
-        eq_active = sympy.Matrix(eq_active)
         eq_dd = sympy.Matrix(eq_dd or [])
 
         f = sympy.Matrix(f)
@@ -338,7 +330,6 @@ class System(object):
         Ax_b = ma-f
         if not not constants:
             Ax_b = Ax_b.subs(constants)
-            eq_active = eq_active.subs(constants)
             eq_dd = eq_dd.subs(constants)
 
         logger.info('substituting constrained in Ma-f.' )
@@ -346,7 +337,6 @@ class System(object):
             if constraint.solved:
                 # subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
                 Ax_b = Ax_b.subs(constraint.subs)
-                eq_active = eq_active.subs(constraint.subs)
                 eq_dd = eq_dd.subs(constraint.subs)
                 # ma = ma.subs(constraint.subs)
                 # f = f.subs(constraint.subs)
@@ -380,7 +370,6 @@ class System(object):
 
         fA = sympy.lambdify(state_full,A_full)
         fb = sympy.lambdify(state_full,b_full)
-        factive = sympy.lambdify(state_full,eq_active)
 
         position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
         if not not constants:
@@ -417,13 +406,6 @@ class System(object):
                 
             Ai = numpy.array(fA(*state_i_full),dtype=float)
             bi = numpy.array(fb(*state_i_full),dtype=float)
-            
-            active = numpy.array(m*[1]+factive(*state_i_full).flatten().tolist())
-            f1 = numpy.eye(m+n)             
-            f2 = f1[(active>self.error_tolerance).nonzero()[0],:]
-#            
-            Ai=(f2.dot(Ai)).dot(f2.T)
-            bi=f2.dot(bi)
             
             x1 = numpy.array(f_position_derivatives(*state_i_full),dtype=float).flatten()
             x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
