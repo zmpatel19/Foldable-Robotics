@@ -25,7 +25,7 @@ system = System()
 pynamics.set_system(__name__,system)
 
 global_q = True
-
+tol = 1e-5
 lA = Constant(1,'lA',system)
 lB = Constant(1,'lB',system)
 lC = Constant(1,'lC',system)
@@ -40,13 +40,13 @@ k = Constant(1e1,'k',system)
 
 tinitial = 0
 tfinal = 5
-tstep = 1/30
+tstep = 1/10
 t = numpy.r_[tinitial:tfinal:tstep]
 
 
-qA_exp = t**2/70
-qB_exp = 2*t**2/70
-qC_exp = 3*t**2/70
+qA_exp = t**3/100
+qB_exp = 2*t**3/100
+qC_exp = 3*t**3/100
 
 qA_d_exp = (qA_exp[2:]-qA_exp[:-2])/(2*tstep)
 qB_d_exp = (qB_exp[2:]-qB_exp[:-2])/(2*tstep)
@@ -68,7 +68,11 @@ t = t[2:-2]
 states_exp = numpy.c_[qA_exp,qB_exp,qC_exp,qA_d_exp,qB_d_exp,qC_d_exp,qA_dd_exp,qB_dd_exp,qC_dd_exp]
 
 y = numpy.array([qA_exp,qB_exp,qC_exp]).T
+plt.figure()
 plt.plot(t,y)
+
+plt.figure()
+plt.plot(t,numpy.array([qA_dd_exp,qB_dd_exp,qC_dd_exp]).T)
 
 
 preload1 = Constant(0*pi/180,'preload1',system)
@@ -185,18 +189,18 @@ sol2 = [sol[item] for item in torques]
 f_torques = sympy.lambdify(system.get_q(0)+system.get_q(1)+system.get_q(2),sol2)
 res = numpy.array(f_torques(*(states_exp.T))).T
 
-plt.figure()
-plt.plot(t,res)
+ft1 = scipy.interpolate.interp1d(t,res[:,0],fill_value = 'extrapolate', kind='linear')
+ft2 = scipy.interpolate.interp1d(t,res[:,1],fill_value = 'extrapolate', kind='linear')
+ft3 = scipy.interpolate.interp1d(t,res[:,2],fill_value = 'extrapolate', kind='linear')
 
-ft1 = scipy.interpolate.interp1d(t,res[:,0],fill_value = 'extrapolate')
-ft2 = scipy.interpolate.interp1d(t,res[:,1],fill_value = 'extrapolate')
-ft3 = scipy.interpolate.interp1d(t,res[:,2],fill_value = 'extrapolate')
+plt.figure()
+plt.plot(t,numpy.array([ft1(t),ft2(t),ft3(t)]).T,'-o')
 
 variable_functions = {t1:ft1,t2:ft2,t3:ft3}
 
 func1 = system.state_space_post_invert(f,ma,variable_functions=variable_functions)
 # # func1,lambda1 = system.state_space_post_invert(f,ma,eq_dd,return_lambda = True)
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},) )
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,args=({'constants':system.constant_values},) )
 
 # lambda2 = numpy.array([lambda1(item1,item2,system.constant_values) for item1,item2 in zip(t,states)])
 
