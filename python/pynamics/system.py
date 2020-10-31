@@ -310,7 +310,7 @@ class System(object):
 
         return func
 
-    def state_space_post_invert(self,f,ma,eq_dd = None,constants = None,q_acceleration = None, q_speed = None, q_position = None):
+    def state_space_post_invert(self,f,ma,eq_dd = None,constants = None,q_acceleration = None, q_speed = None, q_position = None,return_lambda = False):
         '''invert A matrix each call'''
         logger.info('solving a = f/m and creating function')
         
@@ -413,8 +413,30 @@ class System(object):
             x4 = x3.flatten().tolist()
             
             return x4
+
         logger.info('done solving a = f/m and creating function')
-        return func        
+
+        if not return_lambda:
+            return func        
+        else:
+
+            logger.info('calculating function for lambdas')
+
+            def lambdas(time,state,constants = None):
+                constants = constants or {}
+    
+                constant_values = [constants[item] for item in remaining_constant_keys]
+                state_i_full = list(state)+constant_values+[time]
+                    
+                Ai = numpy.array(fA(*state_i_full),dtype=float)
+                bi = numpy.array(fb(*state_i_full),dtype=float)
+                
+                x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
+                x4 = x2[m:].flatten().tolist()
+                
+                return x4
+    
+            return func,lambdas
 
     def state_space_post_invert2(self,f,ma,eq_dd,eq_d,eq,eq_active=None,constants = None,q_acceleration = None, q_speed = None, q_position = None):
         '''invert A matrix each call'''

@@ -132,8 +132,10 @@ eq_dd=[(system.derivative(item)) for item in eq_d]
 
 f,ma = system.getdynamics()
 #func1 = system.state_space_post_invert(f,ma)
-func1 = system.state_space_post_invert(f,ma,eq_dd)
+func1,lambda1 = system.state_space_post_invert(f,ma,eq_dd,return_lambda = True)
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
+
+lambda2 = numpy.array([lambda1(item1,item2,system.constant_values) for item1,item2 in zip(t,states)])
 
 KE = system.get_KE()
 PE = system.getPEGravity(pNA) - system.getPESprings()
