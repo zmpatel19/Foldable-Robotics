@@ -433,7 +433,9 @@ class System(object):
                 constants = constants or {}
     
                 constant_values = [constants[item] for item in remaining_constant_keys]
-                state_i_full = list(state)+constant_values+[time]
+                vi = [variable_functions[key](time) for key in variables]
+    
+                state_i_full = list(state)+constant_values+[time]+vi
                     
                 Ai = numpy.array(fA(*state_i_full),dtype=float)
                 bi = numpy.array(fb(*state_i_full),dtype=float)
