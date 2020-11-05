@@ -9,6 +9,8 @@ import pynamics
 
 import logging
 logger = logging.getLogger('pynamics.output')
+from output_points_3d import PointsOutput3D
+# from output_points import PointsOutput
 
 class Output(object):
     def __init__(self,y_exp, system=None, constant_values = None,state_variables = None):
@@ -50,55 +52,9 @@ class PointsOutput(Output):
         Output.calc(self,x)
         self.y.resize(self.y.shape[0],int(self.y.shape[1]/2),2)
         return self.y
-    
-    def make_gif(self,stepsize = 1):
-        import os
-        import idealab_tools.makemovie
-        import matplotlib.pyplot as plt
-        y = self.y
-        
-        folder = 'render'
-        idealab_tools.makemovie.clear_folder(folder)
-        idealab_tools.makemovie.prep_folder(folder)
-        f = plt.figure()
-        ax = f.add_subplot(1,1,1)
-        ax.axis('equal')
-        ax.set_xlim((y[:,:,0].min(),y[:,:,0].max()))
-        ax.set_ylim((y[:,:,1].min(),y[:,:,1].max()))
-        
-        for ii,item in enumerate(y[::stepsize]):
-            [item.remove() for item in ax.lines]
-            ax.plot(item[:,0],item[:,1],'ro-')
-            plt.savefig(os.path.join(folder,'{0:04d}.png'.format(ii)))
-        
-        idealab_tools.makemovie.make_gif()
-        idealab_tools.makemovie.clear_folder(folder)
-
-    def render_movie(self,stepsize = 1):
-        import os
-        import idealab_tools.makemovie
-        import matplotlib.pyplot as plt
-        y = self.y
-        
-        folder = 'render'
-        idealab_tools.makemovie.clear_folder(folder)
-        idealab_tools.makemovie.prep_folder(folder)
-        f = plt.figure()
-        ax = f.add_subplot(1,1,1)
-        ax.axis('equal')
-        ax.set_xlim((y[:,:,0].min(),y[:,:,0].max()))
-        ax.set_ylim((y[:,:,1].min(),y[:,:,1].max()))
-        
-        for ii,item in enumerate(y[::stepsize]):
-            [item.remove() for item in ax.lines]
-            ax.plot(item[:,0],item[:,1],'ro-')
-            plt.savefig(os.path.join(folder,'img_{0:04d}.png'.format(ii)))
-        
-        idealab_tools.makemovie.render()
-        idealab_tools.makemovie.clear_folder(folder)    
 
     def animate(self,fps = 30,stepsize=1, movie_name = None,*args,**kwargs):
-        import numpy as np
+        # import numpy as np
         import matplotlib.pyplot as plt
         
         from matplotlib import animation, rc
