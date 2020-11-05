@@ -40,7 +40,7 @@ k = Constant(1e1,'k',system)
 
 tinitial = 0
 tfinal = 5
-tstep = 1/10
+tstep = 1/1000
 t = numpy.r_[tinitial:tfinal:tstep]
 
 
@@ -145,9 +145,9 @@ BodyB = Body('BodyB',B,pBcm,mB,IB,system)
 #BodyC = Body('BodyC',C,pCcm,mC,IC,system)
 BodyC = Particle(pCcm,mC,'ParticleC',system)
 
-system.addforce(-b*wNA,wNA)
-system.addforce(-b*wAB,wAB)
-system.addforce(-b*wBC,wBC)
+# system.addforce(-b*wNA,wNA)
+# system.addforce(-b*wAB,wAB)
+# system.addforce(-b*wBC,wBC)
 
 
 system.addforce(t1*N.z,wNA)
@@ -155,14 +155,14 @@ system.addforce(t2*N.z,wAB)
 system.addforce(t3*N.z,wBC)
 
 
-if not global_q:
-    system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
-    system.add_spring_force1(k,(qB-preload2)*N.z,wAB)
-    system.add_spring_force1(k,(qC-preload3)*N.z,wBC)
-else:
-    system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
-    system.add_spring_force1(k,(qB-qA-preload2)*N.z,wAB)
-    system.add_spring_force1(k,(qC-qB-preload3)*N.z,wBC)
+# if not global_q:
+#     system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
+#     system.add_spring_force1(k,(qB-preload2)*N.z,wAB)
+#     system.add_spring_force1(k,(qC-preload3)*N.z,wBC)
+# else:
+#     system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
+#     system.add_spring_force1(k,(qB-qA-preload2)*N.z,wAB)
+#     system.add_spring_force1(k,(qC-qB-preload3)*N.z,wBC)
 
 system.addforcegravity(-g*N.y)
 
@@ -228,5 +228,5 @@ plt.plot(energy_output.y)
 
 #points_output.make_gif()
 #points_output.render_movie()
-points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
+points_output.animate(fps = 1000,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 #a()
