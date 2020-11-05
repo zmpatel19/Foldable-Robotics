@@ -315,7 +315,7 @@ class System(object):
         logger.info('solving a = f/m and creating function')
         
         constants = constants or {}
-        variable_functios = variable_functions or {}
+        variable_functions = variable_functions or {}
         
         remaining_constant_keys = list(set(self.constants) - set(constants.keys()))
         
