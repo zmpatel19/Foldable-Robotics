@@ -57,7 +57,6 @@ preload3 = Constant(name='preload3',system=system)
 preload4 = Constant(name='preload4',system=system)
 preload5 = Constant(name='preload5',system=system)
 
-
 constants = {}
 constants[lO]=.5
 constants[lA] = .75
@@ -210,7 +209,22 @@ system.add_spring_force1(k,(qD-qB-preload5)*N.z,wBD)
 system.addforcegravity(-g*N.y)
 
 time_signal = sympy.tanh((system.t-2)*10)/2+.5 - sympy.tanh((system.t-4)*10)/2+.5- sympy.tanh((system.t-4)*10)/2+.5 + sympy.tanh((system.t-4.5)*10)/2+.5
-torque = time_signal*stall_torque
+
+import scipy.signal
+import scipy.interpolate
+x = [0,2,2,5,5,6,6,10]
+y = [0,0,1,1,-1,-1,0,0]
+plt.figure()
+ft = scipy.interpolate.interp1d(x,y,'linear',fill_value='extrapolate')
+plt.plot(t,ft(t))
+win = scipy.signal.hann(10)
+filtered = scipy.signal.convolve(ft(t), win, mode='same') / sum(win)
+plt.plot(t,filtered)
+ft2 = scipy.interpolate.interp1d(t,filtered,'quadratic',fill_value='extrapolate')
+plt.plot(t,ft2(t))
+my_signal = sympy.Symbol('my_signal')
+
+torque = my_signal*stall_torque
 system.addforce(torque*O.z,wOA)
 system.addforce(-torque*O.z,wOC)
 
@@ -223,8 +237,8 @@ eq_d= [system.derivative(item) for item in eq]
 eq_dd= [system.derivative(item) for item in eq_d]
 #
 f,ma = system.getdynamics()
-func1 = system.state_space_post_invert(f,ma,eq_dd,constants = constants)
-states=pynamics.integration.integrate_odeint(func1,ini1,t,rtol=tol,atol=tol)
+func1 = system.state_space_post_invert(f,ma,eq_dd,constants = constants,variable_functions = {my_signal:ft2})
+states=pynamics.integration.integrate(func1,ini1,t,rtol=tol,atol=tol)
 
 KE = system.get_KE()
 PE = system.getPEGravity(0*N.x) - system.getPESprings()

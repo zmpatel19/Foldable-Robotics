@@ -326,7 +326,23 @@ system.add_spring_force1(k_beam,(qC2-qC1)*N.z,wC1C2)
 system.addforcegravity(-g*N.y)
 
 time_signal = sympy.tanh((system.t-2)*10)/2+.5 - sympy.tanh((system.t-4)*10)/2+.5- sympy.tanh((system.t-4)*10)/2+.5 + sympy.tanh((system.t-4.5)*10)/2+.5
-V = time_signal*v_max
+
+import scipy.signal
+import scipy.interpolate
+x = [0,2,2,5,5,6,6,10]
+y = [0,0,1,1,-1,-1,0,0]
+plt.figure()
+ft = scipy.interpolate.interp1d(x,y,'linear',fill_value='extrapolate')
+plt.plot(t,ft(t))
+win = scipy.signal.hann(10)
+filtered = scipy.signal.convolve(ft(t), win, mode='same') / sum(win)
+plt.plot(t,filtered)
+ft2 = scipy.interpolate.interp1d(t,filtered,'quadratic',fill_value='extrapolate')
+plt.plot(t,ft2(t))
+my_signal = sympy.Symbol('my_signal')
+
+
+V = my_signal*v_max
 
 TA = kt*iA
 system.addforce(TA*N.z,wNMA)
@@ -353,8 +369,8 @@ eq_d.append(wOMC.dot(N.z) - G*wOC1.dot(N.z))
 eq_dd= [system.derivative(item) for item in eq_d]
 #
 f,ma = system.getdynamics()
-func1 = system.state_space_post_invert(f,ma,eq_dd,constants = constants)
-states=pynamics.integration.integrate_odeint(func1,ini1,t,rtol=tol,atol=tol,args=({'constants':constants},))
+func1 = system.state_space_post_invert(f,ma,eq_dd,constants = constants,variable_functions={my_signal:ft2})
+states=pynamics.integration.integrate(func1,ini1,t,rtol=tol,atol=tol)
 
 #KE = system.get_KE()
 #PE = system.getPEGravity(0*N.x) - system.getPESprings()
