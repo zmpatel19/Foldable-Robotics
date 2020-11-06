@@ -208,8 +208,6 @@ system.add_spring_force1(k,(qD-qB-preload5)*N.z,wBD)
 
 system.addforcegravity(-g*N.y)
 
-time_signal = sympy.tanh((system.t-2)*10)/2+.5 - sympy.tanh((system.t-4)*10)/2+.5- sympy.tanh((system.t-4)*10)/2+.5 + sympy.tanh((system.t-4.5)*10)/2+.5
-
 import scipy.signal
 import scipy.interpolate
 x = [0,2,2,5,5,6,6,10]
