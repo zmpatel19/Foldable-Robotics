@@ -11,8 +11,8 @@ from pynamics.output_generic import Output
 
 class PointsOutput(Output):
     def __init__(self,y_exp, system=None, constant_values = None,state_variables = None,dot = None):
-        dot = dot or [system.newtonian.x,system.newtonian.y]
         system = system or pynamics.get_system()
+        dot = dot or [system.newtonian.x,system.newtonian.y]
         y_exp = [item for item2 in y_exp for item in [item2.dot(dotitem) for dotitem in dot]]
         Output.__init__(self,y_exp, system, constant_values,state_variables)
 
