@@ -25,7 +25,7 @@ system = System()
 pynamics.set_system(__name__,system)
 
 global_q = True
-tol = 1e-5
+tol = 1e-7
 lA = Constant(1,'lA',system)
 lB = Constant(1,'lB',system)
 lC = Constant(1,'lC',system)
@@ -40,7 +40,7 @@ k = Constant(1e1,'k',system)
 
 tinitial = 0
 tfinal = 5
-tstep = 1/1000
+tstep = 1/100
 t = numpy.r_[tinitial:tfinal:tstep]
 
 
@@ -189,9 +189,9 @@ sol2 = [sol[item] for item in torques]
 f_torques = sympy.lambdify(system.get_q(0)+system.get_q(1)+system.get_q(2),sol2)
 res = numpy.array(f_torques(*(states_exp.T))).T
 
-ft1 = scipy.interpolate.interp1d(t,res[:,0],fill_value = 'extrapolate', kind='linear')
-ft2 = scipy.interpolate.interp1d(t,res[:,1],fill_value = 'extrapolate', kind='linear')
-ft3 = scipy.interpolate.interp1d(t,res[:,2],fill_value = 'extrapolate', kind='linear')
+ft1 = scipy.interpolate.interp1d(t,res[:,0],fill_value = 'extrapolate', kind='quadratic')
+ft2 = scipy.interpolate.interp1d(t,res[:,1],fill_value = 'extrapolate', kind='quadratic')
+ft3 = scipy.interpolate.interp1d(t,res[:,2],fill_value = 'extrapolate', kind='quadratic')
 
 plt.figure()
 plt.plot(t,numpy.array([ft1(t),ft2(t),ft3(t)]).T,'-o')
@@ -226,5 +226,5 @@ energy_output.calc(states)
 plt.figure()
 plt.plot(energy_output.y)
 
-points_output.animate(fps = 1000,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
+# points_output.animate(fps = 100,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 #a()
