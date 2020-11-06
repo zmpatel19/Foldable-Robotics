@@ -31,6 +31,6 @@ setup_kwargs['license']='MIT'
 setup_kwargs['packages']=packages
 setup_kwargs['package_dir']={'pynamics' : 'python/pynamics','pynamics_examples':'python/pynamics_examples'}
 setup_kwargs['package_data'] = package_data
-setup_kwargs['install_requires']=['idealab_tools','matplotlib','numpy','scipy','sympy']
+setup_kwargs['install_requires']=['matplotlib','numpy','scipy','sympy']
   
 setup(**setup_kwargs)

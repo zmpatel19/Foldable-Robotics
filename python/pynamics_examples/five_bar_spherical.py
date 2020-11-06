@@ -18,8 +18,8 @@ from pynamics.particle import Particle
 import pynamics.integration
 
 import matplotlib.pyplot as plt
-plt.ion()
-from mpl_toolkits.mplot3d import Axes3D
+# plt.ion()
+
 
 #import sympy
 import numpy
@@ -28,7 +28,7 @@ import numpy
 from math import pi
 system = System()
 pynamics.set_system(__name__,system)
-
+tol = 1e-10
 from math import pi,sin,cos
 
 #lA = Constant('lA',1,system)
@@ -66,7 +66,7 @@ k = Constant(1e2,'k',system)
 #time parameters
 tinitial = 0
 tfinal = 5
-tstep = 1/100
+tstep = 1/30
 t = numpy.r_[tinitial:tfinal:tstep]
 
 ################################################
@@ -120,7 +120,7 @@ A12.rotate_fixed_axis_directed(A1,[0,0,1],t1,system)
 A2.rotate_fixed_axis_directed(A12,[1,0,0],qA2,system)
 A23.rotate_fixed_axis_directed(A2,[0,0,1],t2,system)
 A3.rotate_fixed_axis_directed(A23,[1,0,0],qA3,system)
-A34.rotate_fixed_axis_directed(A3,[0,0,1],t3,system)
+# A34.rotate_fixed_axis_directed(A3,[0,0,1],t3,system)
 #
 NB1.rotate_fixed_axis_directed(N,[0,0,1],-t0,system)
 B1.rotate_fixed_axis_directed(NB1,[1,0,0],qB1,system)
@@ -135,9 +135,9 @@ pNO = 0*N.x
 
 ParticleA1 = Particle(A1.x+A12.x,m,'ParticleA1',system)
 ParticleA2 = Particle(A2.x+A23.x,m,'ParticleA2',system)
-ParticleA3 = Particle(A3.x+A34.x,m/2,'ParticleA3',system)
-ParticleB1 = Particle(B1.x+B12.x,m,'ParticleA1',system)
-ParticleB2 = Particle(B2.x+B23.x,m/2,'ParticleA2',system)
+# ParticleA3 = Particle(A3.x+A34.x,m/2,'ParticleA3',system)
+ParticleB1 = Particle(B1.x+B12.x,m,'ParticleB1',system)
+ParticleB2 = Particle(B2.x+B23.x,m,'ParticleB2',system)
 
 ################################################
 #Get the relative rotational velocity between frames
@@ -160,10 +160,10 @@ system.addforce(-b*wB2,wB2)
 ################################################
 #Add spring forces to two joints
 system.add_spring_force1(k,(qA1-pi/180*45)*A1.x,wA1) 
-#system.add_spring_force1(k,(qA2)*A2.x,wA2) 
-#system.add_spring_force1(k,(qA3)*A3.x,wA3) 
+system.add_spring_force1(k,(qA2)*A2.x,wA2) 
+system.add_spring_force1(k,(qA3)*A3.x,wA3) 
 system.add_spring_force1(k,(qB1+pi/180*45)*B1.x,wB1) 
-#system.add_spring_force1(k,(qB2)*B2.x,wB2) 
+system.add_spring_force1(k,(qB2)*B2.x,wB2) 
 
 ################################################
 #Add gravity
@@ -214,13 +214,13 @@ eq = eq1_dd
 ################################################
 #This is F and MA
 f,ma = system.getdynamics()
-#func1 = system.state_space_post_invert(f,ma,eq1_dd)
+func1 = system.state_space_post_invert(f,ma,eq1_dd)
 ################################################
 #this is the function you integrate
-func1 = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
+# func1 = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
 
 #states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-5,atol=1e-5)
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-5,atol=1e-5,args=({'alpha':1e4,'beta':1e2,'constants':system.constant_values},))
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,args=({'alpha':1e4,'beta':1e2,'constants':system.constant_values},))
 
 KE = system.get_KE()
 PE = system.getPEGravity(pNO) - system.getPESprings()
@@ -232,33 +232,17 @@ plt.figure()
 plt.plot(y[:])
 plt.show()
 
-o2 = [pNO,A1.x,pNO,A2.x,pNO,A3.x,pNO,B1.x,pNO,B2.x,pNO,B23.x,pNO,A34.x]
-o2 = [item2 for item in o2 for item2 in [item.dot(N.x),item.dot(N.y),item.dot(N.z)]]
-o2 = Output(o2,system)
-y2 = o2.calc(states)
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+o2 = [pNO,A1.x,A2.x,pNO,A2.x,A3.x,pNO,B1.x,B2.x,pNO,B2.x,B23.x,pNO]
+points_output = PointsOutput3D(o2,system)
+y = points_output.calc(states)
+# points_output.plot_time()
+points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 
-import idealab_tools.matplotlib_tools as mm
-
-import idealab_tools.makemovie
-idealab_tools.makemovie.prep_folder()
-
-jj = 0
-for item in y2:
-    ax.cla()
-    for ii in range(int(y2.shape[1]))[::3]:
-        item2 = item[ii:ii+3]
-        item3 = [0,0,0]
-        vec = numpy.c_[item3,item2]
-        ax.plot3D(vec[0],vec[1],vec[2])
-    mm.equal_axes(ax,y2.reshape((-1,3),order=0))
-    plt.savefig('render/{0:04d}.png'.format(jj))
-    jj+=1
-
-idealab_tools.makemovie.render(image_name_format='%04d.png')
-idealab_tools.makemovie.clear_folder(rmdir=True)
-
-#points_output = PointsOutput3D(o2,system)
-#y = points_output.calc(states)
-#points_output.animate(fps = 100,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
+# self  = points_output
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D
+# f=plt.figure()
+# ax = f.add_subplot(1,1,1,autoscale_on=False,projection='3d')
+# stepsize = 1
+# ax.plot3D(xs=self.y[::stepsize,1,0],ys=self.y[::stepsize,1,1],zs=self.y[::stepsize,1,2])
+# # ax.axis('equal')
