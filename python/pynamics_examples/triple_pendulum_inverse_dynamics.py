@@ -40,7 +40,7 @@ k = Constant(1e1,'k',system)
 
 tinitial = 0
 tfinal = 5
-tstep = 1/100
+tstep = 1/10
 t = numpy.r_[tinitial:tfinal:tstep]
 
 

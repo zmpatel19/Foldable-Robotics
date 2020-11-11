@@ -14,7 +14,6 @@ from pynamics.dyadic import Dyadic
 from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 import pynamics.integration
-
 import sympy
 import numpy
 import matplotlib.pyplot as plt
@@ -208,19 +207,10 @@ system.add_spring_force1(k,(qD-qB-preload5)*N.z,wBD)
 
 system.addforcegravity(-g*N.y)
 
-import scipy.signal
-import scipy.interpolate
+import pynamics.time_series
 x = [0,2,2,5,5,6,6,10]
 y = [0,0,1,1,-1,-1,0,0]
-plt.figure()
-ft = scipy.interpolate.interp1d(x,y,'linear',fill_value='extrapolate')
-plt.plot(t,ft(t))
-win = scipy.signal.hann(10)
-filtered = scipy.signal.convolve(ft(t), win, mode='same') / sum(win)
-plt.plot(t,filtered)
-ft2 = scipy.interpolate.interp1d(t,filtered,'quadratic',fill_value='extrapolate')
-plt.plot(t,ft2(t))
-my_signal = sympy.Symbol('my_signal')
+my_signal, ft2 = pynamics.time_series.build_smoothed_time_signal(x,y,t,'my_signal',window_time_width = .1)
 
 torque = my_signal*stall_torque
 system.addforce(torque*O.z,wOA)
