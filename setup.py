@@ -21,7 +21,7 @@ package_data['pynamics'] = []
 
 setup_kwargs = {}
 setup_kwargs['name']='pynamics'
-setup_kwargs['version']='0.0.6'
+setup_kwargs['version']='0.0.7'
 setup_kwargs['classifiers']=['Programming Language :: Python','Programming Language :: Python :: 3']   
 setup_kwargs['description']='Pynamics is a package for creating and solving dynamic equations of motion symbolically'
 setup_kwargs['author']='Dan Aukes'
