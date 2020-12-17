@@ -11,3 +11,4 @@ python/pynamics/examples/render*
 *.log
 /docs/build/*
 *.mp4
+**/outcmaes/**
