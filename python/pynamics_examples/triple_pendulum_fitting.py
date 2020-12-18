@@ -185,7 +185,7 @@ import cma
 
 k_guess = [1e1,1e2]
 
-es = cma.CMAEvolutionStrategy(ini, 0.5)
+es = cma.CMAEvolutionStrategy(k_guess, 0.5)
 es.logger.disp_header()
 while not es.stop():
       X = es.ask()
@@ -194,9 +194,16 @@ while not es.stop():
       es.logger.disp([-1])
 
 
+es.best.x
+calc_error(es.best.x)
+calc_error([1e2,1e3])
 
 
-
+input_data_all2 = run_sim(es.best.x)
+points_output2 = PointsOutput(points,system)
+y2 = points_output2.calc(input_data_all2)
+points_output2.plot_time()
+points_output2.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 
 
 
