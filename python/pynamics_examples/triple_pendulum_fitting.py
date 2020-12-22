@@ -13,6 +13,13 @@ import numpy
 import matplotlib.pyplot as plt
 plt.ion()
 from math import pi
+import logging
+import pynamics.integration
+import pynamics.system
+import numpy.random
+import scipy.interpolate
+import cma
+
 
 system = System()
 pynamics.set_system(__name__,system)
@@ -153,17 +160,11 @@ def run_sim(args):
     states=pynamics.integration.integrate(func1,ini,t,rtol=tol,atol=tol,hmin=tol, args=({'constants':constants},))
     return states
 
-input_data_all = run_sim([1e2,1e3])
+input_data_all = run_sim([1.1e2,9e2])
 input_positions = input_data_all[:,:3]
-input_positions = input_positions.copy()
+# input_positions = input_positions.copy()
 
-import numpy.random
-r = numpy.random.randn(*(input_positions.shape))*.1
-input_positions += r
 
-import logging
-import pynamics.integration
-import pynamics.system
 # pynamics.integration.logger.setLevel(logging.ERROR)
 pynamics.system.logger.setLevel(logging.ERROR)
 
@@ -171,19 +172,24 @@ points = [pNA,pAB,pBC,pCtip]
 points_output = PointsOutput(points,system)
 y = points_output.calc(input_data_all)
 points_output.plot_time()
-# points_output.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 
+r = numpy.random.randn(*(y.shape))*.01
+y_rand  = y + r
+fy = scipy.interpolate.interp1d(t,y_rand.transpose((1,2,0)))
+fyt = fy(t)
+
+# points_output.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 
 def calc_error(args):
     states_guess = run_sim(args)
-    error = input_positions - states_guess[:,:3]
+    y_guess = points_output.calc(states_guess).transpose((1,2,0))
+    error = fyt - y_guess
     error **=2
     error = error.sum()
     return error
     
-import cma
 
-k_guess = [1e1,1e2]
+k_guess = [1e2,1e3]
 
 es = cma.CMAEvolutionStrategy(k_guess, 0.5)
 es.logger.disp_header()
@@ -203,7 +209,7 @@ input_data_all2 = run_sim(es.best.x)
 points_output2 = PointsOutput(points,system)
 y2 = points_output2.calc(input_data_all2)
 points_output2.plot_time()
-points_output2.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
+# points_output2.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 
 
 
