@@ -52,14 +52,17 @@ class PointsOutput(Output):
         self.anim = animation.FuncAnimation(f, run, init_func=init,frames=y[::stepsize], interval=1/fps*1000, blit=True,repeat = True,repeat_delay=3000)        
         if movie_name is not None:
             self.anim.save(movie_name, fps=fps,writer='ffmpeg')
+        return ax
             
     def plot_time(self,stepsize=1):
         import matplotlib.pyplot as plt
-        plt.figure()
+        fig = plt.figure()
+        ax = fig.add_subplot()
         try:
             self.y
         except AttributeError:
             self.calc()
 
-        plt.plot(self.y[::stepsize,:,0].T,self.y[::stepsize,:,1].T)
-        plt.axis('equal')
+        ax.plot(self.y[::stepsize,:,0].T,self.y[::stepsize,:,1].T)
+        ax.axis('equal')
+        return ax

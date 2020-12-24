@@ -21,7 +21,8 @@ class PointsOutput3D(PointsOutput):
         self.y.resize(self.y.shape[0],int(self.y.shape[1]/3),3)
         return self.y
 
-    def animate(self,fps = 30,stepsize=1, movie_name = None,*args,**kwargs):
+    def animate(self,fps = 30,stepsize=1, movie_name = None,*args,azim = 0, elev = 0,**kwargs):
+        
         # import numpy as np
         import matplotlib.pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
@@ -31,6 +32,7 @@ class PointsOutput3D(PointsOutput):
 
         f = plt.figure()
         ax = f.add_subplot(1,1,1,autoscale_on=False,projection='3d')
+        ax.view_init(azim=azim,elev=elev)
 #        ax.axis('equal')
         limits   = [y[:,:,0].min(),y[:,:,0].max(),y[:,:,1].min(),y[:,:,1].max()]
         ax.axis(limits)
@@ -63,6 +65,7 @@ class PointsOutput3D(PointsOutput):
         self.anim = animation.FuncAnimation(f, run, init_func=init,frames=y[::stepsize], interval=1/fps*1000, blit=True,repeat = True,repeat_delay=3000)        
         if movie_name is not None:
             self.anim.save(movie_name, fps=fps,writer='ffmpeg')
+        return ax
 
     def plot_time(self,stepsize=1):
         import matplotlib.pyplot as plt
@@ -77,4 +80,5 @@ class PointsOutput3D(PointsOutput):
 
         for item in self.y[::stepsize]:
             ax.plot3D(xs=item[:,0].T,ys=item[:,1].T,zs=item[:,2].T)
+        return ax
         # ax.axis('equal')
