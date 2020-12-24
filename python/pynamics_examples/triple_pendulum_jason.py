@@ -65,10 +65,11 @@ mB = Constant(1,'mB',system)
 mC = Constant(1,'mC',system)
 
 g = Constant(9.81,'g',system)
-b = Constant(1e0,'b',system)
-k = Constant(1e1,'k',system)
+b = Constant(1e1,'b',system)
+k = Constant(1e2,'k',system)
 
-r1 = Constant(90,'r1',system)
+r1 = Constant(10,'r1',system)
+r2 = Constant(30,'r2',system)
 
 preload1 = Constant(0*pi/180,'preload1',system)
 preload2 = Constant(0*pi/180,'preload2',system)
@@ -91,7 +92,7 @@ Izz_C = Constant(1,'Izz_C',system)
 # In[6]:
 
 
-tol = 1e-5
+tol = 1e-12
 
 
 # ### Time 
@@ -116,7 +117,7 @@ t = numpy.r_[tinitial:tfinal:tstep]
 
 # qA1,qA1_d,qA1_dd = Differentiable('qA1',system)
 qA2,qA2_d,qA2_dd = Differentiable('qA2',system)
-qA3,qA3_d,qA3_dd = Differentiable('qA3',system)
+# qA3,qA3_d,qA3_dd = Differentiable('qA3',system)
 qB,qB_d,qB_dd = Differentiable('qB',system)
 qC,qC_d,qC_dd = Differentiable('qC',system)
 
@@ -131,9 +132,9 @@ initialvalues = {}
 # initialvalues[qA1]=0*pi/180
 # initialvalues[qA1_d]=0*pi/180
 initialvalues[qA2]=0*pi/180
-initialvalues[qA2_d]=1000*pi/180
-initialvalues[qA3]=10*pi/180
-initialvalues[qA3_d]=0*pi/180
+initialvalues[qA2_d]=-360*pi/180
+# initialvalues[qA3]=10*pi/180
+# initialvalues[qA3_d]=0*pi/180
 initialvalues[qB]=0*pi/180
 initialvalues[qB_d]=0*pi/180
 initialvalues[qC]=0*pi/180
@@ -182,10 +183,10 @@ system.set_newtonian(N)
 
 
 # A1.rotate_fixed_axis_directed(N,[1,0,0],qA,system)
-A2.rotate_fixed_axis_directed(N,[0,1,0],qA2,system)
-A3.rotate_fixed_axis_directed(A2,[0,0,1],qA3,system)
+A2.rotate_fixed_axis_directed(N,[1,0,0],qA2,system)
+A3.rotate_fixed_axis_directed(A2,[0,0,1],r1*pi/180,system)
 B1.rotate_fixed_axis_directed(A3,[0,0,1],qB,system)
-B2.rotate_fixed_axis_directed(B1,[1,0,0],r1*pi/180,system)
+B2.rotate_fixed_axis_directed(B1,[1,0,0],r2*pi/180,system)
 C.rotate_fixed_axis_directed(B2,[0,0,1],qC,system)
 
 
@@ -201,7 +202,7 @@ C.rotate_fixed_axis_directed(B2,[0,0,1],qC,system)
 
 
 pNA=0*N.x
-pIA=pNA-A3.x
+# pIA=pNA-A3.x
 pAB=pNA+lA*A3.x
 pBC = pAB + lB*B1.x
 pCtip = pBC + lC*C.x
@@ -218,6 +219,7 @@ pAcm=pNA+lA/2*A3.x
 pBcm=pAB+lB/2*B1.x
 pCcm=pBC+lC/2*C.x
 
+vAcm=pAcm.time_derivative()
 vCcm=pCcm.time_derivative()
 
 
@@ -253,8 +255,8 @@ IC = Dyadic.build(C,Ixx_C,Iyy_C,Izz_C)
 
 BodyA = Body('BodyA',A3,pAcm,mA,IA,system)
 BodyB = Body('BodyB',B1,pBcm,mB,IB,system)
-#BodyC = Body('BodyC',C,pCcm,mC,IC,system)
-BodyC = Particle(pCcm,mC,'ParticleC',system)
+BodyC = Body('BodyC',C,pCcm,mC,IC,system)
+# BodyC = Particle(pCcm,mC,'ParticleC',system)
 
 
 # ## Forces and Torques
@@ -267,6 +269,7 @@ BodyC = Particle(pCcm,mC,'ParticleC',system)
 # system.addforce(-b*wAB,wAB)
 # system.addforce(-b*wBC,wBC)
 system.addforce(-b*vCcm,vCcm)
+# system.addforce(-b*vAcm,vAcm)
 
 
 # ### Spring Forces
@@ -289,7 +292,7 @@ system.add_spring_force1(k,(qC-preload3)*B2.z,wB2C)
 # In[20]:
 
 
-# system.addforcegravity(-g*N.y)
+system.addforcegravity(-g*N.y)
 
 
 # ## Constraints
@@ -299,8 +302,8 @@ system.add_spring_force1(k,(qC-preload3)*B2.z,wB2C)
 
 
 eq = []
-eq.append(pIA.dot(N.x))
 eq_d=[(system.derivative(item)) for item in eq]
+eq_d.append(qA2_d)
 eq_dd=[(system.derivative(item)) for item in eq_d]
 
 
@@ -378,7 +381,8 @@ energy_output.plot_time()
 # In[29]:
 
 
-points = [pIA,pNA,pAB,pBC,pCtip]
+points = [pNA,pAB,pBC,pCtip]
+# points = [pNA,pAB]
 points_output = PointsOutput3D(points,system)
 y = points_output.calc(states)
 points_output.plot_time(20)
@@ -392,31 +396,9 @@ points_output.plot_time(20)
 
 ax = points_output.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=145)
 #a()
-
-
-# To plot the animation in jupyter you need a couple extra lines of code...
-
-# In[31]:
-
-
-from matplotlib import animation, rc
-from IPython.display import HTML
-HTML(points_output.anim.to_html5_video())
-
-
-# ### Constraint Forces
-
-# This line of code computes the constraint forces once the system's states have been solved for.
-
-# In[32]:
-
-
-# lambda2 = numpy.array([lambda1(item1,item2,system.constant_values) for item1,item2 in zip(t,states)])
-# plt.figure()
-# plt.plot(t, lambda2)
-
-
-# In[ ]:
+ax.set_xlim(-3,3)
+ax.set_ylim(-3,3)
+ax.set_zlim(-3,3)
 
 
 
