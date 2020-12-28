@@ -80,10 +80,12 @@ eq.append(eq0.dot(B.x))
 eq.append(eq0.dot(B.y))
 eq.append(eq0.dot(B.z))
 
-system.add_constraint(Constraint(eq,[wx,wy,wz],[qA_d,qB_d,qC_d]))
+c = Constraint(eq)
+c.linearize(0)
+system.add_constraint(c)
 
 for constraint in system.constraints:
-    constraint.solve()
+    constraint.solve([wx,wy,wz],[qA_d,qB_d,qC_d])
 
 BodyC = Body('BodyC',C,pCcm,mC,IC)
 

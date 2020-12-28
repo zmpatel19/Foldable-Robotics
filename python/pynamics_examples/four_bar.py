@@ -23,8 +23,8 @@ from math import pi
 system = System()
 pynamics.set_system(__name__,system)
 
-lA = Constant(1,'lA',system)
-lB = Constant(1,'lB',system)
+lA = Constant(2,'lA',system)
+lB = Constant(1.5,'lB',system)
 lC = Constant(1,'lC',system)
 
 mA = Constant(1,'mA',system)
@@ -67,7 +67,6 @@ initialvalues[qC]=90*pi/180
 initialvalues[qC_d]=0*pi/180
 
 statevariables = system.get_state_variables()
-ini = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')
 A = Frame('A')
@@ -85,34 +84,12 @@ pBC = pAB + lB*B.x
 pCtip = pBC + lC*C.x
 pD = 1*N.x
 
-pAcm=pNA+lA/2*A.x
-pBcm=pAB+lB/2*B.x
-pCcm=pBC+lC/2*C.x
+points = [pNA,pAB,pBC,pCtip]
 
-wNA = N.getw_(A)
-wAB = A.getw_(B)
-wBC = B.getw_(C)
+statevariables = system.get_state_variables()
+ini0 = [initialvalues[item] for item in statevariables]
 
-IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
-IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)
-IC = Dyadic.build(C,Ixx_C,Iyy_C,Izz_C)
-
-BodyA = Body('BodyA',A,pAcm,mA,IA,system)
-BodyB = Body('BodyB',B,pBcm,mB,IB,system)
-#BodyC = Body('BodyC',C,pCcm,mC,IC,system)
-BodyC = Particle(pCcm,mC,'ParticleC',system)
-
-system.addforce(-b*wNA,wNA)
-system.addforce(-b*wAB,wAB)
-system.addforce(-b*wBC,wBC)
-
-system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
-system.add_spring_force1(k,(qB-preload2)*N.z,wAB)
-system.add_spring_force1(k,(qC-preload3)*N.z,wBC)
-
-system.addforcegravity(-g*N.y)
-
-vCtip = pCtip.time_derivative(N,system)
+from pynamics.constraint import Constraint
 
 eq = []
 eq.append((pCtip-pD).dot(N.x))
@@ -120,43 +97,94 @@ eq.append((pCtip-pD).dot(N.y))
 eq_d=[(system.derivative(item)) for item in eq]
 eq_dd=[(system.derivative(item)) for item in eq_d]
 
+c=Constraint(eq)
 
-f,ma = system.getdynamics()
-dyn = sympy.Matrix(f)-sympy.Matrix(ma)
-eq_dd = sympy.Matrix(eq_dd)
-qi = [qA_dd]
-qd = [qB_dd,qC_dd]
+variables = [qA,qB,qC]
+guess = [initialvalues[item] for item in variables]
+result = c.solve_numeric(variables,guess,system.constant_values)
 
-A = dyn.jacobian(qi)
-B = dyn.jacobian(qd)
-C = eq_dd.jacobian(qi)
-D = eq_dd.jacobian(qd)
+guess = [initialvalues[item] for item in variables]
 
-A_new = A+(B*D.inv()*C)
-func1 = system.state_space_post_invert(f,ma,eq_dd)
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
+ini = []
+for item in system.get_state_variables():
+    if item in variables:
+        ini.append(result.x[variables.index(item)])
+    else:
+        ini.append(initialvalues[item])
+        
+points = PointsOutput(points, constant_values=system.constant_values)
+points.calc(numpy.array([ini0,ini]))
+points.plot_time()
 
-KE = system.get_KE()
-PE = system.getPEGravity(pNA) - system.getPESprings()
 
-points = [pNA,pAB,pBC,pCtip]
-#points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
-points_output = PointsOutput(points,system)
-y = points_output.calc(states)
-#y.resize(y.shape[0],int(y.shape[1]/2),2)
+# pAcm=pNA+lA/2*A.x
+# pBcm=pAB+lB/2*B.x
+# pCcm=pBC+lC/2*C.x
 
-plt.figure()
-plt.plot(t,states[:,:3])
+# wNA = N.getw_(A)
+# wAB = A.getw_(B)
+# wBC = B.getw_(C)
 
-plt.figure()
-plt.plot(*(y[::int(len(y)/20)].T))
-plt.axis('equal')
+# IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
+# IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)
+# IC = Dyadic.build(C,Ixx_C,Iyy_C,Izz_C)
 
-energy_output = Output([KE-PE],system)
-energy_output.calc(states)
+# BodyA = Body('BodyA',A,pAcm,mA,IA,system)
+# BodyB = Body('BodyB',B,pBcm,mB,IB,system)
+# #BodyC = Body('BodyC',C,pCcm,mC,IC,system)
+# BodyC = Particle(pCcm,mC,'ParticleC',system)
 
-plt.figure()
-plt.plot(energy_output.y)
+# system.addforce(-b*wNA,wNA)
+# system.addforce(-b*wAB,wAB)
+# system.addforce(-b*wBC,wBC)
 
-points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2)
-#a()
+# system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
+# system.add_spring_force1(k,(qB-preload2)*N.z,wAB)
+# system.add_spring_force1(k,(qC-preload3)*N.z,wBC)
+
+# system.addforcegravity(-g*N.y)
+
+# vCtip = pCtip.time_derivative(N,system)
+
+
+
+
+# f,ma = system.getdynamics()
+# dyn = sympy.Matrix(f)-sympy.Matrix(ma)
+# eq_dd = sympy.Matrix(eq_dd)
+# qi = [qA_dd]
+# qd = [qB_dd,qC_dd]
+
+# A = dyn.jacobian(qi)
+# B = dyn.jacobian(qd)
+# C = eq_dd.jacobian(qi)
+# D = eq_dd.jacobian(qd)
+
+# A_new = A+(B*D.inv()*C)
+# func1 = system.state_space_post_invert(f,ma,eq_dd)
+# states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':system.constant_values},))
+
+# KE = system.get_KE()
+# PE = system.getPEGravity(pNA) - system.getPESprings()
+
+# points = [pNA,pAB,pBC,pCtip]
+# #points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
+# points_output = PointsOutput(points,system)
+# y = points_output.calc(states)
+# #y.resize(y.shape[0],int(y.shape[1]/2),2)
+
+# plt.figure()
+# plt.plot(t,states[:,:3])
+
+# plt.figure()
+# plt.plot(*(y[::int(len(y)/20)].T))
+# plt.axis('equal')
+
+# energy_output = Output([KE-PE],system)
+# energy_output.calc(states)
+
+# plt.figure()
+# plt.plot(energy_output.y)
+
+# points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2)
+# #a()
