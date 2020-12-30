@@ -406,7 +406,7 @@ plt.legend(artists,['x','y','qA','qB','qC'])
 points = [pNA,pAB,pBC,pC1,pC2]
 points_output = PointsOutput(points,system)
 y = points_output.calc(states)
-points_output.plot_time()
+points_output.plot_time(5)
 
 
 # #### Motion Animation
