@@ -103,7 +103,7 @@ force_var = sympy.Symbol('fv')
 # In[6]:
 
 
-tol = 1e-12
+tol = 1e-11
 
 
 # ### Time 
@@ -121,8 +121,8 @@ t = numpy.r_[tinitial:tfinal:tstep]
 
 force = t*0
 ii = (t==3).nonzero()[0][0]
-jj = (t==3.5).nonzero()[0][0]
-force[ii:] = 10
+jj = (t==5).nonzero()[0][0]
+force[ii:jj] = 10
 f_force = scipy.interpolate.interp1d(t, force,fill_value='extrapolate')
 
 # ### Differentiable State Variables
