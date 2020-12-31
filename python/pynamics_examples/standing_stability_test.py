@@ -72,6 +72,7 @@ lC = Constant(6*25.4/1000,'lC',system)
 mA = Constant(1,'mA',system)
 mB = Constant(1,'mB',system)
 mC = Constant(1,'mC',system)
+m1 = Constant(2,'m1',system)
 
 g = Constant(9.81,'g',system)
 b = Constant(1e1,'b',system)
@@ -137,6 +138,7 @@ y,y_d,y_dd = Differentiable('y',system)
 qA,qA_d,qA_dd = Differentiable('qA',system)
 qB,qB_d,qB_dd = Differentiable('qB',system)
 qC,qC_d,qC_dd = Differentiable('qC',system)
+x2,x2_d,x2_dd = Differentiable('x2',system)
 
 
 # ### Initial Values
@@ -156,6 +158,8 @@ initialvalues[qB]=0*pi/180
 initialvalues[qB_d]=0*pi/180
 initialvalues[qC]=0*pi/180
 initialvalues[qC_d]=0*pi/180
+initialvalues[x2]=-1.5
+initialvalues[x2_d]=.5
 
 
 # These two lines of code order the initial values in a list in such a way that the integrator can use it in the same order that it expects the variables to be supplied
@@ -217,9 +221,12 @@ pBC=pAB-lB*B.y
 pC1 = pBC - lC/2*C.x
 pC2 = pBC + lC/2*C.x
 
+pm1 = x2*N.x+2*N.y
+
 vNA = pNA.time_derivative()
 vC1 = pC1.time_derivative()
 vC2 = pC2.time_derivative()
+vm1 = pm1.time_derivative()
 
 # ## Centers of Mass
 # 
@@ -266,6 +273,7 @@ IC = Dyadic.build(B,Ixx_C,Iyy_C,Izz_C)
 BodyA = Body('BodyA',A,pAcm,mA,IA,system)
 BodyB = Body('BodyB',B,pBcm,mB,IB,system)
 BodyC = Body('BodyC',C,pCcm,mC,IC,system)
+ParticleM = Particle(pm1,m1,'ParticleM',system)
 
 
 # ## Forces and Torques
@@ -291,7 +299,17 @@ system.addforce(-b*wNA,wNA)
 system.addforce(-b*wAB,wAB)
 system.addforce(-b*wBC,wBC)
 
-system.addforce(force_var*N.x,vNA)
+# system.addforce(force_var*N.x,vNA)
+
+
+stretch3_v = (pm1 - pNA)
+stretch3_uv = 1/(stretch3_v.length() + 1e-10)* stretch3_v
+
+stretch3 = 1-(pm1 - pNA).length()
+stretch3_s = (stretch3+abs(stretch3))
+on = stretch3_s/(2*stretch3+1e-10)
+system.add_spring_force2(k_constraint,-stretch3_uv*stretch3_s,vm1,-vNA)
+# system.addforce(-b_constraint*vC2*on,vC2)
 
 
 # ### Spring Forces
@@ -403,7 +421,7 @@ plt.legend(artists,['x','y','qA','qB','qC'])
 # In[29]:
 
 
-points = [pNA,pAB,pBC,pC1,pC2]
+points = [pm1,pNA,pAB,pBC,pC1,pC2]
 points_output = PointsOutput(points,system)
 y = points_output.calc(states)
 points_output.plot_time(5)
