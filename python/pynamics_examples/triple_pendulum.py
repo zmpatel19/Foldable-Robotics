@@ -18,6 +18,7 @@ get_ipython().run_line_magic('matplotlib', 'inline')
 
 
 global_q = False
+use_constraints = False
 
 
 # Import all the necessary modules
@@ -276,8 +277,8 @@ system.addforce(-b*wBC,wBC)
 
 if not global_q:
     system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
-    system.add_spring_force1(k,(qB-preload2)*N.z,wAB)
-    system.add_spring_force1(k,(qC-preload3)*N.z,wBC)
+    system.add_spring_force1(k,(qB-preload2)*A.z,wAB)
+    system.add_spring_force1(k,(qC-preload3)*B.z,wBC)
 else:
     system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
     system.add_spring_force1(k,(qB-qA-preload2)*N.z,wAB)
@@ -300,7 +301,8 @@ system.addforcegravity(-g*N.y)
 
 
 eq = []
-eq.append(pCtip.dot(N.y))
+if use_constraints:
+    eq.append(pCtip.dot(N.y))
 eq_d=[(system.derivative(item)) for item in eq]
 eq_dd=[(system.derivative(item)) for item in eq_d]
 
@@ -345,7 +347,7 @@ func1,lambda1 = system.state_space_post_invert(f,ma,eq_dd,return_lambda = True)
 # In[26]:
 
 
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,hmin=tol, args=({'constants':system.constant_values},))
+states=pynamics.integration.integrate(func1,ini,t,rtol=tol,atol=tol, args=({'constants':system.constant_values},))
 
 
 # ## Outputs
@@ -392,7 +394,6 @@ points_output.plot_time(20)
 
 
 points_output.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
-#a()
 
 
 # To plot the animation in jupyter you need a couple extra lines of code...
@@ -412,9 +413,10 @@ HTML(points_output.anim.to_html5_video())
 # In[32]:
 
 
-lambda2 = numpy.array([lambda1(item1,item2,system.constant_values) for item1,item2 in zip(t,states)])
-plt.figure()
-plt.plot(t, lambda2)
+if use_constraints:
+    lambda2 = numpy.array([lambda1(item1,item2,system.constant_values) for item1,item2 in zip(t,states)])
+    plt.figure()
+    plt.plot(t, lambda2)
 
 
 # In[ ]:

@@ -23,8 +23,6 @@ from math import pi
 system = System()
 pynamics.set_system(__name__,system)
 
-global_q = True
-
 lA = Constant(1,'lA',system)
 lB = Constant(1,'lB',system)
 lC = Constant(1,'lC',system)
@@ -77,14 +75,9 @@ B = Frame('B')
 C = Frame('C')
 
 system.set_newtonian(N)
-if not global_q:
-    A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
-    B.rotate_fixed_axis_directed(A,[0,0,1],qB,system)
-    C.rotate_fixed_axis_directed(B,[0,0,1],qC,system)
-else:
-    A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
-    B.rotate_fixed_axis_directed(N,[0,0,1],qB,system)
-    C.rotate_fixed_axis_directed(N,[0,0,1],qC,system)
+A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
+B.rotate_fixed_axis_directed(N,[0,0,1],qB,system)
+C.rotate_fixed_axis_directed(N,[0,0,1],qC,system)
 
 pNA=0*N.x
 pAB=pNA+lA*A.x

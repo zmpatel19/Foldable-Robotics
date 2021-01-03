@@ -132,8 +132,8 @@ system.addforce(-b*wBC,wBC)
 
 
 system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
-system.add_spring_force1(k,(qB-preload2)*N.z,wAB)
-system.add_spring_force1(k,(qC-preload3)*N.z,wBC)
+system.add_spring_force1(k,(qB-preload2)*A.z,wAB)
+system.add_spring_force1(k,(qC-preload3)*B.z,wBC)
 
 
 system.addforcegravity(-g*N.y)
