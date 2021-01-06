@@ -117,6 +117,21 @@ points.calc(numpy.array([ini0,ini]))
 points.plot_time()
 
 
+eq_d = sympy.Matrix(eq_d)
+qi = sympy.Matrix([qA_d])
+qd = sympy.Matrix([qB_d,qC_d])
+
+C = eq_d.jacobian(qi)
+D = eq_d.jacobian(qd)
+
+J = -D.inv()*C
+J.simplify()
+
+qd2 = J*qi
+
+subs = dict([(ii,jj) for ii,jj in zip(qd,qd2)])
+
+
 # pAcm=pNA+lA/2*A.x
 # pBcm=pAB+lB/2*B.x
 # pCcm=pBC+lC/2*C.x
@@ -152,13 +167,7 @@ points.plot_time()
 # f,ma = system.getdynamics()
 # dyn = sympy.Matrix(f)-sympy.Matrix(ma)
 # eq_dd = sympy.Matrix(eq_dd)
-# qi = [qA_dd]
-# qd = [qB_dd,qC_dd]
 
-# A = dyn.jacobian(qi)
-# B = dyn.jacobian(qd)
-# C = eq_dd.jacobian(qi)
-# D = eq_dd.jacobian(qd)
 
 # A_new = A+(B*D.inv()*C)
 # func1 = system.state_space_post_invert(f,ma,eq_dd)
