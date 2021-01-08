@@ -69,7 +69,7 @@ b = Constant(1e1,'b',system)
 k = Constant(1e2,'k',system)
 
 r1 = Constant(10,'r1',system)
-r2 = Constant(30,'r2',system)
+r2 = Constant(90,'r2',system)
 
 preload1 = Constant(0*pi/180,'preload1',system)
 preload2 = Constant(0*pi/180,'preload2',system)
@@ -394,7 +394,7 @@ points_output.plot_time(20)
 # In[30]:
 
 
-ax = points_output.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=145)
+ax = points_output.animate(fps = fps,movie_name = 'triple_pendulum_jason.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=145)
 #a()
 ax.set_xlim(-3,3)
 ax.set_ylim(-3,3)
