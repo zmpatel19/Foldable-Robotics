@@ -26,33 +26,34 @@ pynamics.set_system(__name__,system)
 lA = Constant(2,'lA',system)
 lB = Constant(1.5,'lB',system)
 lC = Constant(1,'lC',system)
+lD = Constant(1,'lD',system)
 
-mA = Constant(1,'mA',system)
-mB = Constant(1,'mB',system)
-mC = Constant(1,'mC',system)
+# mA = Constant(1,'mA',system)
+# mB = Constant(1,'mB',system)
+# mC = Constant(1,'mC',system)
 
-g = Constant(9.81,'g',system)
-b = Constant(1e0,'b',system)
-k = Constant(1e1,'k',system)
+# g = Constant(9.81,'g',system)
+# b = Constant(1e0,'b',system)
+# k = Constant(1e1,'k',system)
 
-tinitial = 0
-tfinal = 5
-tstep = 1/30
-t = numpy.r_[tinitial:tfinal:tstep]
+# tinitial = 0
+# tfinal = 5
+# tstep = 1/30
+# t = numpy.r_[tinitial:tfinal:tstep]
 
-preload1 = Constant(0*pi/180,'preload1',system)
-preload2 = Constant(0*pi/180,'preload2',system)
-preload3 = Constant(0*pi/180,'preload3',system)
+# preload1 = Constant(0*pi/180,'preload1',system)
+# preload2 = Constant(0*pi/180,'preload2',system)
+# preload3 = Constant(0*pi/180,'preload3',system)
 
-Ixx_A = Constant(1,'Ixx_A',system)
-Iyy_A = Constant(1,'Iyy_A',system)
-Izz_A = Constant(1,'Izz_A',system)
-Ixx_B = Constant(1,'Ixx_B',system)
-Iyy_B = Constant(1,'Iyy_B',system)
-Izz_B = Constant(1,'Izz_B',system)
-Ixx_C = Constant(1,'Ixx_C',system)
-Iyy_C = Constant(1,'Iyy_C',system)
-Izz_C = Constant(1,'Izz_C',system)
+# Ixx_A = Constant(1,'Ixx_A',system)
+# Iyy_A = Constant(1,'Iyy_A',system)
+# Izz_A = Constant(1,'Izz_A',system)
+# Ixx_B = Constant(1,'Ixx_B',system)
+# Iyy_B = Constant(1,'Iyy_B',system)
+# Izz_B = Constant(1,'Izz_B',system)
+# Ixx_C = Constant(1,'Ixx_C',system)
+# Iyy_C = Constant(1,'Iyy_C',system)
+# Izz_C = Constant(1,'Izz_C',system)
 
 qA,qA_d,qA_dd = Differentiable('qA',system)
 qB,qB_d,qB_dd = Differentiable('qB',system)
@@ -82,7 +83,7 @@ pNA=0*N.x
 pAB=pNA+lA*A.x
 pBC = pAB + lB*B.x
 pCtip = pBC + lC*C.x
-pD = 1*N.x
+pD = lD*N.x
 
 points = [pNA,pAB,pBC,pCtip]
 
