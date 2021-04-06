@@ -32,6 +32,10 @@ tfinal = 5
 tstep = 1/30
 t = numpy.r_[tinitial:tfinal:tstep]
 
+# x,x_d,x_dd = Differentiable('x')
+# y,y_d,y_dd = Differentiable('y')
+# z,z_d,z_dd = Differentiable('z')
+
 qA,qA_d = Differentiable('qA',limit=2)
 qB,qB_d = Differentiable('qB',limit=2)
 qC,qC_d = Differentiable('qC',limit=2)
@@ -72,7 +76,7 @@ w1 = N.getw_(C)
 w2 = wx*C.x+wy*C.y+wz*C.z
 N.set_w(C,w2)
 
-from pynamics.constraint import Constraint
+from pynamics.constraint import Constraint2
 
 eq0 = w1-w2
 eq = []
@@ -80,12 +84,12 @@ eq.append(eq0.dot(B.x))
 eq.append(eq0.dot(B.y))
 eq.append(eq0.dot(B.z))
 
-c = Constraint(eq)
-c.linearize(0)
+c = Constraint2(eq,[wx,wy,wz],[qA_d,qB_d,qC_d])
+# c.linearize(0)
 system.add_constraint(c)
 
 for constraint in system.constraints:
-    constraint.solve([wx,wy,wz],[qA_d,qB_d,qC_d])
+    constraint.solve()
 
 BodyC = Body('BodyC',C,pCcm,mC,IC)
 

@@ -20,10 +20,9 @@ class Constraint(object):
         self.eq = eq
         self.solved = False
         
-    def linearize(self,num):
-        eq_linear = self.eq
-        for ii in range(num):
-            eq_linear=[(system.derivative(item)) for item in eq_linear]
+    def linearize(self,system):
+        eq = self.eq
+        eq_linear=[(system.derivative(item)) for item in eq]
         self.eq_linear = eq_linear
 
     def solve(self,q_ind,q_dep,inv_method = 'LU'):
@@ -59,3 +58,30 @@ class Constraint(object):
         if result.fun>tol:
             raise(OutOfTol())
         return result
+
+class Constraint2(object):
+
+    def __init__(self,eq,q_ind,q_dep):
+        self.eq = eq
+        self.solved = False
+        self.q_dep = q_dep
+        self.q_ind = q_ind
+        
+    def solve(self,inv_method = 'LU'):
+        
+        logger.info('solving constraint')
+
+        EQ = sympy.Matrix(self.eq)
+        AA = EQ.jacobian(sympy.Matrix(self.q_ind))
+        BB = EQ.jacobian(sympy.Matrix(self.q_dep))
+    
+        CC = EQ - AA*(sympy.Matrix(self.q_ind)) - BB*(sympy.Matrix(self.q_dep))
+        CC = sympy.simplify(CC)
+        assert(sum(CC)==0)
+    
+        self.J = sympy.simplify(BB.solve(-(AA),method = inv_method))
+        
+        self.subs = dict([(a,b) for a,b in zip(self.q_dep,self.J*sympy.Matrix(self.q_ind))])
+        self.solved = True
+        return self.J, self.subs
+    
