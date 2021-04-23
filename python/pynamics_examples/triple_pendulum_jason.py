@@ -59,6 +59,7 @@ pynamics.set_system(__name__,system)
 
 small = 1e-10
 
+rho = Constant(1.292,'rho')
 lA = Constant(1,'lA',system)
 lB = Constant(1,'lB',system)
 lC = Constant(1,'lC',system)
@@ -72,9 +73,11 @@ mS = Constant(1,'mS',system)
 g = Constant(9.81,'g',system)
 b = Constant(1e1,'b',system)
 k = Constant(1e2,'k',system)
+k2 = Constant(1e1,'k',system)
+Area = Constant(1,'Area',system)
 
 r1 = Constant(10,'r1',system)
-r2 = Constant(90,'r2',system)
+r2 = Constant(0,'r2',system)
 
 preload1 = Constant(0*pi/180,'preload1',system)
 preload2 = Constant(0*pi/180,'preload2',system)
@@ -128,19 +131,19 @@ y,y_d,y_dd = Differentiable('y',system)
 z,z_d,z_dd = Differentiable('z',system)
 
 
-# qA1,qA1_d,qA1_dd = Differentiable('qA1')
-# qA2,qA2_d,qA2_dd = Differentiable('qA2')
-# qA3,qA3_d,qA3_dd = Differentiable('qA3')
-qA1,qA1_d = Differentiable('qA1',limit=2)
-qA2,qA2_d = Differentiable('qA2',limit=2)
-qA3,qA3_d = Differentiable('qA3',limit=2)
+qA1,qA1_d,qA1_dd = Differentiable('qA1')
+qA2,qA2_d,qA2_dd = Differentiable('qA2')
+qA3,qA3_d,qA3_dd = Differentiable('qA3')
+#qA1,qA1_d = Differentiable('qA1',limit=2)
+#qA2,qA2_d = Differentiable('qA2',limit=2)
+#qA3,qA3_d = Differentiable('qA3',limit=2)
 qB,qB_d,qB_dd = Differentiable('qB')
 qC,qC_d,qC_dd = Differentiable('qC')
 qS,qS_d,qS_dd = Differentiable('qS')
 
-wAx,wAx_d = Differentiable('wAx',ii = 1,limit=3)
-wAy,wAy_d = Differentiable('wAy',ii = 1,limit=3)
-wAz,wAz_d = Differentiable('wAz',ii = 1,limit=3)
+#wAx,wAx_d = Differentiable('wAx',ii = 1,limit=3)
+#wAy,wAy_d = Differentiable('wAy',ii = 1,limit=3)
+#wAz,wAz_d = Differentiable('wAz',ii = 1,limit=3)
 
 
 # ### Initial Values
@@ -154,9 +157,9 @@ initialvalues[qA1]=0*pi/180
 initialvalues[qA1_d]=small
 initialvalues[qA2]=0*pi/180
 initialvalues[qA2_d]=small
-initialvalues[qA3]=10*pi/180
+initialvalues[qA3]=0*pi/180
 initialvalues[qA3_d]=small
-initialvalues[qB]=30*pi/180
+initialvalues[qB]=0*pi/180
 initialvalues[qB_d]=small
 initialvalues[qC]=0*pi/180
 initialvalues[qC_d]=small
@@ -168,9 +171,9 @@ initialvalues[z]=0
 initialvalues[z_d]=small
 initialvalues[qS]=0*pi/180
 initialvalues[qS_d]=small
-initialvalues[wAx]=small
-initialvalues[wAy]=small
-initialvalues[wAz]=small
+# initialvalues[wAx]=small
+# initialvalues[wAy]=small
+# initialvalues[wAz]=small
 
 
 # These two lines of code order the initial values in a list in such a way that the integrator can use it in the same order that it expects the variables to be supplied
@@ -222,12 +225,12 @@ B2.rotate_fixed_axis_directed(B1,[1,0,0],r2*pi/180,system)
 C.rotate_fixed_axis_directed(B2,[0,0,1],qC,system)
 S.rotate_fixed_axis_directed(A3,[0,0,1],qS,system)
 
-wA1 = N.getw_(A3)
-wA2 = wAx*A3.x + wAy*A3.y + wAz*A3.z
-N.set_w(A3,wA2)
+#wA1 = N.getw_(A3)
+#wA2 = wAx*A3.x + wAy*A3.y + wAz*A3.z
+#N.set_w(A3,wA2)
 
 
-from pynamics.constraint import Constraint2
+#from pynamics.constraint import Constraint2
 
 
 
@@ -246,6 +249,14 @@ pHead=x*N.x+y*N.y+z*N.z
 pAB=pHead+lA*A3.x
 pBC = pAB + lB*B1.x
 pCtip = pBC + lC*C.x
+
+vctip=pCtip.time_derivative()
+uctip = 1/vctip.length()*vctip
+vctip_squared = vctip.dot(vctip)
+aoa_S = sympy.asin(uctip.dot(C.y))
+
+f_aero_C = rho*vctip_squared*sympy.sin(aoa_S)*Area *C.y
+# system.addforce(f_aero_C,vctip)
 
 
 # ## Centers of Mass
@@ -276,6 +287,7 @@ vCcm=pCcm.time_derivative()
 
 #wNA3 = N.getw_(A3)
 wA3B1 = A3.getw_(B1)
+wA3S = A3.getw_(S)
 wB2C = B2.getw_(C)
 
 
@@ -307,11 +319,14 @@ BodyC = Body('BodyS',S,pScm,mS,IS,system)
 
 # In[18]:
 
+import sympy
+
+system.addforce(-10*sympy.sin(2*sympy.pi*system.t)*A3.z,wA3S)
 
 # system.addforce(-b*wNA,wNA)
 # system.addforce(-b*wAB,wAB)
 # system.addforce(-b*wBC,wBC)
-system.addforce(-b*vCcm,vCcm)
+#system.addforce(-b*vCcm,vCcm)
 # system.addforce(-b*vAcm,vAcm)
 
 
@@ -327,6 +342,7 @@ system.addforce(-b*vCcm,vCcm)
 # system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
 system.add_spring_force1(k,(qB-preload2)*A3.z,wA3B1)
 system.add_spring_force1(k,(qC-preload3)*B2.z,wB2C)
+system.add_spring_force1(k2,(qS)*S.z,wA3S)
 
 
 # ### Gravity
@@ -335,7 +351,7 @@ system.add_spring_force1(k,(qC-preload3)*B2.z,wB2C)
 # In[20]:
 
 
-system.addforcegravity(-g*N.y)
+#system.addforcegravity(-g*N.y)
 
 
 # ## Constraints
@@ -380,16 +396,16 @@ ma
 
 # In[25]:
 
-eq0 = wA1-wA2
-eq = []
-eq.append(eq0.dot(A2.x))
-eq.append(eq0.dot(A2.y))
-eq.append(eq0.dot(A2.z))
+# eq0 = wA1-wA2
+#eq = []
+#eq.append(eq0.dot(A2.x))
+#eq.append(eq0.dot(A2.y))
+#eq.append(eq0.dot(A2.z))
 
-system.add_constraint(Constraint2(eq,[wAx,wAy,wAz],[qA1_d,qA2_d,qA3_d]))
-
-for constraint in system.constraints:
-    constraint.solve()
+#system.add_constraint(Constraint2(eq,[wAx,wAy,wAz],[qA1_d,qA2_d,qA3_d]))
+#
+#for constraint in system.constraints:
+#    constraint.solve()
 
 func1= system.state_space_post_invert(f,ma,return_lambda = False)
 
