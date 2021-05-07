@@ -229,7 +229,7 @@ wA2 = wAx*A3.x + wAy*A3.y + wAz*A3.z
 N.set_w(A3,wA2)
 
 
-from pynamics.constraint import Constraint2
+from pynamics.constraint import DynamicConstraint
 
 
 
@@ -379,7 +379,7 @@ eq.append(eq0.dot(A2.x))
 eq.append(eq0.dot(A2.y))
 eq.append(eq0.dot(A2.z))
 
-system.add_constraint(Constraint2(eq,[wAx,wAy,wAz],[qA1_d,qA2_d,qA3_d]))
+system.add_constraint(DynamicConstraint(eq,[wAx,wAy,wAz],[qA1_d,qA2_d,qA3_d]))
 
 
 for constraint in system.constraints:

@@ -76,7 +76,7 @@ w1 = N.getw_(C)
 w2 = wx*C.x+wy*C.y+wz*C.z
 N.set_w(C,w2)
 
-from pynamics.constraint import Constraint2
+from pynamics.constraint import DynamicConstraint
 
 eq0 = w1-w2
 eq = []
@@ -84,7 +84,7 @@ eq.append(eq0.dot(B.x))
 eq.append(eq0.dot(B.y))
 eq.append(eq0.dot(B.z))
 
-c = Constraint2(eq,[wx,wy,wz],[qA_d,qB_d,qC_d])
+c = DynamicConstraint(eq,[wx,wy,wz],[qA_d,qB_d,qC_d])
 # c.linearize(0)
 system.add_constraint(c)
 

@@ -90,7 +90,7 @@ points = [pNA,pAB,pBC,pCtip]
 statevariables = system.get_state_variables()
 ini0 = [initialvalues[item] for item in statevariables]
 
-from pynamics.constraint import Constraint
+from pynamics.constraint import KinematicConstraint
 
 eq = []
 eq.append((pCtip-pD).dot(N.x))
@@ -98,7 +98,7 @@ eq.append((pCtip-pD).dot(N.y))
 eq_d=[(system.derivative(item)) for item in eq]
 eq_dd=[(system.derivative(item)) for item in eq_d]
 
-c=Constraint(eq)
+c=KinematicConstraint(eq)
 
 variables = [qA,qB,qC]
 guess = [initialvalues[item] for item in variables]

@@ -14,7 +14,7 @@ logger = logging.getLogger('pynamics.constraint')
 class OutOfTol(Exception):
     pass
 
-class Constraint(object):
+class KinematicConstraint(object):
 
     def __init__(self,eq):
         self.eq = eq
@@ -59,7 +59,7 @@ class Constraint(object):
             raise(OutOfTol())
         return result
 
-class Constraint2(object):
+class DynamicConstraint(object):
 
     def __init__(self,eq,q_ind,q_dep):
         self.eq = eq
