@@ -72,7 +72,7 @@ mS = Constant(1,'mS',system)
 
 g = Constant(9.81,'g',system)
 b = Constant(1e1,'b',system)
-k = Constant(1e2,'k',system)
+k = Constant(1e3,'k',system)
 k2 = Constant(1e1,'k',system)
 Area = Constant(1,'Area',system)
 
@@ -103,7 +103,7 @@ Izz_S = Constant(1,'Izz_S',system)
 # In[6]:
 
 
-tol = 1e-5
+tol = 1e-7
 
 
 # ### Time 
@@ -131,19 +131,19 @@ y,y_d,y_dd = Differentiable('y',system)
 z,z_d,z_dd = Differentiable('z',system)
 
 
-qA1,qA1_d,qA1_dd = Differentiable('qA1')
-qA2,qA2_d,qA2_dd = Differentiable('qA2')
-qA3,qA3_d,qA3_dd = Differentiable('qA3')
-#qA1,qA1_d = Differentiable('qA1',limit=2)
-#qA2,qA2_d = Differentiable('qA2',limit=2)
-#qA3,qA3_d = Differentiable('qA3',limit=2)
+# qA1,qA1_d,qA1_dd = Differentiable('qA1')
+# qA2,qA2_d,qA2_dd = Differentiable('qA2')
+# qA3,qA3_d,qA3_dd = Differentiable('qA3')
+qA1,qA1_d = Differentiable('qA1',limit=2)
+qA2,qA2_d = Differentiable('qA2',limit=2)
+qA3,qA3_d = Differentiable('qA3',limit=2)
 qB,qB_d,qB_dd = Differentiable('qB')
 qC,qC_d,qC_dd = Differentiable('qC')
 qS,qS_d,qS_dd = Differentiable('qS')
 
-#wAx,wAx_d = Differentiable('wAx',ii = 1,limit=3)
-#wAy,wAy_d = Differentiable('wAy',ii = 1,limit=3)
-#wAz,wAz_d = Differentiable('wAz',ii = 1,limit=3)
+wAx,wAx_d = Differentiable('wAx',ii = 1,limit=3)
+wAy,wAy_d = Differentiable('wAy',ii = 1,limit=3)
+wAz,wAz_d = Differentiable('wAz',ii = 1,limit=3)
 
 
 # ### Initial Values
@@ -154,26 +154,26 @@ qS,qS_d,qS_dd = Differentiable('qS')
 
 initialvalues = {}
 initialvalues[qA1]=0*pi/180
-initialvalues[qA1_d]=small
 initialvalues[qA2]=0*pi/180
+initialvalues[qA1_d]=small
 initialvalues[qA2_d]=small
-initialvalues[qA3]=0*pi/180
 initialvalues[qA3_d]=small
+initialvalues[qA3]=0*pi/180
 initialvalues[qB]=0*pi/180
 initialvalues[qB_d]=small
 initialvalues[qC]=0*pi/180
 initialvalues[qC_d]=small
 initialvalues[x]=0
-initialvalues[x_d]=small
+initialvalues[x_d]=0
 initialvalues[y]=0
 initialvalues[y_d]=small
 initialvalues[z]=0
 initialvalues[z_d]=small
 initialvalues[qS]=0*pi/180
 initialvalues[qS_d]=small
-# initialvalues[wAx]=small
-# initialvalues[wAy]=small
-# initialvalues[wAz]=small
+initialvalues[wAx]=small
+initialvalues[wAy]=small
+initialvalues[wAz]=small
 
 
 # These two lines of code order the initial values in a list in such a way that the integrator can use it in the same order that it expects the variables to be supplied
@@ -181,8 +181,7 @@ initialvalues[qS_d]=small
 # In[10]:
 
 
-statevariables = system.get_state_variables()
-ini = [initialvalues[item] for item in statevariables]
+
 
 
 # ## Kinematics
@@ -225,12 +224,12 @@ B2.rotate_fixed_axis_directed(B1,[1,0,0],r2*pi/180,system)
 C.rotate_fixed_axis_directed(B2,[0,0,1],qC,system)
 S.rotate_fixed_axis_directed(A3,[0,0,1],qS,system)
 
-#wA1 = N.getw_(A3)
-#wA2 = wAx*A3.x + wAy*A3.y + wAz*A3.z
-#N.set_w(A3,wA2)
+wA1 = N.getw_(A3)
+wA2 = wAx*A3.x + wAy*A3.y + wAz*A3.z
+N.set_w(A3,wA2)
 
 
-#from pynamics.constraint import Constraint2
+from pynamics.constraint import Constraint2
 
 
 
@@ -255,8 +254,9 @@ uctip = 1/vctip.length()*vctip
 vctip_squared = vctip.dot(vctip)
 aoa_S = sympy.asin(uctip.dot(C.y))
 
-f_aero_C = rho*vctip_squared*sympy.sin(aoa_S)*Area *C.y
-# system.addforce(f_aero_C,vctip)
+# f_aero_C = rho*vctip_squared*sympy.sin(aoa_S)*Area *C.y
+f_aero_C2 = rho * vctip.length()*(vctip.dot(C.y))*Area*C.y
+system.addforce(-f_aero_C2,vctip)
 
 
 # ## Centers of Mass
@@ -373,6 +373,22 @@ system.add_spring_force1(k2,(qS)*S.z,wA3S)
 # In[22]:
 
 
+eq0 = wA1-wA2
+eq = []
+eq.append(eq0.dot(A2.x))
+eq.append(eq0.dot(A2.y))
+eq.append(eq0.dot(A2.z))
+
+system.add_constraint(Constraint2(eq,[wAx,wAy,wAz],[qA1_d,qA2_d,qA3_d]))
+
+
+for constraint in system.constraints:
+    constraint.solve()
+
+statevariables = system.get_state_variables()
+ini = [initialvalues[item] for item in statevariables]
+
+
 f,ma = system.getdynamics()
 
 
@@ -396,16 +412,6 @@ ma
 
 # In[25]:
 
-# eq0 = wA1-wA2
-#eq = []
-#eq.append(eq0.dot(A2.x))
-#eq.append(eq0.dot(A2.y))
-#eq.append(eq0.dot(A2.z))
-
-#system.add_constraint(Constraint2(eq,[wAx,wAy,wAz],[qA1_d,qA2_d,qA3_d]))
-#
-#for constraint in system.constraints:
-#    constraint.solve()
 
 func1= system.state_space_post_invert(f,ma,return_lambda = False)
 
@@ -417,7 +423,7 @@ func1= system.state_space_post_invert(f,ma,return_lambda = False)
 # In[26]:
 
 
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,hmin=tol, args=({'constants':system.constant_values},))
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol, args=({'constants':system.constant_values},))
 
 
 # ## Outputs
