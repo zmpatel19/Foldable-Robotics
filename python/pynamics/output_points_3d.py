@@ -34,9 +34,17 @@ class PointsOutput3D(PointsOutput):
         ax = f.add_subplot(1,1,1,autoscale_on=False,projection='3d')
         ax.view_init(azim=azim,elev=elev)
 #        ax.axis('equal')
-        limits   = [y[:,:,0].min(),y[:,:,0].max(),y[:,:,1].min(),y[:,:,1].max()]
-        ax.axis(limits)
-
+        #limits   = [y[:,:,0].min(),y[:,:,0].max(),y[:,:,1].min(),y[:,:,1].max()]
+        #ax.axis(limits)
+        out = y.copy().reshape((-1,3))
+        out_max = out.max(0)
+        out_min = out.min(0)
+        out_mid = (out_max+out_min)/2
+        max_range = (out_max-out_min).max()/2
+        ax.set_xlim(out_mid[0] - max_range, out_mid[0] + max_range)
+        ax.set_ylim(out_mid[1] - max_range, out_mid[1] + max_range)
+        ax.set_zlim(out_mid[2] - max_range, out_mid[2] + max_range)
+	
 
 #        y = self.y[::stepsize]
         

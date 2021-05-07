@@ -15,9 +15,12 @@ from pynamics.output import Output,PointsOutput
 #from pynamics.particle import Particle
 import pynamics.integration
 import sympy
-#import logging
-#pynamics.logger.setLevel(logging.ERROR)
-#pynamics.system.logger.setLevel(logging.ERROR)
+import scipy
+import logging
+pynamics.logger.setLevel(logging.ERROR)
+pynamics.system.logger.setLevel(logging.ERROR)
+
+import cma
 
 import numpy
 import matplotlib.pyplot as plt
@@ -45,12 +48,13 @@ qB,qB_d,qB_dd = Differentiable('qB',ini=[0,0])
 qC,qC_d,qC_dd = Differentiable('qC',ini=[ang_ini*pi/180,0])
 
 
-mC = Constant(.05,'mC')
+# mC = Constant(0,'mC')
 g = Constant(9.81,'g')
 I_11=Constant(6e-3,'I_11')
 rho = Constant(1.292,'rho')
-Sw = Constant(.1,'Sw')
-Se = Constant(.025,'Se')
+r = Constant(0,'r')
+# Sw = Constant(.1,'Sw')
+# Se = Constant(.025,'Se')
 l = Constant(.35,'l')
 lw = Constant(-.03,'lw')
 le = Constant(.04,'le')
@@ -73,6 +77,8 @@ E.rotate_fixed_axis_directed(C,[0,0,1],-qE)
 pCcm=x*N.x+y*N.y+z*N.z
 #pCcm=x*N.x+y*N.y
 pCcp=pCcm-lw*C.x
+
+mC = pi*r**2*.1
 
 pC1 = pCcm
 pC2 = pCcm-l*C.x
@@ -107,8 +113,10 @@ angle_of_attack_E = sympy.atan2(vey,vex)
 #fl = .5*rho*vcp2*cl*A
 #fd = .5*rho*vcp2*cd*A
 
-f_aero_C = rho*vcp2*sympy.sin(angle_of_attack_C)*Sw*C.y
-f_aero_E = rho*ve2*sympy.sin(angle_of_attack_E)*Sw*E.y
+Area = 2*pi*r**2
+
+f_aero_C = rho*vcp2*sympy.sin(angle_of_attack_C)*Area *C.y
+f_aero_E = rho*ve2*sympy.sin(angle_of_attack_E)*Area*E.y
 
 system.addforcegravity(-g*N.y)
 system.addforce(f_aero_C,vcp)
@@ -120,18 +128,54 @@ points = [pC1,pC2]
 
 f,ma = system.getdynamics()
 func1 = system.state_space_post_invert(f,ma)
-states=pynamics.integration.integrate_odeint(func1,ini,t, args=({'constants':system.constant_values},))
 
-#output = Output(ang,system)
-#output.calc(states)
-#output.plot_time()
+# import scipy.optimize
+# import scipy.linalg
 
-po = PointsOutput(points,system)
-y=po.calc(states)
-#po.plot_time()
-#y = y.reshape((-1,2,2))
-plt.figure()
-for item in y:
-    plt.plot(*(item.T),lw=2,marker='o')
-#
-po.animate(fps = 30, movie_name='glider.mp4',lw=2,marker='o')
+def run(args):
+    my_r = args[0]
+    constants = system.constant_values.copy()
+    constants[r] = my_r
+    
+    states=pynamics.integration.integrate_odeint(func1,ini,t, args=({'constants':constants},))
+        
+    return states
+
+def measure_perf(args):
+    print('r: ',args[0])
+    if args[0]>1:
+        return 1000
+    if args[0]<=0:
+        return 1000
+    try:
+        states = run(args)
+        perf = 1/states[-1,0]
+        return perf
+    except scipy.linalg.LinAlgError:
+        return 1000
+
+
+# sol = scipy.optimize.minimize(measure_perf,[0.5],tol=1e-3)
+    
+yy = []    
+xx = numpy.r_[0.1:1:5j]
+for ii in xx:
+    yy.append(measure_perf([ii]))
+    
+yy = numpy.array(yy)
+plt.plot(xx,yy)
+
+# states = run([.1])
+# # output = Output(ang,system)
+# # output.calc(states)
+# # output.plot_time()
+
+# po = PointsOutput(points,system)
+# y=po.calc(states)
+# #po.plot_time()
+# #y = y.reshape((-1,2,2))
+# plt.figure()
+# for item in y:
+#     plt.plot(*(item.T),lw=2,marker='o')
+# #
+# po.animate(fps = 30, movie_name='glider.mp4',lw=2,marker='o')

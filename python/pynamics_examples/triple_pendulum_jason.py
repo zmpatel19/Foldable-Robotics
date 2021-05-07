@@ -36,7 +36,8 @@ import numpy
 import matplotlib.pyplot as plt
 plt.ion()
 from math import pi
-
+import sympy
+import math
 
 # The next two lines create a new system object and set that system as the global system within the module so that other variables can use and find it.
 
@@ -56,20 +57,27 @@ pynamics.set_system(__name__,system)
 # In[5]:
 
 
+small = 1e-10
+
+rho = Constant(1.292,'rho')
 lA = Constant(1,'lA',system)
 lB = Constant(1,'lB',system)
 lC = Constant(1,'lC',system)
+lS = Constant(.25,'lS',system)
 
 mA = Constant(1,'mA',system)
 mB = Constant(1,'mB',system)
 mC = Constant(1,'mC',system)
+mS = Constant(1,'mS',system)
 
 g = Constant(9.81,'g',system)
 b = Constant(1e1,'b',system)
-k = Constant(1e2,'k',system)
+k = Constant(1e3,'k',system)
+k2 = Constant(1e1,'k',system)
+Area = Constant(1,'Area',system)
 
 r1 = Constant(10,'r1',system)
-r2 = Constant(90,'r2',system)
+r2 = Constant(0,'r2',system)
 
 preload1 = Constant(0*pi/180,'preload1',system)
 preload2 = Constant(0*pi/180,'preload2',system)
@@ -84,6 +92,9 @@ Izz_B = Constant(1,'Izz_B',system)
 Ixx_C = Constant(1,'Ixx_C',system)
 Iyy_C = Constant(1,'Iyy_C',system)
 Izz_C = Constant(1,'Izz_C',system)
+Ixx_S = Constant(1,'Ixx_S',system)
+Iyy_S = Constant(1,'Iyy_S',system)
+Izz_S = Constant(1,'Izz_S',system)
 
 
 # ## Integration Tolerance
@@ -92,7 +103,7 @@ Izz_C = Constant(1,'Izz_C',system)
 # In[6]:
 
 
-tol = 1e-12
+tol = 1e-7
 
 
 # ### Time 
@@ -115,11 +126,24 @@ t = numpy.r_[tinitial:tfinal:tstep]
 # In[8]:
 
 
-# qA1,qA1_d,qA1_dd = Differentiable('qA1',system)
-qA2,qA2_d,qA2_dd = Differentiable('qA2',system)
-# qA3,qA3_d,qA3_dd = Differentiable('qA3',system)
-qB,qB_d,qB_dd = Differentiable('qB',system)
-qC,qC_d,qC_dd = Differentiable('qC',system)
+x,x_d,x_dd = Differentiable('x',system)
+y,y_d,y_dd = Differentiable('y',system)
+z,z_d,z_dd = Differentiable('z',system)
+
+
+# qA1,qA1_d,qA1_dd = Differentiable('qA1')
+# qA2,qA2_d,qA2_dd = Differentiable('qA2')
+# qA3,qA3_d,qA3_dd = Differentiable('qA3')
+qA1,qA1_d = Differentiable('qA1',limit=2)
+qA2,qA2_d = Differentiable('qA2',limit=2)
+qA3,qA3_d = Differentiable('qA3',limit=2)
+qB,qB_d,qB_dd = Differentiable('qB')
+qC,qC_d,qC_dd = Differentiable('qC')
+qS,qS_d,qS_dd = Differentiable('qS')
+
+wAx,wAx_d = Differentiable('wAx',ii = 1,limit=3)
+wAy,wAy_d = Differentiable('wAy',ii = 1,limit=3)
+wAz,wAz_d = Differentiable('wAz',ii = 1,limit=3)
 
 
 # ### Initial Values
@@ -129,16 +153,27 @@ qC,qC_d,qC_dd = Differentiable('qC',system)
 
 
 initialvalues = {}
-# initialvalues[qA1]=0*pi/180
-# initialvalues[qA1_d]=0*pi/180
+initialvalues[qA1]=0*pi/180
 initialvalues[qA2]=0*pi/180
-initialvalues[qA2_d]=-360*pi/180
-# initialvalues[qA3]=10*pi/180
-# initialvalues[qA3_d]=0*pi/180
+initialvalues[qA1_d]=small
+initialvalues[qA2_d]=small
+initialvalues[qA3_d]=small
+initialvalues[qA3]=0*pi/180
 initialvalues[qB]=0*pi/180
-initialvalues[qB_d]=0*pi/180
+initialvalues[qB_d]=small
 initialvalues[qC]=0*pi/180
-initialvalues[qC_d]=0*pi/180
+initialvalues[qC_d]=small
+initialvalues[x]=0
+initialvalues[x_d]=0
+initialvalues[y]=0
+initialvalues[y_d]=small
+initialvalues[z]=0
+initialvalues[z_d]=small
+initialvalues[qS]=0*pi/180
+initialvalues[qS_d]=small
+initialvalues[wAx]=small
+initialvalues[wAy]=small
+initialvalues[wAz]=small
 
 
 # These two lines of code order the initial values in a list in such a way that the integrator can use it in the same order that it expects the variables to be supplied
@@ -146,8 +181,7 @@ initialvalues[qC_d]=0*pi/180
 # In[10]:
 
 
-statevariables = system.get_state_variables()
-ini = [initialvalues[item] for item in statevariables]
+
 
 
 # ## Kinematics
@@ -159,13 +193,13 @@ ini = [initialvalues[item] for item in statevariables]
 
 
 N = Frame('N')
-# A1 = Frame('A1')
+A1 = Frame('A1')
 A2 = Frame('A2')
 A3 = Frame('A3')
 B1 = Frame('B1')
 B2 = Frame('B2')
 C = Frame('C')
-
+S = Frame('S')
 
 # ### Newtonian Frame
 # 
@@ -182,12 +216,21 @@ system.set_newtonian(N)
 # In[13]:
 
 
-# A1.rotate_fixed_axis_directed(N,[1,0,0],qA,system)
-A2.rotate_fixed_axis_directed(N,[1,0,0],qA2,system)
-A3.rotate_fixed_axis_directed(A2,[0,0,1],r1*pi/180,system)
+A1.rotate_fixed_axis_directed(N,[1,0,0],qA1,system)
+A2.rotate_fixed_axis_directed(A1,[0,1,0],qA2,system)
+A3.rotate_fixed_axis_directed(A2,[0,0,1],qA3,system)
 B1.rotate_fixed_axis_directed(A3,[0,0,1],qB,system)
 B2.rotate_fixed_axis_directed(B1,[1,0,0],r2*pi/180,system)
 C.rotate_fixed_axis_directed(B2,[0,0,1],qC,system)
+S.rotate_fixed_axis_directed(A3,[0,0,1],qS,system)
+
+wA1 = N.getw_(A3)
+wA2 = wAx*A3.x + wAy*A3.y + wAz*A3.z
+N.set_w(A3,wA2)
+
+
+from pynamics.constraint import DynamicConstraint
+
 
 
 # ### Vectors
@@ -201,11 +244,19 @@ C.rotate_fixed_axis_directed(B2,[0,0,1],qC,system)
 # In[14]:
 
 
-pNA=0*N.x
-# pIA=pNA-A3.x
-pAB=pNA+lA*A3.x
+pHead=x*N.x+y*N.y+z*N.z
+pAB=pHead+lA*A3.x
 pBC = pAB + lB*B1.x
 pCtip = pBC + lC*C.x
+
+vctip=pCtip.time_derivative()
+uctip = 1/vctip.length()*vctip
+vctip_squared = vctip.dot(vctip)
+aoa_S = sympy.asin(uctip.dot(C.y))
+
+# f_aero_C = rho*vctip_squared*sympy.sin(aoa_S)*Area *C.y
+f_aero_C2 = rho * vctip.length()*(vctip.dot(C.y))*Area*C.y
+system.addforce(-f_aero_C2,vctip)
 
 
 # ## Centers of Mass
@@ -215,9 +266,10 @@ pCtip = pBC + lC*C.x
 # In[15]:
 
 
-pAcm=pNA+lA/2*A3.x
+pAcm=pHead+lA/2*A3.x
 pBcm=pAB+lB/2*B1.x
 pCcm=pBC+lC/2*C.x
+pScm = pHead - lS*A3.x
 
 vAcm=pAcm.time_derivative()
 vCcm=pCcm.time_derivative()
@@ -235,6 +287,7 @@ vCcm=pCcm.time_derivative()
 
 #wNA3 = N.getw_(A3)
 wA3B1 = A3.getw_(B1)
+wA3S = A3.getw_(S)
 wB2C = B2.getw_(C)
 
 
@@ -252,10 +305,12 @@ wB2C = B2.getw_(C)
 IA = Dyadic.build(A3,Ixx_A,Iyy_A,Izz_A)
 IB = Dyadic.build(B1,Ixx_B,Iyy_B,Izz_B)
 IC = Dyadic.build(C,Ixx_C,Iyy_C,Izz_C)
+IS = Dyadic.build(S,Ixx_S,Iyy_S,Izz_S)
 
 BodyA = Body('BodyA',A3,pAcm,mA,IA,system)
 BodyB = Body('BodyB',B1,pBcm,mB,IB,system)
 BodyC = Body('BodyC',C,pCcm,mC,IC,system)
+BodyC = Body('BodyS',S,pScm,mS,IS,system)
 # BodyC = Particle(pCcm,mC,'ParticleC',system)
 
 
@@ -264,11 +319,14 @@ BodyC = Body('BodyC',C,pCcm,mC,IC,system)
 
 # In[18]:
 
+import sympy
+
+system.addforce(-10*sympy.sin(2*sympy.pi*system.t)*A3.z,wA3S)
 
 # system.addforce(-b*wNA,wNA)
 # system.addforce(-b*wAB,wAB)
 # system.addforce(-b*wBC,wBC)
-system.addforce(-b*vCcm,vCcm)
+#system.addforce(-b*vCcm,vCcm)
 # system.addforce(-b*vAcm,vAcm)
 
 
@@ -284,6 +342,7 @@ system.addforce(-b*vCcm,vCcm)
 # system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
 system.add_spring_force1(k,(qB-preload2)*A3.z,wA3B1)
 system.add_spring_force1(k,(qC-preload3)*B2.z,wB2C)
+system.add_spring_force1(k2,(qS)*S.z,wA3S)
 
 
 # ### Gravity
@@ -292,7 +351,7 @@ system.add_spring_force1(k,(qC-preload3)*B2.z,wB2C)
 # In[20]:
 
 
-system.addforcegravity(-g*N.y)
+#system.addforcegravity(-g*N.y)
 
 
 # ## Constraints
@@ -301,16 +360,33 @@ system.addforcegravity(-g*N.y)
 # In[21]:
 
 
-eq = []
-eq_d=[(system.derivative(item)) for item in eq]
-eq_d.append(qA2_d)
-eq_dd=[(system.derivative(item)) for item in eq_d]
+# eq = []
+# # eq.append(qS-sympy.sin(2*math.pi*system.t)
+# eq_d=[(system.derivative(item)) for item in eq]
+# # eq_d.append(qA2_d)
+# eq_dd=[(system.derivative(item)) for item in eq_d]
 
 
 # ## F=ma
 # This is where the symbolic expressions for F and ma are calculated.  This must be done after all parts of the system have been defined.  The ```getdynamics``` function uses Kane's method to derive the equations of motion.
 
 # In[22]:
+
+
+eq0 = wA1-wA2
+eq = []
+eq.append(eq0.dot(A2.x))
+eq.append(eq0.dot(A2.y))
+eq.append(eq0.dot(A2.z))
+
+system.add_constraint(DynamicConstraint(eq,[wAx,wAy,wAz],[qA1_d,qA2_d,qA3_d]))
+
+
+for constraint in system.constraints:
+    constraint.solve()
+
+statevariables = system.get_state_variables()
+ini = [initialvalues[item] for item in statevariables]
 
 
 f,ma = system.getdynamics()
@@ -337,7 +413,7 @@ ma
 # In[25]:
 
 
-func1,lambda1 = system.state_space_post_invert(f,ma,eq_dd,return_lambda = True)
+func1= system.state_space_post_invert(f,ma,return_lambda = False)
 
 
 # ## Integrate
@@ -347,7 +423,7 @@ func1,lambda1 = system.state_space_post_invert(f,ma,eq_dd,return_lambda = True)
 # In[26]:
 
 
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,hmin=tol, args=({'constants':system.constant_values},))
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol, args=({'constants':system.constant_values},))
 
 
 # ## Outputs
@@ -370,7 +446,7 @@ states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,hmin=
 
 
 KE = system.get_KE()
-PE = system.getPEGravity(pNA) - system.getPESprings()
+PE = system.getPEGravity(pHead) - system.getPESprings()
 energy_output = Output([KE-PE],system)
 energy_output.calc(states)
 energy_output.plot_time()
@@ -381,7 +457,7 @@ energy_output.plot_time()
 # In[29]:
 
 
-points = [pNA,pAB,pBC,pCtip]
+points = [pScm,pHead,pAB,pBC,pCtip]
 # points = [pNA,pAB]
 points_output = PointsOutput3D(points,system)
 y = points_output.calc(states)
@@ -396,9 +472,9 @@ points_output.plot_time(20)
 
 ax = points_output.animate(fps = fps,movie_name = 'triple_pendulum_jason.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=145)
 #a()
-ax.set_xlim(-3,3)
-ax.set_ylim(-3,3)
-ax.set_zlim(-3,3)
+# ax.set_xlim(-3,3)
+# ax.set_ylim(-3,3)
+# ax.set_zlim(-3,3)
 
 
 
