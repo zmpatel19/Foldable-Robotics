@@ -59,16 +59,16 @@ pynamics.set_system(__name__,system)
 
 small = 1e-10
 
-rho = Constant(1.292,'rho')
-lA = Constant(1,'lA',system)
-lB = Constant(1,'lB',system)
-lC = Constant(1,'lC',system)
-lS = Constant(.25,'lS',system)
+rho = Constant(1000,'rho')
+lA = Constant(.1,'lA',system)
+lB = Constant(.1,'lB',system)
+lC = Constant(.1,'lC',system)
+lS = Constant(.1,'lS',system)
 
-mA = Constant(1,'mA',system)
-mB = Constant(1,'mB',system)
-mC = Constant(1,'mC',system)
-mS = Constant(1,'mS',system)
+mA = Constant(.1,'mA',system)
+mB = Constant(.1,'mB',system)
+mC = Constant(.1,'mC',system)
+mS = Constant(.2,'mS',system)
 
 g = Constant(9.81,'g',system)
 b = Constant(1e1,'b',system)
@@ -83,18 +83,18 @@ preload1 = Constant(0*pi/180,'preload1',system)
 preload2 = Constant(0*pi/180,'preload2',system)
 preload3 = Constant(0*pi/180,'preload3',system)
 
-Ixx_A = Constant(1,'Ixx_A',system)
-Iyy_A = Constant(1,'Iyy_A',system)
-Izz_A = Constant(1,'Izz_A',system)
-Ixx_B = Constant(1,'Ixx_B',system)
-Iyy_B = Constant(1,'Iyy_B',system)
-Izz_B = Constant(1,'Izz_B',system)
-Ixx_C = Constant(1,'Ixx_C',system)
-Iyy_C = Constant(1,'Iyy_C',system)
-Izz_C = Constant(1,'Izz_C',system)
-Ixx_S = Constant(1,'Ixx_S',system)
-Iyy_S = Constant(1,'Iyy_S',system)
-Izz_S = Constant(1,'Izz_S',system)
+Ixx_A = Constant(.1,'Ixx_A',system)
+Iyy_A = Constant(.1,'Iyy_A',system)
+Izz_A = Constant(.1,'Izz_A',system)
+Ixx_B = Constant(.1,'Ixx_B',system)
+Iyy_B = Constant(.1,'Iyy_B',system)
+Izz_B = Constant(.1,'Izz_B',system)
+Ixx_C = Constant(.1,'Ixx_C',system)
+Iyy_C = Constant(.1,'Iyy_C',system)
+Izz_C = Constant(.1,'Izz_C',system)
+Ixx_S = Constant(.1,'Ixx_S',system)
+Iyy_S = Constant(.1,'Iyy_S',system)
+Izz_S = Constant(.1,'Izz_S',system)
 
 
 # ## Integration Tolerance
@@ -103,7 +103,6 @@ Izz_S = Constant(1,'Izz_S',system)
 # In[6]:
 
 
-tol = 1e-7
 
 
 # ### Time 
@@ -422,7 +421,7 @@ func1= system.state_space_post_invert(f,ma,return_lambda = False)
 
 # In[26]:
 
-
+tol = 1e-4
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol, args=({'constants':system.constant_values},))
 
 
