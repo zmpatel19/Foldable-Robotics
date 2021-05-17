@@ -613,6 +613,7 @@ class System(object):
             # else:
                 # result += expression.diff(a)*self.derivatives[a]
              result += expression.diff(a)*self.derivatives[a]
+        result += expression.diff(self.t)
         return result
 
     def get_ini(self,state_variables = None):
