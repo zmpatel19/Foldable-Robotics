@@ -415,6 +415,7 @@ class System(object):
             bi = numpy.array(fb(*state_i_full),dtype=float)
             
             x1 = numpy.array(f_position_derivatives(*state_i_full),dtype=float).flatten()
+            print(Ai.shape,bi.shape)
             x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()

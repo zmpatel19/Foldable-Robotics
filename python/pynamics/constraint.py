@@ -84,4 +84,21 @@ class DynamicConstraint(object):
         self.subs = dict([(a,b) for a,b in zip(self.q_dep,self.J*sympy.Matrix(self.q_ind))])
         self.solved = True
         return self.J, self.subs
+
+
+    def get_constraint_matrix(self,inv_method = 'LU'):
+        
+        logger.info('solving constraint')
+
+        EQ = sympy.Matrix(self.eq)
+        AA = EQ.jacobian(sympy.Matrix(self.q_ind))
+        BB = EQ.jacobian(sympy.Matrix(self.q_dep))
+    
+        CC = EQ - AA*(sympy.Matrix(self.q_ind)) - BB*(sympy.Matrix(self.q_dep))
+        CC = sympy.simplify(CC)
+        assert(sum(CC)==0)
+    
+        self.J = sympy.simplify(BB.solve(-(AA),method = inv_method))
+        
+        return self.J
     
