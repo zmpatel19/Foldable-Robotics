@@ -53,17 +53,18 @@ class System(object):
         else:
             self.q[ii] = [q]
 
-    def get_dependent_solved(self):
-        q_dep = []
-        for constraint in self.constraints:
-            if constraint.solved:
-                q_dep.extend(constraint.q_dep)
-        return q_dep
+    # def get_dependent_solved(self):
+    #     q_dep = []
+    #     for constraint in self.constraints:
+    #         # if constraint.solved:
+    #         q_dep.extend(constraint.q_dep)
+    #     return q_dep
 
     def get_q(self,ii):
-        q_dep = self.get_dependent_solved()
+        # q_dep = self.get_dependent_solved()
         if ii in self.q:
-            q_ind = [item for item in self.q[ii] if item not in q_dep]
+            # q_ind = [item for item in self.q[ii] if item not in q_dep]
+            q_ind = [item for item in self.q[ii]]
             return q_ind
         else:
             return []
@@ -237,10 +238,10 @@ class System(object):
         # ma = ma.subs(constants)
 
         logger.info('substituting constrained in Ma-f.' )
-        for constraint in self.constraints:
-            if constraint.solved:
+        # for constraint in self.constraints:
+            # if constraint.solved:
                 # subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
-                Ax_b = Ax_b.subs(constraint.subs)
+                # Ax_b = Ax_b.subs(constraint.subs)
                 # ma = ma.subs(constraint.subs)
                 # f = f.subs(constraint.subs)
 
@@ -253,19 +254,46 @@ class System(object):
         A = Ax_b.jacobian(q_dd)
         # M = ma.jacobian(q_dd)
 
+        logger.info('simplifying A')
+        
+        A = sympy.simplify(A)
+        
         logger.info('finding b')
 
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
-        # logger.info('simplifying A')
-        
-        A = sympy.simplify(A)
         # M = sympy.simplify(M)
+        m = len(q_dd)
+
+        if not self.constraints:
+            A_full = A
+            b_full = b
+            n=0
+        else:
+            eq_dd = []
+            for constraint in self.constraints:
+                eq_dd += constraint.eq
+            eq_dd = sympy.Matrix(eq_dd)
+            if not not constants:
+                eq_dd = eq_dd.subs(constants)
+            J = eq_dd.jacobian(q_dd)
+            c = -eq_dd.subs(dict(list([(item,0) for item in q_dd])))
+
+            n = len(eq_dd)
+            A_full = sympy.zeros(m+n)   
+            A_full[:m,:m] = A
+            A_full[m:,:m] = J
+            A_full[:m,m:] = J.T
+        
+            b_full = sympy.zeros(m+n,1)
+            b_full[:m,0]=b
+            b_full[m:,0]=c
+        
         
         logger.info('solving M')
         
         # acc = M.solve(f,method = inv_method)
-        acc = A.solve(b,method = inv_method)
+        acc = A_full.solve(b_full,method = inv_method)
         #         # return var_dd
             
         state_augmented = q_state+remaining_constant_keys+[self.t]
@@ -273,8 +301,8 @@ class System(object):
         f_acc = sympy.lambdify(state_augmented,acc)
         
         position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
-        for constraint in self.constraints:
-            position_derivatives = position_derivatives.subs(constraint.subs)
+        # for constraint in self.constraints:
+            # position_derivatives = position_derivatives.subs(constraint.subs)
         position_derivatives = position_derivatives.subs(constants)
         f_position_derivatives = sympy.lambdify(state_augmented,position_derivatives)
 
@@ -302,7 +330,7 @@ class System(object):
             
             x1 = numpy.array(f_position_derivatives(*state_i_augmented),dtype=float).flatten()
             x2 = numpy.array(f_acc(*(state_i_augmented))).flatten()
-            x3 = numpy.r_[x1,x2]
+            x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
             
             return x4
@@ -324,36 +352,32 @@ class System(object):
         q_dd = q_acceleration or self.get_q(2)
         q_state = q+q_d
         
-        eq_dd = sympy.Matrix(eq_dd or [])
-
         f = sympy.Matrix(f)
         ma = sympy.Matrix(ma)
         
         Ax_b = ma-f
         if not not constants:
             Ax_b = Ax_b.subs(constants)
-            eq_dd = eq_dd.subs(constants)
 
-        logger.info('substituting constrained in Ma-f.' )
-        for constraint in self.constraints:
-            if constraint.solved:
-                # subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
-                Ax_b = Ax_b.subs(constraint.subs)
-                eq_dd = eq_dd.subs(constraint.subs)
-                # ma = ma.subs(constraint.subs)
-                # f = f.subs(constraint.subs)
-
+               
             
         A = Ax_b.jacobian(q_dd)
         b = -Ax_b.subs(dict(list([(item,0) for item in q_dd])))
 
         m = len(q_dd)
     
-        if not eq_dd:
+        logger.info('substituting constrained in Ma-f.' )
+        if not self.constraints:
             A_full = A
             b_full = b
             n=0
         else:
+            eq_dd = []
+            for constraint in self.constraints:
+                eq_dd += constraint.eq
+            eq_dd = sympy.Matrix(eq_dd)
+            if not not constants:
+                eq_dd = eq_dd.subs(constants)
             J = eq_dd.jacobian(q_dd)
             c = -eq_dd.subs(dict(list([(item,0) for item in q_dd])))
 
@@ -377,10 +401,6 @@ class System(object):
         position_derivatives = sympy.Matrix([self.derivative(item) for item in q])
         if not not constants:
             position_derivatives = position_derivatives.subs(constants)
-        for constraint in self.constraints:
-            if constraint.solved:
-                # subs1 = dict([(a,b) for a,b in zip(q_dep,dep2*sympy.Matrix(q_ind))])
-                position_derivatives = position_derivatives.subs(constraint.subs)
             
         f_position_derivatives = sympy.lambdify(state_full,position_derivatives)
         
@@ -415,7 +435,6 @@ class System(object):
             bi = numpy.array(fb(*state_i_full),dtype=float)
             
             x1 = numpy.array(f_position_derivatives(*state_i_full),dtype=float).flatten()
-            print(Ai.shape,bi.shape)
             x2 = numpy.array(scipy.linalg.solve(Ai,bi)).flatten()
             x3 = numpy.r_[x1,x2[:m]]
             x4 = x3.flatten().tolist()
