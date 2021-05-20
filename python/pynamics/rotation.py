@@ -18,13 +18,13 @@ def build_fixed_axis(axis,q,frame,sys = None):
     l_2 = axis.dot(axis)
     axis = axis/(l_2**.5)
     
-    e0 = axis[0]        
-    e1 = axis[1]        
-    e2 = axis[2]        
+    e1 = axis[0]        
+    e2 = axis[1]        
+    e3 = axis[2]        
     
     c = axis * axis.T
     a = (sympy.Matrix.eye(3) - c) * cos(q)
-    b = sympy.Matrix([[0, -e2, e1], [e2, 0, -e0],[-e1, e0, 0]]) * sin(q)
+    b = sympy.Matrix([[0, -e3, e2], [e3, 0, -e1],[-e2, e1, 0]]) * sin(q)
     R = a + b + c 
     R = R.T
 
@@ -160,10 +160,11 @@ class RotationalVelocity(object):
     @classmethod
     def build_fixed_axis(cls,f1,f2,axis,q,sys = None):
         # R,fixedaxis = build_fixed_axis(axis,q,f1,sys)
+        import pynamics.misc_tools
+        if not all([pynamics.misc_tools.is_literal(item) for item in axis]):
+            raise(Exception('not all axis variables are constant'))
         w = w_from_fixed_axis(axis,q,f1,sys)
         new = cls(f1,f2,w)
-        # if pynamics.automatic_differentiate:
-            # new.set_w(w)
         return new
 
         

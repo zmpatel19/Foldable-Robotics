@@ -136,6 +136,9 @@ class Frame(NameGenerator):
 
     def rotate_fixed_axis(self,fromframe,axis,q,system = None):
         system = system or pynamics.get_system()
+        import pynamics.misc_tools
+        if not all([pynamics.misc_tools.is_literal(item) for item in axis]):
+            raise(Exception('not all axis variables are constant'))
 
         rotation = Rotation.build_fixed_axis(fromframe,self,axis,q,system)
         rotational_velocity = RotationalVelocity.build_fixed_axis(fromframe,self,axis,q,system)

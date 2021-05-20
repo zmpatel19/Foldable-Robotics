@@ -19,3 +19,16 @@ def delete_all_local(name = '__main__'):
     variables_to_delete = list(set(all_variables) - set(default_variables))
     for item in variables_to_delete:
         delattr(main,item)
+        
+def is_literal(num):
+    import sympy
+    types = int,float,sympy.core.numbers.Float,sympy.core.numbers.Integer
+    is_a_literal = [isinstance(num,item) for item in types]
+    return any(is_a_literal)
+
+def is_constant(num):
+    import sympy
+    from pynamics.variable_types import Constant
+    types = int,float,sympy.core.numbers.Float,sympy.core.numbers.Integer,Constant
+    is_a_literal = [isinstance(num,item) for item in types]
+    return any(is_a_literal)
