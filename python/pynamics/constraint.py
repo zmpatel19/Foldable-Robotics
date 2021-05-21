@@ -57,7 +57,7 @@ class KinematicConstraint(object):
 
         for item in variables:
             if item in constants:
-                raise Warning('An unknown variable is being supplied')
+                raise Warning('A variable which you are solving for is being supplied in constants',item)
                 
         eq = [item.subs(constants) for item in self.eq]
         eq = numpy.array(eq)
