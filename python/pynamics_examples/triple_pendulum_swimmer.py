@@ -266,7 +266,7 @@ system.addforce(-f_aero_C2,vctip)
 pAcm=pHead+lA/2*A3.x
 pBcm=pAB+lB/2*B1.x
 pCcm=pBC+lC/2*C.x
-pScm = pHead - lS*A3.x
+pScm = pHead - lS*S.x
 
 vAcm=pAcm.time_derivative()
 vCcm=pCcm.time_derivative()
@@ -466,7 +466,7 @@ points_output.plot_time(20)
 # In[30]:
 
 
-ax = points_output.animate(fps = fps,movie_name = 'triple_pendulum_jason.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=145)
+ax = points_output.animate(fps = fps,movie_name = 'triple_pendulum_swimmer.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=145)
 #a()
 # ax.set_xlim(-3,3)
 # ax.set_ylim(-3,3)
