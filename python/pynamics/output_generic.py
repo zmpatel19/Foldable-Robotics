@@ -19,11 +19,11 @@ class Output(object):
         self.y_expression = sympy.Matrix(y_exp)
         cons_s = list(constant_values.keys())
         self.cons_v = [constant_values[key] for key in cons_s]
-        self.fy_expression = sympy.lambdify(state_variables+cons_s,self.y_expression)
+        self.fy_expression = sympy.lambdify(state_variables+cons_s+[system.t],self.y_expression)
 
-    def calc(self,x):
+    def calc(self,x,t):
         logger.info('calculating outputs')
-        self.y = numpy.array([self.fy_expression(*(item.tolist()+self.cons_v)) for item in x]).squeeze()
+        self.y = numpy.array([self.fy_expression(*(state.tolist()+self.cons_v+[time])) for state,time in zip(x,t)]).squeeze()
         logger.info('done calculating outputs')
         return self.y
 
