@@ -46,9 +46,6 @@ Ixx_plate = Constant(.1,'Ixx_plate')
 Iyy_plate = Constant(.1,'Iyy_plate')
 Izz_plate = Constant(1,'Izz_plate')
 
-
-# preload1 = Constant(0*pi/180,'preload1',system)
-
 qA,qA_d,qA_dd = Differentiable('qA',system)
 
 initialvalues = {}
@@ -68,7 +65,6 @@ vAcm=pAcm.time_derivative(N,system)
 
 wNA = N.getw_(A)
 
-# ParticleA = Particle(pAB,mA,'ParticleA',system)
 IA_motor = Dyadic.build(A,Ixx_motor,Iyy_motor,Izz_motor)
 IA_plate = Dyadic.build(A,Ixx_plate,Iyy_plate,Izz_plate)
 BodyMotor = Body('BodyMotor',A,pNA,mA,IA_motor)
@@ -80,10 +76,7 @@ system.add_spring_force1(k,qA*N.z,wNA)
 
 tin = torque*sympy.sin(2*sympy.pi*freq*system.t)
 system.addforce(tin*N.z,wNA)
-# f_aero_C = rho*vctip_squared*sym
 
-
-tol = 1e-4
 
 f,ma = system.getdynamics()
 
@@ -103,15 +96,16 @@ points_output = PointsOutput(points,system)
 out1 = Output([tin,qA])
 
 my_constants={}
-freq_sweep = numpy.r_[-1:1:10j]
+freq_sweep = numpy.r_[-1.5:1:20j]
 freq_sweep = 1*10**freq_sweep
 amps = []
 
 for ff in freq_sweep:
-    
+    tol = 1e-4
+
     tinitial = 0
     tfinal = 10/ff
-    tstep = 1/30
+    tstep = tfinal/1000
     t = numpy.r_[tinitial:tfinal:tstep]
 
     my_constants[freq] = ff
