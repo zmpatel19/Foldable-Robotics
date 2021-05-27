@@ -130,12 +130,10 @@ y,y_d,y_dd = Differentiable('y',system)
 z,z_d,z_dd = Differentiable('z',system)
 
 
-# qA1,qA1_d,qA1_dd = Differentiable('qA1')
-# qA2,qA2_d,qA2_dd = Differentiable('qA2')
-# qA3,qA3_d,qA3_dd = Differentiable('qA3')
-qA1,qA1_d = Differentiable('qA1',limit=2)
-qA2,qA2_d = Differentiable('qA2',limit=2)
-qA3,qA3_d = Differentiable('qA3',limit=2)
+qA1,qA1_d,qA1_dd = Differentiable('qA1')
+qA2,qA2_d,qA2_dd = Differentiable('qA2')
+qA3,qA3_d,qA3_dd = Differentiable('qA3')
+
 qB,qB_d,qB_dd = Differentiable('qB')
 qC,qC_d,qC_dd = Differentiable('qC')
 qS,qS_d,qS_dd = Differentiable('qS')
@@ -228,7 +226,7 @@ wA2 = wAx*A3.x + wAy*A3.y + wAz*A3.z
 N.set_w(A3,wA2)
 
 
-from pynamics.constraint import DynamicConstraint
+from pynamics.constraint import AccelerationConstraint
 
 
 
@@ -372,17 +370,16 @@ system.add_spring_force1(k2,(qS)*S.z,wA3S)
 # In[22]:
 
 
-eq0 = wA1-wA2
-eq = []
-eq.append(eq0.dot(A2.x))
-eq.append(eq0.dot(A2.y))
-eq.append(eq0.dot(A2.z))
+eq_d=[wA1-wA2]
+eq_dd = [item.time_derivative() for item in eq_d]
 
-system.add_constraint(DynamicConstraint(eq,[wAx,wAy,wAz],[qA1_d,qA2_d,qA3_d]))
+eq_dd_scalar = []
+eq_dd_scalar.append(eq_dd[0].dot(A2.x))
+eq_dd_scalar.append(eq_dd[0].dot(A2.y))
+eq_dd_scalar.append(eq_dd[0].dot(A2.z))
 
+system.add_constraint(AccelerationConstraint(eq_dd_scalar))
 
-for constraint in system.constraints:
-    constraint.solve()
 
 statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
@@ -447,7 +444,7 @@ states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol, args
 KE = system.get_KE()
 PE = system.getPEGravity(pHead) - system.getPESprings()
 energy_output = Output([KE-PE],system)
-energy_output.calc(states)
+energy_output.calc(states,t)
 energy_output.plot_time()
 
 
@@ -459,7 +456,7 @@ energy_output.plot_time()
 points = [pScm,pHead,pAB,pBC,pCtip]
 # points = [pNA,pAB]
 points_output = PointsOutput3D(points,system)
-y = points_output.calc(states)
+y = points_output.calc(states,t)
 points_output.plot_time(20)
 
 

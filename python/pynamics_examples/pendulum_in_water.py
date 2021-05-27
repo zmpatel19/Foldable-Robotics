@@ -105,14 +105,14 @@ for ff in freq_sweep:
 
     tinitial = 0
     tfinal = 10/ff
-    tstep = tfinal/1000
+    tstep = 1/30
     t = numpy.r_[tinitial:tfinal:tstep]
 
     my_constants[freq] = ff
     states=pynamics.integration.integrate(func,ini,t,rtol=tol,atol=tol, args=({'constants':my_constants},))
 
     # points_output.calc(states,t)
-    # points_output.animate(fps = 30,lw=2)
+    # points_output.animate(fps = 1/tstep,lw=2,movie_name = 'pendulum_in_water.mp4',)
     # points_output.plot_time()
     
     

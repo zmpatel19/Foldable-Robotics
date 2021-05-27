@@ -124,9 +124,9 @@ ini = [initialvalues[item] for item in system.get_state_variables()]
 states=pynamics.integration.integrate_odeint(func1,ini,t,args=({'constants':system.constant_values},))
 
 po = PointsOutput(points,system)
-po.calc(states)
+po.calc(states,t)
 po.animate(fps = 30,lw=2)
 
 so = Output([qA,qB,qC])
-so.calc(states)
+so.calc(states,t)
 so.plot_time()
