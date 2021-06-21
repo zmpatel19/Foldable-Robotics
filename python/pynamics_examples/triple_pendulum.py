@@ -393,7 +393,7 @@ points_output.plot_time(20)
 # In[30]:
 
 
-points_output.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
+points_output.animate(fps = fps,movie_name = 'triple_pendulum.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 
 
 # To plot the animation in jupyter you need a couple extra lines of code...
