@@ -14,6 +14,7 @@ from pynamics.dyadic import Dyadic
 from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 import pynamics.integration
+from pynamics.constraint import KinematicConstraint
 
 import sympy
 import numpy
@@ -90,7 +91,6 @@ points = [pNA,pAB,pBC,pCtip]
 statevariables = system.get_state_variables()
 ini0 = [initialvalues[item] for item in statevariables]
 
-from pynamics.constraint import KinematicConstraint
 
 eq = []
 eq.append((pCtip-pD).dot(N.x))
@@ -104,12 +104,10 @@ variables = [qA,qB,qC]
 guess = [initialvalues[item] for item in variables]
 result = c.solve_numeric(variables,guess,system.constant_values)
 
-guess = [initialvalues[item] for item in variables]
-
 ini = []
 for item in system.get_state_variables():
     if item in variables:
-        ini.append(result.x[variables.index(item)])
+        ini.append(result[item])
     else:
         ini.append(initialvalues[item])
         
