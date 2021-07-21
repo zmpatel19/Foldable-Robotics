@@ -27,6 +27,7 @@ import math
 system = System()
 pynamics.set_system(__name__,system)
 
+constrain_base=True
 pp = 30
 small = 1e-10
 
@@ -84,14 +85,12 @@ z3,z3_d,z3_dd = Differentiable('z3',system)
 qA1,qA1_d,qA1_dd = Differentiable('qA1')
 qA2,qA2_d,qA2_dd = Differentiable('qA2')
 qA3,qA3_d,qA3_dd = Differentiable('qA3')
-
 qB1,qB1_d,qB1_dd = Differentiable('qB1')
 qB2,qB2_d,qB2_dd = Differentiable('qB2')
 qB3,qB3_d,qB3_dd = Differentiable('qB3')
 qC1,qC1_d,qC1_dd = Differentiable('qC1')
 qC2,qC2_d,qC2_dd = Differentiable('qC2')
 qC3,qC3_d,qC3_dd = Differentiable('qC3')
-
 
 qS,qS_d,qS_dd = Differentiable('qS')
 
@@ -121,12 +120,13 @@ initialvalues[qC1]=0*pi/180
 initialvalues[qC2]=0*pi/180
 initialvalues[qC3]=0*pi/180
 
-# initialvalues[x]=0
-# initialvalues[x_d]=0
-# initialvalues[y]=0
-# initialvalues[y_d]=small
-# initialvalues[z]=0
-# initialvalues[z_d]=small
+if not constrain_base:
+    initialvalues[x]=0
+    initialvalues[x_d]=0
+    initialvalues[y]=0
+    initialvalues[y_d]=0
+    initialvalues[z]=0
+    initialvalues[z_d]=0
 
 initialvalues[qS]=0*pi/180
 initialvalues[qS_d]=small
@@ -196,7 +196,7 @@ N.set_w(C3,wC2)
 # Define the vectors that describe the kinematics of a series of connected lengths
 
 pAcm=x*A3.x+y*A3.y+z*A3.z
-pHead = pAcm-lA/2*A3.x
+pBase = pAcm-lA/2*A3.x
 pAB=pAcm+lA/2*A3.x
 
 pBcm=x2*B3.x+y2*B3.y+z2*B3.z
@@ -207,7 +207,7 @@ pCcm=x3*C3.x+y3*C3.y+z3*C3.z
 pCB = pCcm - lC/2*C3.x
 pCtip=pCcm+lC/2*C3.x
 
-pScm = pHead - lS*S.x
+pScm = pBase - lS*S.x
 
 # vAcm=pAcm.time_derivative()
 # vCcm=pCcm.time_derivative()
@@ -248,7 +248,7 @@ IS = Dyadic.build(S,Ixx_S,Iyy_S,Izz_S)
 BodyA = Body('BodyA',A3,pAcm,mA,IA,system)
 BodyB = Body('BodyB',B3,pBcm,mB,IB,system)
 BodyC = Body('BodyC',C3,pCcm,mC,IC,system)
-BodyC = Body('BodyS',S,pScm,mS,IS,system)
+BodyS = Body('BodyS',S,pScm,mS,IS,system)
 
 # ## Forces and Torques
 # Forces and torques are added to the system with the generic ```addforce``` method.  The first parameter supplied is a vector describing the force applied at a point or the torque applied along a given rotational axis.  The second parameter is the  vector describing the linear speed (for an applied force) or the angular velocity(for an applied torque)
@@ -284,83 +284,92 @@ eq.append(A3.z-B3.z)
 eq.append(pAB-pBA)
 eq.append(B3.z-C3.z)
 eq.append(pBC-pCB)
-# eq.append(pAcm-0*N.x)
+if constrain_base:
+    eq.append(pBase-0*N.x)
 
 eq_d = []
+eq_d.extend([item.time_derivative() for item in eq])
 eq_d.append(wA1-wA2)
 eq_d.append(wB1-wB2)
 eq_d.append(wC1-wC2)
 
-eq_d.extend([item.time_derivative() for item in eq])
 
 eq_dd = [item.time_derivative() for item in eq_d]
 eq_dd_scalar = []
-eq_dd_scalar.append(eq_dd[0].dot(A2.x))
-eq_dd_scalar.append(eq_dd[0].dot(A2.y))
-eq_dd_scalar.append(eq_dd[0].dot(A2.z))
-eq_dd_scalar.append(eq_dd[1].dot(B2.x))
-eq_dd_scalar.append(eq_dd[1].dot(B2.y))
-eq_dd_scalar.append(eq_dd[1].dot(B2.z))
-eq_dd_scalar.append(eq_dd[2].dot(C2.x))
-eq_dd_scalar.append(eq_dd[2].dot(C2.y))
-eq_dd_scalar.append(eq_dd[2].dot(C2.z))
+eq_dd_scalar.append(eq_dd[0].dot(N.x))
+eq_dd_scalar.append(eq_dd[0].dot(N.y))
+eq_dd_scalar.append(eq_dd[1].dot(N.x))
+eq_dd_scalar.append(eq_dd[1].dot(N.y))
+eq_dd_scalar.append(eq_dd[1].dot(N.z))
+eq_dd_scalar.append(eq_dd[2].dot(N.x))
+eq_dd_scalar.append(eq_dd[2].dot(N.y))
 eq_dd_scalar.append(eq_dd[3].dot(N.x))
 eq_dd_scalar.append(eq_dd[3].dot(N.y))
-eq_dd_scalar.append(eq_dd[4].dot(N.x))
-eq_dd_scalar.append(eq_dd[4].dot(N.y))
-eq_dd_scalar.append(eq_dd[4].dot(N.z))
-eq_dd_scalar.append(eq_dd[5].dot(N.x))
-eq_dd_scalar.append(eq_dd[5].dot(N.y))
-eq_dd_scalar.append(eq_dd[6].dot(N.x))
-eq_dd_scalar.append(eq_dd[6].dot(N.y))
-eq_dd_scalar.append(eq_dd[6].dot(N.z))
-# eq_dd_scalar.append(eq_dd[7].dot(N.x))
-# eq_dd_scalar.append(eq_dd[7].dot(N.y))
-# eq_dd_scalar.append(eq_dd[7].dot(N.z))
-
+eq_dd_scalar.append(eq_dd[3].dot(N.z))
+ii=4
+if constrain_base:
+    eq_dd_scalar.append(eq_dd[4].dot(N.x))
+    eq_dd_scalar.append(eq_dd[4].dot(N.y))
+    eq_dd_scalar.append(eq_dd[4].dot(N.z))
+    ii=5
+eq_dd_scalar.append(eq_dd[ii+0].dot(A2.x))
+eq_dd_scalar.append(eq_dd[ii+0].dot(A2.y))
+eq_dd_scalar.append(eq_dd[ii+0].dot(A2.z))
+eq_dd_scalar.append(eq_dd[ii+1].dot(B2.x))
+eq_dd_scalar.append(eq_dd[ii+1].dot(B2.y))
+eq_dd_scalar.append(eq_dd[ii+1].dot(B2.z))
+eq_dd_scalar.append(eq_dd[ii+2].dot(C2.x))
+eq_dd_scalar.append(eq_dd[ii+2].dot(C2.y))
+eq_dd_scalar.append(eq_dd[ii+2].dot(C2.z))
+    
 system.add_constraint(AccelerationConstraint(eq_dd_scalar))
 
 
 
 eq_d_scalar = []
-eq_d_scalar.append(eq_d[0].dot(A2.x))
-eq_d_scalar.append(eq_d[0].dot(A2.y))
-eq_d_scalar.append(eq_d[0].dot(A2.z))
-eq_d_scalar.append(eq_d[1].dot(B2.x))
-eq_d_scalar.append(eq_d[1].dot(B2.y))
-eq_d_scalar.append(eq_d[1].dot(B2.z))
-eq_d_scalar.append(eq_d[2].dot(C2.x))
-eq_d_scalar.append(eq_d[2].dot(C2.y))
-eq_d_scalar.append(eq_d[2].dot(C2.z))
+eq_d_scalar.append(eq_d[0].dot(N.x))
+eq_d_scalar.append(eq_d[0].dot(N.y))
+eq_d_scalar.append(eq_d[1].dot(N.x))
+eq_d_scalar.append(eq_d[1].dot(N.y))
+eq_d_scalar.append(eq_d[1].dot(N.z))
+eq_d_scalar.append(eq_d[2].dot(N.x))
+eq_d_scalar.append(eq_d[2].dot(N.y))
 eq_d_scalar.append(eq_d[3].dot(N.x))
 eq_d_scalar.append(eq_d[3].dot(N.y))
-eq_d_scalar.append(eq_d[4].dot(N.x))
-eq_d_scalar.append(eq_d[4].dot(N.y))
-eq_d_scalar.append(eq_d[4].dot(N.z))
-eq_d_scalar.append(eq_d[5].dot(N.x))
-eq_d_scalar.append(eq_d[5].dot(N.y))
-eq_d_scalar.append(eq_d[6].dot(N.x))
-eq_d_scalar.append(eq_d[6].dot(N.y))
-eq_d_scalar.append(eq_d[6].dot(N.z))
+eq_d_scalar.append(eq_d[3].dot(N.z))
+ii=4
+if constrain_base:
+    eq_d_scalar.append(eq_d[4].dot(N.x))
+    eq_d_scalar.append(eq_d[4].dot(N.y))
+    eq_d_scalar.append(eq_d[4].dot(N.z))
+    ii=5
+eq_d_scalar.append(eq_d[ii+0].dot(A2.x))
+eq_d_scalar.append(eq_d[ii+0].dot(A2.y))
+eq_d_scalar.append(eq_d[ii+0].dot(A2.z))
+eq_d_scalar.append(eq_d[ii+1].dot(B2.x))
+eq_d_scalar.append(eq_d[ii+1].dot(B2.y))
+eq_d_scalar.append(eq_d[ii+1].dot(B2.z))
+eq_d_scalar.append(eq_d[ii+2].dot(C2.x))
+eq_d_scalar.append(eq_d[ii+2].dot(C2.y))
+eq_d_scalar.append(eq_d[ii+2].dot(C2.z))
+eq_d_scalar.append(eq[0].dot(N.x))
+eq_d_scalar.append(eq[0].dot(N.y))
 eq_d_scalar.append(eq[1].dot(N.x))
 eq_d_scalar.append(eq[1].dot(N.y))
 eq_d_scalar.append(eq[1].dot(N.z))
+eq_d_scalar.append(eq[2].dot(N.x))
+eq_d_scalar.append(eq[2].dot(N.y))
 eq_d_scalar.append(eq[3].dot(N.x))
 eq_d_scalar.append(eq[3].dot(N.y))
 eq_d_scalar.append(eq[3].dot(N.z))
-# eq_d_scalar.append(eq_d[7].dot(N.x))
-# eq_d_scalar.append(eq_d[7].dot(N.y))
-# eq_d_scalar.append(eq_d[7].dot(N.z))
-
 
 kinematic_constraint = KinematicConstraint(eq_d_scalar)
-variables = [qA1_d,qA2_d,qA3_d,qB1_d,qB2_d,qB3_d,qC1_d,qC2_d,qC3_d,wBx,wBy,wCx,wCy,x2_d,y2_d,z2_d,x2,y2,z2,x3_d,y3_d,z3_d,x3,y3,z3,x,y,z,x_d,y_d,z_d]
+if constrain_base:
+    variables = [qA1_d,qA2_d,qA3_d,qB1_d,qB2_d,qB3_d,qC1_d,qC2_d,qC3_d,wBx,wBy,wCx,wCy,x2_d,y2_d,z2_d,x2,y2,z2,x3_d,y3_d,z3_d,x3,y3,z3,x,y,z,x_d,y_d,z_d]
+else:
+    variables = [qA1_d,qA2_d,qA3_d,qB1_d,qB2_d,qB3_d,qC1_d,qC2_d,qC3_d,wBx,wBy,wCx,wCy,x2_d,y2_d,z2_d,x2,y2,z2,x3_d,y3_d,z3_d,x3,y3,z3]
 result = kinematic_constraint.solve_numeric(variables,[1]*len(variables),system.constant_values,initialvalues)
 initialvalues.update(result)
-
-
-points = [pScm,pHead,pAcm,pAB,pBcm,pBC,pCcm,pCtip]
-points_output = PointsOutput3D(points,system)
 
 f,ma = system.getdynamics()
 
@@ -399,8 +408,10 @@ constants[kb]=5e0
 constants[freq]=3e0
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol, args=({'constants':constants},))
 
+points = [pScm,pBase,pAcm,pAB,pBcm,pBC,pCcm,pCtip]
+points_output = PointsOutput3D(points,system)
 points_output.calc(states,t)
 points_output.plot_time()
-# ax = points_output.animate(fps = fps,movie_name = 'triple_pendulum_swimmer_paddles.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=90)
+points_output.animate(fps = fps,movie_name = 'triple_pendulum_swimmer.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=90)
 
 
