@@ -51,6 +51,6 @@ import pynamics_examples.triple_pendulum_inverse_dynamics
 import pynamics_examples.triple_pendulum_swimmer
 
 
-# convert_notebook('triple_pendulum.ipynb')
-# import pynamics_examples.triple_pendulum
-# os.remove(my_dir,'triple_pendulum.py')
+convert_notebook('triple_pendulum.ipynb')
+import pynamics_examples.triple_pendulum
+os.remove(os.path.join(my_dir,'triple_pendulum.py'))
