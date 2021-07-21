@@ -236,7 +236,7 @@ o2 = [pNO,A1.x,A2.x,pNO,A2.x,A3.x,pNO,B1.x,B2.x,pNO,B2.x,B23.x,pNO]
 points_output = PointsOutput3D(o2,system)
 y = points_output.calc(states,t)
 # points_output.plot_time()
-points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
+#points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 
 # self  = points_output
 # import matplotlib.pyplot as plt

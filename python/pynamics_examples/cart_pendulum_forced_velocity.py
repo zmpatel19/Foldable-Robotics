@@ -126,5 +126,5 @@ plt.plot(states[:,1])
 points2 = PointsOutput(points_list)
 points2.calc(states,t)
 #points2.plot_time()
-points2.animate(fps = 30, movie_name='cart_pendulum.mp4',lw=2)
+#points2.animate(fps = 30, movie_name='cart_pendulum.mp4',lw=2)
 

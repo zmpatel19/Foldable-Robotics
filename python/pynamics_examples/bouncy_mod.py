@@ -166,4 +166,4 @@ for item in y:
     plt.plot(*(item.T),lw=2,marker='o')
 plt.axis('equal')
 #
-po.animate(fps = 30, movie_name='bouncy-mod.mp4',lw=2,marker='o')
+#po.animate(fps = 30, movie_name='bouncy-mod.mp4',lw=2,marker='o')

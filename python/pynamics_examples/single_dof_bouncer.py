@@ -103,5 +103,5 @@ points = [pNA,pAcm]
 #points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
 points_output = PointsOutput(points,system)
 y = points_output.calc(states,t)
-points_output.animate(fps = 100,movie_name = 'single_dof_bouncer.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='')
+#points_output.animate(fps = 100,movie_name = 'single_dof_bouncer.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='')
 

@@ -466,7 +466,7 @@ points_output.plot_time(20)
 # In[30]:
 
 
-ax = points_output.animate(fps = fps,movie_name = 'triple_pendulum_swimmer.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=145)
+#ax = points_output.animate(fps = fps,movie_name = 'triple_pendulum_swimmer.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=145)
 #a()
 # ax.set_xlim(-3,3)
 # ax.set_ylim(-3,3)

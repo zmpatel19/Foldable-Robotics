@@ -158,4 +158,4 @@ plt.plot(t,y[:,3])
 points = [BodyA.pCM,Particle2.pCM]
 points = PointsOutput(points)
 points.calc(states,t)
-points.animate(fps = 30, movie_name='bouncy2.mp4',lw=2)
+#points.animate(fps = 30, movie_name='bouncy2.mp4',lw=2)
