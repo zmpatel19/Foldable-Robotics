@@ -226,7 +226,7 @@ KE = system.get_KE()
 PE = system.getPEGravity(pNO) - system.getPESprings()
 
 output = Output([KE-PE],system)
-y = output.calc(states)
+y = output.calc(states,t)
 
 plt.figure()
 plt.plot(y[:])
@@ -234,7 +234,7 @@ plt.show()
 
 o2 = [pNO,A1.x,A2.x,pNO,A2.x,A3.x,pNO,B1.x,B2.x,pNO,B2.x,B23.x,pNO]
 points_output = PointsOutput3D(o2,system)
-y = points_output.calc(states)
+y = points_output.calc(states,t)
 # points_output.plot_time()
 points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 

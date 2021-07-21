@@ -153,7 +153,7 @@ if result.fun<1e-7:
     points = PointsOutput(points)
     state = numpy.array([ini,result.x])
     ini1 = list(result.x)
-    y = points.calc(state)
+    y = points.calc(states,t)
     y = y.reshape((-1,6,2))
     plt.figure()
     for item in y:
@@ -248,16 +248,16 @@ states=pynamics.integration.integrate_odeint(func1,ini1,t,rtol=tol,atol=tol)
 KE = system.get_KE()
 PE = system.getPEGravity(0*N.x) - system.getPESprings()
 energy = Output([KE-PE,toeforce,heelforce])
-energy.calc(states)
+energy.calc(states,t)
 energy.plot_time()
 
 #torque_plot = Output([torque])
-#torque_plot.calc(states)
+#torque_plot.calc(states,t)
 #torque_plot.plot_time()
 
 points = [pDtip,pCD,pOC,pOA,pAB,pBtip,pE1,pE2,pBtip]
 points = PointsOutput(points)
-y = points.calc(states)
+y = points.calc(states,t)
 y = y.reshape((-1,9,2))
 plt.figure()
 for item in y[::30]:

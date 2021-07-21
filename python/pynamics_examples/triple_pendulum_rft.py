@@ -153,7 +153,7 @@ points = [pNA,pAB,pBC,pCtip]
 
 states0,constants0 = myfunc([1e1,1e2])
 points_output = PointsOutput(points,system,constant_values = constants0)
-y = points_output.calc(states0)
+y = points_output.calc(states0,t)
 points_output.plot_time()
 
 def my_error(x):
@@ -168,7 +168,7 @@ def my_error(x):
 
 # states,constants = myfunc([1e2,1e1])
 # points_output = PointsOutput(points,system,constant_values = constants)
-# y = points_output.calc(states)
+# y = points_output.calc(states,t)
 # points_output.plot_time()
 
 import cma
@@ -188,11 +188,11 @@ es.logger.plot() # will make a plot
 
 states,constants = myfunc(es.result.xbest)
 points_output = PointsOutput(points,system,constant_values = constants)
-y = points_output.calc(states)
+y = points_output.calc(states,t)
 points_output.plot_time()
 
 # energy_output = Output([KE-PE],system)
-# energy_output.calc(states)
+# energy_output.calc(states,t)
 
 # plt.figure()
 # plt.plot(energy_output.y)

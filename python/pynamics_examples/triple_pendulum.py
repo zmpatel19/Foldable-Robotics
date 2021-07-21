@@ -372,7 +372,7 @@ plt.legend(artists,['qA','qB','qC'])
 KE = system.get_KE()
 PE = system.getPEGravity(pNA) - system.getPESprings()
 energy_output = Output([KE-PE],system)
-energy_output.calc(states)
+energy_output.calc(states,t)
 energy_output.plot_time()
 
 
@@ -383,7 +383,7 @@ energy_output.plot_time()
 
 points = [pNA,pAB,pBC,pCtip]
 points_output = PointsOutput(points,system)
-y = points_output.calc(states)
+y = points_output.calc(states,t)
 points_output.plot_time(20)
 
 

@@ -102,13 +102,13 @@ lambda1_n = [lambda1(tt,ss) for tt,ss in zip(t,states)]
 KE = system.get_KE()
 PE = system.getPEGravity(0*N.x) - system.getPESprings()
 energy = Output([KE-PE])
-energy.calc(states)
+energy.calc(states,t)
 energy.plot_time()
 # =============================================================================
 points_list = [p1,p2]
 #points_list = [item2 for item in points_list for item2 in [item.dot(N.x),item.dot(N.y)]]
 #points = Output(points_list)
-#y = points.calc(states)
+#y = points.calc(states,t)
 #y = y.reshape((-1,2,2))
 
 #plt.figure()
@@ -116,7 +116,7 @@ points_list = [p1,p2]
 #plt.axis('equal')
 
 states2= Output([x,q])
-states2.calc(states)
+states2.calc(states,t)
 
 plt.figure()
 plt.plot(states[:,0])
@@ -124,7 +124,7 @@ plt.figure()
 plt.plot(states[:,1])
 
 points2 = PointsOutput(points_list)
-points2.calc(states)
+points2.calc(states,t)
 #points2.plot_time()
 points2.animate(fps = 30, movie_name='cart_pendulum.mp4',lw=2)
 

@@ -139,19 +139,19 @@ states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-10,atol=1e-10,a
 KE = system.get_KE()
 PE = system.getPEGravity(0*N.x) - system.getPESprings()
 energy = Output([KE-PE], constant_values = constants)
-energy.calc(states)
+energy.calc(states,t)
 energy.plot_time()
 # =============================================================================
 
 positions = Output(system.get_q(0), constant_values = constants)
-positions.calc(states)
+positions.calc(states,t)
 positions.plot_time()
 
 speeds = Output(system.get_q(1), constant_values = constants)
-speeds.calc(states)
+speeds.calc(states,t)
 speeds.plot_time()
 
 y= Output([G*qB_d], constant_values=constants)
-y.calc(states)
+y.calc(states,t)
 y.plot_time()
 

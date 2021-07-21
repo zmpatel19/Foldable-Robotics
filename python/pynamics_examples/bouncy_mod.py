@@ -159,7 +159,7 @@ states=pynamics.integration.integrate_odeint(func,ini,t,rtol = error, atol = err
 
 points = [pm1,pm2]
 po = PointsOutput(points, system, constant_values=system.constant_values)
-y=po.calc(states)
+y=po.calc(states,t)
 
 plt.figure()
 for item in y:

@@ -105,5 +105,5 @@ states=pynamics.integration.integrate_odeint(func,ini,t,rtol=1e-12,atol=1e-12,hm
 
 points = [pNA,pAB]
 points_output = PointsOutput(points,system)
-points_output.calc(states)
+points_output.calc(states,t)
 points_output.animate(fps = 30,lw=2)

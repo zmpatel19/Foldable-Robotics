@@ -170,7 +170,7 @@ pynamics.system.logger.setLevel(logging.ERROR)
 
 points = [pNA,pAB,pBC,pCtip]
 points_output = PointsOutput(points,system)
-y = points_output.calc(input_data_all)
+y = points_output.calc(input_data_all,t)
 points_output.plot_time()
 
 r = numpy.random.randn(*(y.shape))*.01
@@ -182,7 +182,7 @@ fyt = fy(t)
 
 def calc_error(args):
     states_guess = run_sim(args)
-    y_guess = points_output.calc(states_guess).transpose((1,2,0))
+    y_guess =  points_output.calc(states_guess).transpose((1,2,0),t)
     error = fyt - y_guess
     error **=2
     error = error.sum()
@@ -207,7 +207,7 @@ calc_error([1e2,1e3])
 
 input_data_all2 = run_sim(es.best.x)
 points_output2 = PointsOutput(points,system)
-y2 = points_output2.calc(input_data_all2)
+y2 = points_output2.calc(input_data_all2,t)
 points_output2.plot_time()
 # points_output2.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 

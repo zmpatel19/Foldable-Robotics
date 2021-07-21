@@ -167,11 +167,11 @@ plt.plot(xx,yy)
 
 # states = run([.1])
 # # output = Output(ang,system)
-# # output.calc(states)
+# # output.calc(states,t)
 # # output.plot_time()
 
 # po = PointsOutput(points,system)
-# y=po.calc(states)
+# y=po.calc(states,t)
 # #po.plot_time()
 # #y = y.reshape((-1,2,2))
 # plt.figure()
