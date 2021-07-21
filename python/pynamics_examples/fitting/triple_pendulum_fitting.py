@@ -182,7 +182,7 @@ fyt = fy(t)
 
 def calc_error(args):
     states_guess = run_sim(args)
-    y_guess =  points_output.calc(states_guess).transpose((1,2,0),t)
+    y_guess =  points_output.calc(states_guess,t).transpose((1,2,0))
     error = fyt - y_guess
     error **=2
     error = error.sum()

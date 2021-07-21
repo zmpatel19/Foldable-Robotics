@@ -1,20 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# ---
-# title: Triple Pendulum Example
-# type: submodule
-# ---
-
-# In[1]:
-
-
-
-# Try running with this variable set to true and to false and see the difference in the resulting equations of motion
-
-# In[3]:
-
-
 # -*- coding: utf-8 -*-
 """
 Written by Daniel M. Aukes
@@ -31,57 +14,47 @@ from pynamics.dyadic import Dyadic
 from pynamics.output import Output,PointsOutput
 from pynamics.output_points_3d import PointsOutput3D
 from pynamics.particle import Particle
+from pynamics.constraint import AccelerationConstraint,KinematicConstraint
 import pynamics.integration
 import numpy
 import matplotlib.pyplot as plt
 plt.ion()
 from math import pi
 import sympy
+sympy.init_printing(pretty_print=False)
 import math
-
-# The next two lines create a new system object and set that system as the global system within the module so that other variables can use and find it.
-
-# In[4]:
-
 
 system = System()
 pynamics.set_system(__name__,system)
 
-
-# ## Parameterization
-# 
-# ### Constants
-# 
-# Declare constants and seed them with their default value.  This can be changed at integration time but is often a nice shortcut when you don't want the value to change but you want it to be represented symbolically in calculations
-
-# In[5]:
-
-
+pp = 30
 small = 1e-10
 
 rho = Constant(1000,'rho')
 lA = Constant(.1,'lA',system)
 lB = Constant(.1,'lB',system)
 lC = Constant(.1,'lC',system)
-lS = Constant(.1,'lS',system)
+lS = Constant(.04,'lS',system)
+lPaddle = Constant(.1,'lPaddle',system)
 
 mA = Constant(.1,'mA',system)
 mB = Constant(.1,'mB',system)
 mC = Constant(.1,'mC',system)
 mS = Constant(.2,'mS',system)
+mPaddle = Constant(.05,'mPaddle',system)
 
-g = Constant(9.81,'g',system)
-b = Constant(1e1,'b',system)
-k = Constant(1e3,'k',system)
-k2 = Constant(1e1,'k',system)
+k = Constant(1e2,'k',system)
+k2 = Constant(1e0,'k2',system)
+k3 = Constant(5e0,'k3',system)
+kb = Constant(1e3,'kb',system)
 Area = Constant(1,'Area',system)
 
-r1 = Constant(10,'r1',system)
+torque = Constant(1e1,'torque',system)
+freq = Constant(3e0,'freq',system)
+
 r2 = Constant(0,'r2',system)
 
-preload1 = Constant(0*pi/180,'preload1',system)
-preload2 = Constant(0*pi/180,'preload2',system)
-preload3 = Constant(0*pi/180,'preload3',system)
+paddle_preload = Constant(pp*pi/180,'preload3',system)
 
 Ixx_A = Constant(.1,'Ixx_A',system)
 Iyy_A = Constant(.1,'Iyy_A',system)
@@ -96,98 +69,89 @@ Ixx_S = Constant(.1,'Ixx_S',system)
 Iyy_S = Constant(.1,'Iyy_S',system)
 Izz_S = Constant(.1,'Izz_S',system)
 
-
-# ## Integration Tolerance
-# Specify the precision of the integration
-
-# In[6]:
-
-
-
-
-# ### Time 
-# Define variables for time that can be used throughout the script.  These get used to create the t array, a list of every time value that is solved for during integration
-
-# In[7]:
-
-
-tinitial = 0
-tfinal = 10
-fps = 30
-tstep = 1/fps
-t = numpy.r_[tinitial:tfinal:tstep]
-
-
-# ### Differentiable State Variables
-# 
-# Define your differentiable state variables that you will use to model the state of the system.  In this case $qA$, $qB$, and $qC$ are the rotation angles of a three-link mechanism
-
-# In[8]:
-
-
 x,x_d,x_dd = Differentiable('x',system)
 y,y_d,y_dd = Differentiable('y',system)
 z,z_d,z_dd = Differentiable('z',system)
 
+x2,x2_d,x2_dd = Differentiable('x2',system)
+y2,y2_d,y2_dd = Differentiable('y2',system)
+z2,z2_d,z2_dd = Differentiable('z2',system)
+
+x3,x3_d,x3_dd = Differentiable('x3',system)
+y3,y3_d,y3_dd = Differentiable('y3',system)
+z3,z3_d,z3_dd = Differentiable('z3',system)
 
 qA1,qA1_d,qA1_dd = Differentiable('qA1')
 qA2,qA2_d,qA2_dd = Differentiable('qA2')
 qA3,qA3_d,qA3_dd = Differentiable('qA3')
 
-qB,qB_d,qB_dd = Differentiable('qB')
-qC,qC_d,qC_dd = Differentiable('qC')
+qB1,qB1_d,qB1_dd = Differentiable('qB1')
+qB2,qB2_d,qB2_dd = Differentiable('qB2')
+qB3,qB3_d,qB3_dd = Differentiable('qB3')
+qC1,qC1_d,qC1_dd = Differentiable('qC1')
+qC2,qC2_d,qC2_dd = Differentiable('qC2')
+qC3,qC3_d,qC3_dd = Differentiable('qC3')
+
+
 qS,qS_d,qS_dd = Differentiable('qS')
 
-wAx,wAx_d = Differentiable('wAx',ii = 1,limit=3)
-wAy,wAy_d = Differentiable('wAy',ii = 1,limit=3)
-wAz,wAz_d = Differentiable('wAz',ii = 1,limit=3)
+wAx,wAx_d = Differentiable('wAx',ii = 1)
+wAy,wAy_d = Differentiable('wAy',ii = 1)
+wAz,wAz_d = Differentiable('wAz',ii = 1)
 
+wBx,wBx_d = Differentiable('wBx',ii = 1)
+wBy,wBy_d = Differentiable('wBy',ii = 1)
+wBz,wBz_d = Differentiable('wBz',ii = 1)
 
-# ### Initial Values
-# Define a set of initial values for the position and velocity of each of your state variables.  It is necessary to define a known.  This code create a dictionary of initial values.
-
-# In[9]:
+wCx,wCx_d = Differentiable('wCx',ii = 1)
+wCy,wCy_d = Differentiable('wCy',ii = 1)
+wCz,wCz_d = Differentiable('wCz',ii = 1)
 
 
 initialvalues = {}
 initialvalues[qA1]=0*pi/180
 initialvalues[qA2]=0*pi/180
-initialvalues[qA1_d]=small
-initialvalues[qA2_d]=small
-initialvalues[qA3_d]=small
 initialvalues[qA3]=0*pi/180
-initialvalues[qB]=0*pi/180
-initialvalues[qB_d]=small
-initialvalues[qC]=0*pi/180
-initialvalues[qC_d]=small
-initialvalues[x]=0
-initialvalues[x_d]=0
-initialvalues[y]=0
-initialvalues[y_d]=small
-initialvalues[z]=0
-initialvalues[z_d]=small
+
+initialvalues[qB1]=0*pi/180
+initialvalues[qB2]=0*pi/180
+initialvalues[qB3]=0*pi/180
+
+initialvalues[qC1]=0*pi/180
+initialvalues[qC2]=0*pi/180
+initialvalues[qC3]=0*pi/180
+
+# initialvalues[x]=0
+# initialvalues[x_d]=0
+# initialvalues[y]=0
+# initialvalues[y_d]=small
+# initialvalues[z]=0
+# initialvalues[z_d]=small
+
 initialvalues[qS]=0*pi/180
 initialvalues[qS_d]=small
+
 initialvalues[wAx]=small
 initialvalues[wAy]=small
 initialvalues[wAz]=small
 
+initialvalues[wBz]=small
 
-# These two lines of code order the initial values in a list in such a way that the integrator can use it in the same order that it expects the variables to be supplied
+initialvalues[wCz]=small
 
-# In[10]:
+# initialvalues[qA1_d]=small
+# initialvalues[qA2_d]=small
+# initialvalues[qA3_d]=small
 
+# initialvalues[qB_d]=small
 
+# initialvalues[qC_d]=small
 
+# initialvalues[wBx]=small
+# initialvalues[wBy]=small
 
-
-# ## Kinematics
-# 
-# ### Frames
-# Define the reference frames of the system
-
-# In[11]:
-
+# initialvalues[wCx]=small
+# initialvalues[wCy]=small
 
 N = Frame('N')
 A1 = Frame('A1')
@@ -195,136 +159,101 @@ A2 = Frame('A2')
 A3 = Frame('A3')
 B1 = Frame('B1')
 B2 = Frame('B2')
-C = Frame('C')
+B3 = Frame('B3')
+C1 = Frame('C1')
+C2 = Frame('C2')
+C3 = Frame('C3')
+
 S = Frame('S')
 
-# ### Newtonian Frame
-# 
-# It is important to define the Newtonian reference frame as a reference frame that is not accelerating, otherwise the dynamic equations will not be correct
-
-# In[12]:
-
-
 system.set_newtonian(N)
-
-
-# This is the first time that the "global_q" variable is used.  If you choose to rotate each frame with reference to the base frame, there is the potential for a representational simplification.  If you use a relative rotation, this can also be simpler in some cases.  Try running the code either way to see which one is simpler in this case.
-
-# In[13]:
 
 
 A1.rotate_fixed_axis_directed(N,[1,0,0],qA1,system)
 A2.rotate_fixed_axis_directed(A1,[0,1,0],qA2,system)
 A3.rotate_fixed_axis_directed(A2,[0,0,1],qA3,system)
-B1.rotate_fixed_axis_directed(A3,[0,0,1],qB,system)
-B2.rotate_fixed_axis_directed(B1,[1,0,0],r2*pi/180,system)
-C.rotate_fixed_axis_directed(B2,[0,0,1],qC,system)
+B1.rotate_fixed_axis_directed(N,[1,0,0],qB1,system)
+B2.rotate_fixed_axis_directed(B1,[0,1,0],qB2,system)
+B3.rotate_fixed_axis_directed(B2,[0,0,1],qB3,system)
+C1.rotate_fixed_axis_directed(N,[1,0,0],qC1,system)
+C2.rotate_fixed_axis_directed(C1,[0,1,0],qC2,system)
+C3.rotate_fixed_axis_directed(C2,[0,0,1],qC3,system)
 S.rotate_fixed_axis_directed(A3,[0,0,1],qS,system)
 
 wA1 = N.getw_(A3)
 wA2 = wAx*A3.x + wAy*A3.y + wAz*A3.z
 N.set_w(A3,wA2)
 
+wB1 = N.getw_(B3)
+wB2 = wBx*B3.x + wBy*B3.y + wBz*B3.z
+N.set_w(B3,wB2)
 
-from pynamics.constraint import AccelerationConstraint
+wC1 = N.getw_(C3)
+wC2 = wCx*C3.x + wCy*C3.y + wCz*C3.z
+N.set_w(C3,wC2)
 
-
-
-# ### Vectors
+### Vectors
 # Define the vectors that describe the kinematics of a series of connected lengths
-# 
-# * pNA - This is a vector with position at the origin.
-# * pAB - This vector is length $l_A$ away from the origin along the A.x unit vector
-# * pBC - This vector is length $l_B$ away from the pAB along the B.x unit vector 
-# * pCtip - This vector is length $l_C$ away from the pBC along the C.x unit vector 
 
-# In[14]:
+pAcm=x*A3.x+y*A3.y+z*A3.z
+pHead = pAcm-lA/2*A3.x
+pAB=pAcm+lA/2*A3.x
 
+pBcm=x2*B3.x+y2*B3.y+z2*B3.z
+pBA = pBcm - lB/2*B3.x
+pBC = pBcm + lB/2*B3.x
 
-pHead=x*N.x+y*N.y+z*N.z
-pAB=pHead+lA*A3.x
-pBC = pAB + lB*B1.x
-pCtip = pBC + lC*C.x
+pCcm=x3*C3.x+y3*C3.y+z3*C3.z
+pCB = pCcm - lC/2*C3.x
+pCtip=pCcm+lC/2*C3.x
 
-vctip=pCtip.time_derivative()
-uctip = 1/vctip.length()*vctip
-vctip_squared = vctip.dot(vctip)
-aoa_S = sympy.asin(uctip.dot(C.y))
-
-# f_aero_C = rho*vctip_squared*sympy.sin(aoa_S)*Area *C.y
-f_aero_C2 = rho * vctip.length()*(vctip.dot(C.y))*Area*C.y
-system.addforce(-f_aero_C2,vctip)
-
-
-# ## Centers of Mass
-# 
-# It is important to define the centers of mass of each link.  In this case, the center of mass of link A, B, and C is halfway along the length of each
-
-# In[15]:
-
-
-pAcm=pHead+lA/2*A3.x
-pBcm=pAB+lB/2*B1.x
-pCcm=pBC+lC/2*C.x
 pScm = pHead - lS*S.x
 
-vAcm=pAcm.time_derivative()
-vCcm=pCcm.time_derivative()
+# vAcm=pAcm.time_derivative()
+# vCcm=pCcm.time_derivative()
 
+va=pAcm.time_derivative()
+f_aero_Ax = rho * va.length()*(va.dot(A3.x))*Area/10*A3.x
+system.addforce(-f_aero_Ax,va)
+
+f_aero_A = rho * va.length()*(va.dot(A3.y))*Area*A3.y
+system.addforce(-f_aero_A,va)
+
+vb=pBcm.time_derivative()
+f_aero_B = rho * vb.length()*(vb.dot(B3.y))*Area*B3.y
+system.addforce(-f_aero_B,vb)
+
+vctip=pCtip.time_derivative()
+f_aero_C = rho * vctip.length()*(vctip.dot(C3.y))*Area*C3.y
+system.addforce(-f_aero_C,vctip)
 
 # ## Calculating Velocity
 # 
 # The angular velocity between frames, and the time derivatives of vectors are extremely useful in calculating the equations of motion and for determining many of the forces that need to be applied to your system (damping, drag, etc).  Thus, it is useful, once kinematics have been defined, to take or find the derivatives of some of those vectors for calculating  linear or angular velocity vectors
 # 
 # ### Angular Velocity
-# The following three lines of code computes and returns the angular velocity between frames N and A (${}^N\omega^A$), A and B (${}^A\omega^B$), and B and C (${}^B\omega^C$).  In other cases, if the derivative expression is complex or long,  you can supply pynamics with a given angular velocity between frames to speed up computation time.
 
-# In[16]:
-
-
-#wNA3 = N.getw_(A3)
-wA3B1 = A3.getw_(B1)
+wA3B3 = A3.getw_(B3)
+wB3C3 = B3.getw_(C3)
 wA3S = A3.getw_(S)
-wB2C = B2.getw_(C)
-
-
-# ### Vector derivatives
-# The time derivatives of vectors may also be 
-
-# vCtip = pCtip.time_derivative(N,system)
 
 # ### Define Inertias and Bodies
 # The next several lines compute the inertia dyadics of each body and define a rigid body on each frame.  In the case of frame C, we represent the mass as a particle located at point pCcm.  
 
-# In[17]:
-
-
 IA = Dyadic.build(A3,Ixx_A,Iyy_A,Izz_A)
-IB = Dyadic.build(B1,Ixx_B,Iyy_B,Izz_B)
-IC = Dyadic.build(C,Ixx_C,Iyy_C,Izz_C)
+IB = Dyadic.build(B3,Ixx_B,Iyy_B,Izz_B)
+IC = Dyadic.build(C3,Ixx_C,Iyy_C,Izz_C)
 IS = Dyadic.build(S,Ixx_S,Iyy_S,Izz_S)
 
 BodyA = Body('BodyA',A3,pAcm,mA,IA,system)
-BodyB = Body('BodyB',B1,pBcm,mB,IB,system)
-BodyC = Body('BodyC',C,pCcm,mC,IC,system)
+BodyB = Body('BodyB',B3,pBcm,mB,IB,system)
+BodyC = Body('BodyC',C3,pCcm,mC,IC,system)
 BodyC = Body('BodyS',S,pScm,mS,IS,system)
-# BodyC = Particle(pCcm,mC,'ParticleC',system)
-
 
 # ## Forces and Torques
 # Forces and torques are added to the system with the generic ```addforce``` method.  The first parameter supplied is a vector describing the force applied at a point or the torque applied along a given rotational axis.  The second parameter is the  vector describing the linear speed (for an applied force) or the angular velocity(for an applied torque)
 
-# In[18]:
-
-import sympy
-
-system.addforce(-10*sympy.sin(2*sympy.pi*system.t)*A3.z,wA3S)
-
-# system.addforce(-b*wNA,wNA)
-# system.addforce(-b*wAB,wAB)
-# system.addforce(-b*wBC,wBC)
-#system.addforce(-b*vCcm,vCcm)
-# system.addforce(-b*vAcm,vAcm)
+system.addforce(torque*sympy.sin(freq*2*sympy.pi*system.t)*A3.z,wA3S)
 
 
 # ### Spring Forces
@@ -333,20 +262,16 @@ system.addforce(-10*sympy.sin(2*sympy.pi*system.t)*A3.z,wA3S)
 # 
 # In this case, the torques applied to each joint are dependent upon whether qA, qB, and qC are absolute or relative rotations, as defined above.
 
-# In[19]:
-
-
 # system.add_spring_force1(k,(qA-preload1)*N.z,wNA) 
-system.add_spring_force1(k,(qB-preload2)*A3.z,wA3B1)
-system.add_spring_force1(k,(qC-preload3)*B2.z,wB2C)
-system.add_spring_force1(k2,(qS)*S.z,wA3S)
+qAB = -sympy.atan2(A3.x.dot(B3.y),A3.x.dot(B3.x))
+system.add_spring_force1(k,(qAB)*A3.z,wA3B3)
 
+qBC = -sympy.atan2(B3.x.dot(C3.y),B3.x.dot(C3.x))
+system.add_spring_force1(k,(qBC)*B3.z,wB3C3)
+system.add_spring_force1(k2,(qS)*S.z,wA3S)
 
 # ### Gravity
 # Again, like springs, the force of gravity is conservative and should be applied to all bodies.  To globally apply the force of gravity to all particles and bodies, you can use the special ```addforcegravity``` method, by supplying the acceleration due to gravity as a vector.  This will get applied to all bodies defined in your system.
-
-# In[20]:
-
 
 #system.addforcegravity(-g*N.y)
 
@@ -354,124 +279,128 @@ system.add_spring_force1(k2,(qS)*S.z,wA3S)
 # ## Constraints
 # Constraints may be defined that prevent the motion of certain elements.  Try uncommenting the commented out line to see what happens.
 
-# In[21]:
+eq = []
+eq.append(A3.z-B3.z)
+eq.append(pAB-pBA)
+eq.append(B3.z-C3.z)
+eq.append(pBC-pCB)
+# eq.append(pAcm-0*N.x)
 
+eq_d = []
+eq_d.append(wA1-wA2)
+eq_d.append(wB1-wB2)
+eq_d.append(wC1-wC2)
 
-# eq = []
-# # eq.append(qS-sympy.sin(2*math.pi*system.t)
-# eq_d=[(system.derivative(item)) for item in eq]
-# # eq_d.append(qA2_d)
-# eq_dd=[(system.derivative(item)) for item in eq_d]
+eq_d.extend([item.time_derivative() for item in eq])
 
-
-# ## F=ma
-# This is where the symbolic expressions for F and ma are calculated.  This must be done after all parts of the system have been defined.  The ```getdynamics``` function uses Kane's method to derive the equations of motion.
-
-# In[22]:
-
-
-eq_d=[wA1-wA2]
 eq_dd = [item.time_derivative() for item in eq_d]
-
 eq_dd_scalar = []
 eq_dd_scalar.append(eq_dd[0].dot(A2.x))
 eq_dd_scalar.append(eq_dd[0].dot(A2.y))
 eq_dd_scalar.append(eq_dd[0].dot(A2.z))
+eq_dd_scalar.append(eq_dd[1].dot(B2.x))
+eq_dd_scalar.append(eq_dd[1].dot(B2.y))
+eq_dd_scalar.append(eq_dd[1].dot(B2.z))
+eq_dd_scalar.append(eq_dd[2].dot(C2.x))
+eq_dd_scalar.append(eq_dd[2].dot(C2.y))
+eq_dd_scalar.append(eq_dd[2].dot(C2.z))
+eq_dd_scalar.append(eq_dd[3].dot(N.x))
+eq_dd_scalar.append(eq_dd[3].dot(N.y))
+eq_dd_scalar.append(eq_dd[4].dot(N.x))
+eq_dd_scalar.append(eq_dd[4].dot(N.y))
+eq_dd_scalar.append(eq_dd[4].dot(N.z))
+eq_dd_scalar.append(eq_dd[5].dot(N.x))
+eq_dd_scalar.append(eq_dd[5].dot(N.y))
+eq_dd_scalar.append(eq_dd[6].dot(N.x))
+eq_dd_scalar.append(eq_dd[6].dot(N.y))
+eq_dd_scalar.append(eq_dd[6].dot(N.z))
+# eq_dd_scalar.append(eq_dd[7].dot(N.x))
+# eq_dd_scalar.append(eq_dd[7].dot(N.y))
+# eq_dd_scalar.append(eq_dd[7].dot(N.z))
 
 system.add_constraint(AccelerationConstraint(eq_dd_scalar))
 
 
-statevariables = system.get_state_variables()
-ini = [initialvalues[item] for item in statevariables]
 
+eq_d_scalar = []
+eq_d_scalar.append(eq_d[0].dot(A2.x))
+eq_d_scalar.append(eq_d[0].dot(A2.y))
+eq_d_scalar.append(eq_d[0].dot(A2.z))
+eq_d_scalar.append(eq_d[1].dot(B2.x))
+eq_d_scalar.append(eq_d[1].dot(B2.y))
+eq_d_scalar.append(eq_d[1].dot(B2.z))
+eq_d_scalar.append(eq_d[2].dot(C2.x))
+eq_d_scalar.append(eq_d[2].dot(C2.y))
+eq_d_scalar.append(eq_d[2].dot(C2.z))
+eq_d_scalar.append(eq_d[3].dot(N.x))
+eq_d_scalar.append(eq_d[3].dot(N.y))
+eq_d_scalar.append(eq_d[4].dot(N.x))
+eq_d_scalar.append(eq_d[4].dot(N.y))
+eq_d_scalar.append(eq_d[4].dot(N.z))
+eq_d_scalar.append(eq_d[5].dot(N.x))
+eq_d_scalar.append(eq_d[5].dot(N.y))
+eq_d_scalar.append(eq_d[6].dot(N.x))
+eq_d_scalar.append(eq_d[6].dot(N.y))
+eq_d_scalar.append(eq_d[6].dot(N.z))
+eq_d_scalar.append(eq[1].dot(N.x))
+eq_d_scalar.append(eq[1].dot(N.y))
+eq_d_scalar.append(eq[1].dot(N.z))
+eq_d_scalar.append(eq[3].dot(N.x))
+eq_d_scalar.append(eq[3].dot(N.y))
+eq_d_scalar.append(eq[3].dot(N.z))
+# eq_d_scalar.append(eq_d[7].dot(N.x))
+# eq_d_scalar.append(eq_d[7].dot(N.y))
+# eq_d_scalar.append(eq_d[7].dot(N.z))
+
+
+kinematic_constraint = KinematicConstraint(eq_d_scalar)
+variables = [qA1_d,qA2_d,qA3_d,qB1_d,qB2_d,qB3_d,qC1_d,qC2_d,qC3_d,wBx,wBy,wCx,wCy,x2_d,y2_d,z2_d,x2,y2,z2,x3_d,y3_d,z3_d,x3,y3,z3,x,y,z,x_d,y_d,z_d]
+result = kinematic_constraint.solve_numeric(variables,[1]*len(variables),system.constant_values,initialvalues)
+initialvalues.update(result)
+
+
+points = [pScm,pHead,pAcm,pAB,pBcm,pBC,pCcm,pCtip]
+points_output = PointsOutput3D(points,system)
 
 f,ma = system.getdynamics()
 
+# # ## Solve for Acceleration
+# # 
+# # The next line of code solves the system of equations F=ma plus any constraint equations that have been added above.  It returns one or two variables.  func1 is the function that computes the velocity and acceleration given a certain state, and lambda1(optional) supplies the function that computes the constraint forces as a function of the resulting states
+# # 
+# # There are a few ways of solveing for a.  The below function inverts the mass matrix numerically every time step.  This can be slower because the matrix solution has to be solved for, but is sometimes more tractable than solving the highly nonlinear symbolic expressions that can be generated from the previous step.  The other options would be to use ```state_space_pre_invert```, which pre-inverts the equations symbolically before generating a numerical function, or ```state_space_post_invert2```, which adds Baumgarte's method for intermittent constraints.
 
-# In[23]:
-
-
-f
-
-
-# In[24]:
-
-
-ma
+static_constants = [rho,lA,lB,lC,lS,lPaddle,mA,mB,mC,mS,mPaddle,r2,Ixx_A,Iyy_A,Izz_A,Ixx_B,Iyy_B,Izz_B,Ixx_A,Iyy_B,Izz_B,Ixx_C,Iyy_C,Izz_C,Ixx_S,Iyy_S,Izz_S]
+static_constants = dict([(key,system.constant_values[key]) for key in static_constants])
+func1= system.state_space_post_invert(f,ma,return_lambda = False, constants = static_constants)
 
 
-# ## Solve for Acceleration
-# 
-# The next line of code solves the system of equations F=ma plus any constraint equations that have been added above.  It returns one or two variables.  func1 is the function that computes the velocity and acceleration given a certain state, and lambda1(optional) supplies the function that computes the constraint forces as a function of the resulting states
-# 
-# There are a few ways of solveing for a.  The below function inverts the mass matrix numerically every time step.  This can be slower because the matrix solution has to be solved for, but is sometimes more tractable than solving the highly nonlinear symbolic expressions that can be generated from the previous step.  The other options would be to use ```state_space_pre_invert```, which pre-inverts the equations symbolically before generating a numerical function, or ```state_space_post_invert2```, which adds Baumgarte's method for intermittent constraints.
+# %%
+statevariables = system.get_state_variables()
+ini = [initialvalues[item] for item in statevariables]
 
-# In[25]:
+# %%
+# # ## Integrate
+# # 
+# # The next line of code integrates the function calculated
 
+tol = 1e-7
+tinitial = 0
+tfinal = 3
+fps = 30
+tstep = 1/fps
+t = numpy.r_[tinitial:tfinal:tstep]
+constants = system.constant_values.copy()
+constants[torque]=-1e1
+constants[k]=1e2
+constants[k2]=2e1
+constants[k3]=1e0
+constants[kb]=5e0
+constants[freq]=3e0
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol, args=({'constants':constants},))
 
-func1= system.state_space_post_invert(f,ma,return_lambda = False)
-
-
-# ## Integrate
-# 
-# The next line of code integrates the function calculated
-
-# In[26]:
-
-tol = 1e-4
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol, args=({'constants':system.constant_values},))
-
-
-# ## Outputs
-# 
-# 
-# The next section simply calculates and plots a variety of data from the previous simulation
-# ### States
-
-# In[27]:
-
-
-# plt.figure()
-# artists = plt.plot(t,states[:,:3])
-# plt.legend(artists,['qA','qB','qC'])
-
-
-# ### Energy
-
-# In[28]:
-
-
-KE = system.get_KE()
-PE = system.getPEGravity(pHead) - system.getPESprings()
-energy_output = Output([KE-PE],system)
-energy_output.calc(states,t)
-energy_output.plot_time()
-
-
-# ### Motion
-
-# In[29]:
-
-
-points = [pScm,pHead,pAB,pBC,pCtip]
-# points = [pNA,pAB]
-points_output = PointsOutput3D(points,system)
-y = points_output.calc(states,t)
-points_output.plot_time(20)
-
-
-# #### Motion Animation
-# in normal Python the next lines of code produce an animation using matplotlib
-
-# In[30]:
-
-
-#ax = points_output.animate(fps = fps,movie_name = 'triple_pendulum_swimmer.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=145)
-#a()
-# ax.set_xlim(-3,3)
-# ax.set_ylim(-3,3)
-# ax.set_zlim(-3,3)
-
-
+points_output.calc(states,t)
+points_output.plot_time()
+# ax = points_output.animate(fps = fps,movie_name = 'triple_pendulum_swimmer_paddles.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=90)
 
 
