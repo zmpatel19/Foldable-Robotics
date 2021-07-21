@@ -38,8 +38,8 @@ mB = Constant(1,'mB',system)
 mC = Constant(1,'mC',system)
 
 g = Constant(9.81,'g',system)
-b = Constant(1e-1,'b',system)
-k = Constant(0,'k',system)
+b = Constant(1e1,'b',system)
+k = Constant(1e1,'k',system)
 
 preload1 = Constant(0*pi/180,'preload1',system)
 preload2 = Constant(0*pi/180,'preload2',system)
