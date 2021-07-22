@@ -283,7 +283,7 @@ eq.append(B3.z-C3.z)
 eq.append(pBC-pCB)
 if constrain_base:
     eq.append(pBase-0*N.x)
-
+    eq.append(A3.z-N.z)
 eq_d = []
 eq_d.extend([item.time_derivative() for item in eq])
 eq_d.append(wA1-wA2)
@@ -308,7 +308,9 @@ if constrain_base:
     eq_dd_scalar.append(eq_dd[4].dot(N.x))
     eq_dd_scalar.append(eq_dd[4].dot(N.y))
     eq_dd_scalar.append(eq_dd[4].dot(N.z))
-    ii=5
+    eq_dd_scalar.append(eq_dd[5].dot(N.x))
+    eq_dd_scalar.append(eq_dd[5].dot(N.y))
+    ii=6
 eq_dd_scalar.append(eq_dd[ii+0].dot(A2.x))
 eq_dd_scalar.append(eq_dd[ii+0].dot(A2.y))
 eq_dd_scalar.append(eq_dd[ii+0].dot(A2.z))
@@ -339,7 +341,9 @@ if constrain_base:
     eq_d_scalar.append(eq_d[4].dot(N.x))
     eq_d_scalar.append(eq_d[4].dot(N.y))
     eq_d_scalar.append(eq_d[4].dot(N.z))
-    ii=5
+    eq_d_scalar.append(eq_d[5].dot(N.x))
+    eq_d_scalar.append(eq_d[5].dot(N.y))
+    ii=6
 eq_d_scalar.append(eq_d[ii+0].dot(A2.x))
 eq_d_scalar.append(eq_d[ii+0].dot(A2.y))
 eq_d_scalar.append(eq_d[ii+0].dot(A2.z))
