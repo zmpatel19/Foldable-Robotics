@@ -46,7 +46,7 @@ import pynamics_examples.springy_pendulum
 import pynamics_examples.standing_stability_test
 # import pynamics_examples.fitting.triple_pendulum_fitting
 import pynamics_examples.triple_pendulum_inverse_dynamics
-# import pynamics_examples.fitting.triple_pendulum_rft
+import pynamics_examples.triple_pendulum_rft
 import pynamics_examples.triple_pendulum_swimmer
 
 

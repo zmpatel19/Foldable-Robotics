@@ -139,13 +139,6 @@ system.add_spring_force1(k,(qC-preload3)*B.z,wBC)
 system.addforcegravity(-g*N.y)
 
 
-
-eq = []
-# eq.append(pCtip.dot(N.y))
-eq_d=[(system.derivative(item)) for item in eq]
-eq_dd=[(system.derivative(item)) for item in eq_d]
-
-
 f,ma = system.getdynamics()
 
 unknown_constants = [b,k]
@@ -153,7 +146,7 @@ unknown_constants = [b,k]
 known_constants = list(set(system.constant_values.keys())-set(unknown_constants))
 known_constants = dict([(key,system.constant_values[key]) for key in known_constants])
 
-func1,lambda1 = system.state_space_post_invert(f,ma,eq_dd,return_lambda = True,constants = known_constants)
+func1,lambda1 = system.state_space_post_invert(f,ma,return_lambda = True,constants = known_constants)
 
 def run_sim(args):
     constants = dict([(key,value) for key,value in zip(unknown_constants,args)])
