@@ -85,17 +85,16 @@ pE = pC2-le*E.x
 
 vcm = pCcm.time_derivative()
 
-vcp=pCcp.time_derivative()
-
-ve=pE.time_derivative()
-
 IC = Dyadic.build(C,I_11,I_11,I_11)
 
 Body('BodyC',C,pCcm,mC,IC)
 
 Area = 2*pi*r**2
 
+vcp=pCcp.time_derivative()
 f_aero_C = rho * vcp.length()*(vcp.dot(C.y))*Area*C.y
+
+ve=pE.time_derivative()
 f_aero_E = rho * ve.length()*(ve.dot(E.y))*Area*E.y
 
 

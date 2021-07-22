@@ -31,31 +31,13 @@ constrain_base=True
 pp = 30
 small = 1e-10
 
-rho = Constant(1000,'rho')
 lA = Constant(.1,'lA',system)
 lB = Constant(.1,'lB',system)
 lC = Constant(.1,'lC',system)
-lS = Constant(.04,'lS',system)
-lPaddle = Constant(.1,'lPaddle',system)
 
 mA = Constant(.1,'mA',system)
 mB = Constant(.1,'mB',system)
 mC = Constant(.1,'mC',system)
-mS = Constant(.2,'mS',system)
-mPaddle = Constant(.05,'mPaddle',system)
-
-k = Constant(1e2,'k',system)
-k2 = Constant(1e0,'k2',system)
-k3 = Constant(5e0,'k3',system)
-kb = Constant(1e3,'kb',system)
-Area = Constant(1,'Area',system)
-
-torque = Constant(1e1,'torque',system)
-freq = Constant(3e0,'freq',system)
-
-r2 = Constant(0,'r2',system)
-
-paddle_preload = Constant(pp*pi/180,'preload3',system)
 
 Ixx_A = Constant(.1,'Ixx_A',system)
 Iyy_A = Constant(.1,'Iyy_A',system)
@@ -66,9 +48,24 @@ Izz_B = Constant(.1,'Izz_B',system)
 Ixx_C = Constant(.1,'Ixx_C',system)
 Iyy_C = Constant(.1,'Iyy_C',system)
 Izz_C = Constant(.1,'Izz_C',system)
+
+torque = Constant(1e1,'torque',system)
+freq = Constant(3e0,'freq',system)
+
+k = Constant(1e2,'k',system)
+k2 = Constant(1e0,'k2',system)
+k3 = Constant(5e0,'k3',system)
+kb = Constant(1e3,'kb',system)
+Area = Constant(1,'Area',system)
+rho = Constant(1000,'rho')
+lS = Constant(.04,'lS',system)
+mS = Constant(.2,'mS',system)
+r2 = Constant(0,'r2',system)
 Ixx_S = Constant(.1,'Ixx_S',system)
 Iyy_S = Constant(.1,'Iyy_S',system)
 Izz_S = Constant(.1,'Izz_S',system)
+paddle_preload = Constant(pp*pi/180,'preload3',system)
+
 
 x,x_d,x_dd = Differentiable('x',system)
 y,y_d,y_dd = Differentiable('y',system)
@@ -379,7 +376,7 @@ f,ma = system.getdynamics()
 # # 
 # # There are a few ways of solveing for a.  The below function inverts the mass matrix numerically every time step.  This can be slower because the matrix solution has to be solved for, but is sometimes more tractable than solving the highly nonlinear symbolic expressions that can be generated from the previous step.  The other options would be to use ```state_space_pre_invert```, which pre-inverts the equations symbolically before generating a numerical function, or ```state_space_post_invert2```, which adds Baumgarte's method for intermittent constraints.
 
-static_constants = [rho,lA,lB,lC,lS,lPaddle,mA,mB,mC,mS,mPaddle,r2,Ixx_A,Iyy_A,Izz_A,Ixx_B,Iyy_B,Izz_B,Ixx_A,Iyy_B,Izz_B,Ixx_C,Iyy_C,Izz_C,Ixx_S,Iyy_S,Izz_S]
+static_constants = [rho,lA,lB,lC,lS,mA,mB,mC,mS,r2,Ixx_A,Iyy_A,Izz_A,Ixx_B,Iyy_B,Izz_B,Ixx_A,Iyy_B,Izz_B,Ixx_C,Iyy_C,Izz_C,Ixx_S,Iyy_S,Izz_S]
 static_constants = dict([(key,system.constant_values[key]) for key in static_constants])
 func1= system.state_space_post_invert(f,ma,return_lambda = False, constants = static_constants)
 

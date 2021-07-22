@@ -28,7 +28,7 @@ if __name__=='__main__':
     x = [0,2,2,5,5,6,6,10]
     y = [0,0,1,1,-1,-1,0,0]
     t = numpy.r_[0:10:.01]
-    my_signal, ft2 = build_smoothed_time_signal(x,y,t,window_time_width = 1)
+    my_signal, ft2 = build_smoothed_time_signal(x,y,t,'my_signal',window_time_width = 1)
     plt.figure()
     plt.plot(x,y)
     # plt.plot(time_series,ft(time_series))
