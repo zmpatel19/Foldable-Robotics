@@ -35,11 +35,6 @@ g = Constant(9.81,'g',system)
 b = Constant(1e0,'b',system)
 k = Constant(1e1,'k',system)
 
-tinitial = 0
-tfinal = 5
-tstep = 1/30
-t = numpy.r_[tinitial:tfinal:tstep]
-
 preload1 = Constant(0*pi/180,'preload1',system)
 
 qA,qA_d,qA_dd = Differentiable('qA',system)
@@ -88,6 +83,11 @@ constraint = AccelerationConstraint([eq1_dd])
 system.add_constraint(constraint)
 
 tol = 1e-4
+
+tinitial = 0
+tfinal = 5
+tstep = 1/30
+t = numpy.r_[tinitial:tfinal:tstep]
 
 f,ma = system.getdynamics()
 func = system.state_space_post_invert(f,ma,constants=system.constant_values)
