@@ -17,6 +17,7 @@ from pynamics.dyadic import Dyadic
 from pynamics.output import Output
 from pynamics.particle import Particle, PseudoParticle
 import pynamics.integration
+from pynamics.constraint import AccelerationConstraint
 
 #import sympy
 import numpy
@@ -110,11 +111,12 @@ system.addforce(T*N.z,wNA)
 system.addforce(-b*wNA,wNA)
 system.addforce(-Tl*B.z,wNB)
 system.addforce((V-i*R - kv*G*qB_d)*M.x,i*M.x)
-eq_d = []
-eq_d = [wNA.dot(N.z) - G*wNB.dot(N.z)]
-#eq_d = [N.getw_(A).dot(N.z) - G*N.getw_(B).dot(N.z)]
-eq_dd= [system.derivative(item) for item in eq_d]
 
+eq_d = []
+eq_d = [wNA - G*wNB]
+eq_dd= [item.time_derivative() for item in eq_d]
+eq_dd_scalar = [eq_dd[0].dot(N.z)]
+system.add_constraint(AccelerationConstraint(eq_dd_scalar))
 
 #import sympy
 #ind = sympy.Matrix([wB])
@@ -132,7 +134,7 @@ f,ma = system.getdynamics()
 #ma.append(L*i_d )
 #res = system.solve_f_ma(f,ma,system.get_q(2))
 #func1 = system.state_space_pre_invert(f,ma,constants = system.constant_values)
-func1 = system.state_space_post_invert(f,ma,eq_dd)
+func1 = system.state_space_post_invert(f,ma)
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-10,atol=1e-10,args=({'constants':constants,'alpha':1e2,'beta':1e1},))
 
 # =============================================================================

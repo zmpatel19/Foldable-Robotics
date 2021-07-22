@@ -40,7 +40,6 @@ import pynamics_examples.motor_motor_side
 import pynamics_examples.parallel_five_bar_jumper
 import pynamics_examples.parallel_five_bar_jumper_foot
 import pynamics_examples.pendulum_2_ways
-import pynamics_examples.pendulum_chien_wen
 import pynamics_examples.pendulum_in_water
 import pynamics_examples.single_dof_bouncer
 import pynamics_examples.springy_pendulum

@@ -16,6 +16,7 @@ from pynamics.dyadic import Dyadic
 from pynamics.output import Output, PointsOutput3D
 from pynamics.particle import Particle
 import pynamics.integration
+from pynamics.constraint import AccelerationConstraint,KinematicConstraint
 
 import matplotlib.pyplot as plt
 # plt.ion()

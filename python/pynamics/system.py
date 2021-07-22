@@ -342,6 +342,9 @@ class System(object):
         '''invert A matrix each call'''
         logger.info('solving a = f/m and creating function')
         
+        if eq_dd is not None:
+            raise(Exception('eq_dd is no longer being used, please use pynamics acceleration constraints instead'))
+
         constants = constants or {}
         variable_functions = variable_functions or {}
         

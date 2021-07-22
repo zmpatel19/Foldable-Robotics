@@ -341,12 +341,6 @@ system.addforcegravity(-g*N.y)
 # In[21]:
 
 
-eq = []
-# eq.append(pCtip.dot(N.y))
-eq_d=[(system.derivative(item)) for item in eq]
-eq_dd=[(system.derivative(item)) for item in eq_d]
-
-
 # ## F=ma
 # This is where the symbolic expressions for F and ma are calculated.  This must be done after all parts of the system have been defined.  The ```getdynamics``` function uses Kane's method to derive the equations of motion.
 
@@ -377,7 +371,7 @@ ma
 # In[25]:
 
 
-func1,lambda1 = system.state_space_post_invert(f,ma,eq_dd,return_lambda = True,variable_functions={force_var:f_force})
+func1,lambda1 = system.state_space_post_invert(f,ma,return_lambda = True,variable_functions={force_var:f_force})
 
 
 # ## Integrate

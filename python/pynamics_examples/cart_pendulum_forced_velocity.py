@@ -13,6 +13,7 @@ from pynamics.body import Body
 from pynamics.dyadic import Dyadic
 from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
+from pynamics.constraint import AccelerationConstraint
 import pynamics.integration
 
 #import sympy
@@ -84,16 +85,10 @@ system.add_spring_force1(k,(stretch)*N.z,wNA)
 system.addforce(-b*v2,v2)
 system.addforcegravity(-g*N.y)
 
-eq = []
-
-eq_d= [system.derivative(item) for item in eq]
-
-eq_d.append(x_d-1)
-
-eq_dd= [system.derivative(item) for item in eq_d]
+system.add_constraint(AccelerationConstraint([x_dd]))
 
 f,ma = system.getdynamics()
-func1,lambda1 = system.state_space_post_invert(f,ma,eq_dd,constants = system.constant_values,return_lambda=True)
+func1,lambda1 = system.state_space_post_invert(f,ma,constants = system.constant_values,return_lambda=True)
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,args=({'constants':{},'alpha':1e2,'beta':1e1},))
 
 lambda1_n = [lambda1(tt,ss) for tt,ss in zip(t,states)]

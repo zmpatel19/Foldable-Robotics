@@ -139,5 +139,6 @@ plt.plot(xx,yy)
 
 states = run([.1])
 po = PointsOutput(points,system)
+po.calc(states,t)
 po.plot_time()
 # po.animate(fps = 30, movie_name='glider.mp4',lw=2,marker='o')

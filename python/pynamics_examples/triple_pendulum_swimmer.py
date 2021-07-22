@@ -413,6 +413,6 @@ points = [pScm,pBase,pAcm,pAB,pBcm,pBC,pCcm,pCtip]
 points_output = PointsOutput3D(points,system)
 points_output.calc(states,t)
 points_output.plot_time()
-points_output.animate(fps = fps,movie_name = 'triple_pendulum_swimmer.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=90)
+#points_output.animate(fps = fps,movie_name = 'triple_pendulum_swimmer.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-',azim = -90,elev=90)
 
 
