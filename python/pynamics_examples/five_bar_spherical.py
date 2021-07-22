@@ -179,26 +179,39 @@ v3 = B23.z - A3.z
 
 eq1 = []
 
+# eq1.append(v1)
+# eq1.append(v2)
+# eq1.append(v3)
+# #eq1.append(B23.x.dot(A3.x)-1)
+# #eq1.append(A34.x.dot(B2.x)-1)
+# #eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.y))
+# #eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.x))
+# #eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.z))
+# #eq1 = []
+# #eq1.append((B23.x-A3.x).dot(N.x))
+# #eq1.append((B23.x-A3.x).dot(N.z))
+# #eq1.append((A34.x-B2.x).dot(N.x))
+# #eq1.append((A34.x-B2.x).dot(N.z))
+# #eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.z))
+
+# #take the derivative of those equations twice
+# eq1_d=[(item.time_derivative()) for item in eq1]
+# eq1_dd=[(item.time_derivative()) for item in eq1_d]
+
+# eq_scalar= []
+# eq_scalar.append(eq1_dd[0].length())
+# eq_scalar.append(eq1_dd[1].length())
+# eq_scalar.append(eq1_dd[2].length())
+
 eq1.append(v1.dot(v1))
 eq1.append(v2.dot(v2))
 eq1.append(v3.dot(v3))
-#eq1.append(B23.x.dot(A3.x)-1)
-#eq1.append(A34.x.dot(B2.x)-1)
-#eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.y))
-#eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.x))
-#eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.z))
-#eq1 = []
-#eq1.append((B23.x-A3.x).dot(N.x))
-#eq1.append((B23.x-A3.x).dot(N.z))
-#eq1.append((A34.x-B2.x).dot(N.x))
-#eq1.append((A34.x-B2.x).dot(N.z))
-#eq1.append((ParticleA3.pCM-ParticleB2.pCM).dot(N.z))
 
 #take the derivative of those equations twice
 eq1_d=[(system.derivative(item)) for item in eq1]
-eq1_dd=[(system.derivative(item)) for item in eq1_d]
-eq = eq1_dd
+eq_scalar=[(system.derivative(item)) for item in eq1_d]
 
+system.add_constraint(AccelerationConstraint(eq_scalar))
 
 #x1 = ParticleA.pCM.dot(N.x)
 #y1 = ParticleA.pCM.dot(N.y)
@@ -215,13 +228,13 @@ eq = eq1_dd
 ################################################
 #This is F and MA
 f,ma = system.getdynamics()
-func1 = system.state_space_post_invert(f,ma,eq1_dd)
+func1 = system.state_space_post_invert(f,ma,constants=system.constant_values)
 ################################################
 #this is the function you integrate
 # func1 = system.state_space_post_invert2(f,ma,eq1_dd,eq1_d,eq1)
 
 #states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-5,atol=1e-5)
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,args=({'alpha':1e4,'beta':1e2,'constants':system.constant_values},))
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol)
 
 KE = system.get_KE()
 PE = system.getPEGravity(pNO) - system.getPESprings()
