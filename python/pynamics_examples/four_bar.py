@@ -14,6 +14,7 @@ from pynamics.dyadic import Dyadic
 from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 import pynamics.integration
+from pynamics.constraint import KinematicConstraint
 
 import sympy
 import numpy
@@ -90,7 +91,6 @@ points = [pNA,pAB,pBC,pCtip]
 statevariables = system.get_state_variables()
 ini0 = [initialvalues[item] for item in statevariables]
 
-from pynamics.constraint import KinematicConstraint
 
 eq = []
 eq.append((pCtip-pD).dot(N.x))
@@ -104,17 +104,15 @@ variables = [qA,qB,qC]
 guess = [initialvalues[item] for item in variables]
 result = c.solve_numeric(variables,guess,system.constant_values)
 
-guess = [initialvalues[item] for item in variables]
-
 ini = []
 for item in system.get_state_variables():
     if item in variables:
-        ini.append(result.x[variables.index(item)])
+        ini.append(result[item])
     else:
         ini.append(initialvalues[item])
         
 points = PointsOutput(points, constant_values=system.constant_values)
-points.calc(numpy.array([ini0,ini]))
+points.calc(numpy.array([ini0,ini]),[0,1])
 points.plot_time()
 
 
@@ -180,7 +178,7 @@ subs = dict([(ii,jj) for ii,jj in zip(qd,qd2)])
 # points = [pNA,pAB,pBC,pCtip]
 # #points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
 # points_output = PointsOutput(points,system)
-# y = points_output.calc(states)
+# y = points_output.calc(states,t)
 # #y.resize(y.shape[0],int(y.shape[1]/2),2)
 
 # plt.figure()
@@ -191,7 +189,7 @@ subs = dict([(ii,jj) for ii,jj in zip(qd,qd2)])
 # plt.axis('equal')
 
 # energy_output = Output([KE-PE],system)
-# energy_output.calc(states)
+# energy_output.calc(states,t)
 
 # plt.figure()
 # plt.plot(energy_output.y)

@@ -15,6 +15,7 @@ Please see LICENSE for full license."""
 #        return str(self)
 
 import sympy
+sympy.init_printing(pretty_print=False)
 import sys
 
 ZERO = sympy.Number(0)

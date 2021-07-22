@@ -210,7 +210,7 @@ PE = system.getPEGravity(pNA) - system.getPESprings()
 points = [pNA,pAB,pBC,pCtip]
 #points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
 points_output = PointsOutput(points,system)
-y = points_output.calc(states)
+y = points_output.calc(states,t)
 #y.resize(y.shape[0],int(y.shape[1]/2),2)
 
 plt.figure()
@@ -221,7 +221,7 @@ plt.plot(*(y[::int(len(y)/20)].T))
 plt.axis('equal')
 
 energy_output = Output([KE-PE],system)
-energy_output.calc(states)
+energy_output.calc(states,t)
 
 plt.figure()
 plt.plot(energy_output.y)

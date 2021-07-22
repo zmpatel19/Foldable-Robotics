@@ -101,25 +101,25 @@ constants = system.constant_values.copy()
 states=pynamics.integration.integrate_odeint(func,ini,t,rtol = tol, atol = tol, args=({'constants':constants},))
 points = [pm1,pm2]
 po = PointsOutput(points, system, constant_values=system.constant_values)
-po.calc(states)
+po.calc(states,t)
 
 constants = system.constant_values.copy()
 constants[b_constraint]=1e3
 states=pynamics.integration.integrate_odeint(func,ini,t,rtol = tol, atol = tol, args=({'constants':constants},))
 points = [pm1,pm2]
 po2 = PointsOutput(points, system, constant_values=system.constant_values)
-po2.calc(states)
+po2.calc(states,t)
 
 
 constants[b_constraint]=0
 states=pynamics.integration.integrate_odeint(func,ini,t,rtol = tol, atol = tol, args=({'constants':constants},))
 points = [pm1,pm2]
 po3 = PointsOutput(points, system, constant_values=system.constant_values)
-po3.calc(states)
+po3.calc(states,t)
 
 po.plot_time()
-po.animate(fps = fps, movie_name='bouncy-mod.mp4',lw=2,marker='o')
+#po.animate(fps = fps, movie_name='bouncy-mod.mp4',lw=2,marker='o')
 po2.plot_time()
-po2.animate(fps = fps, movie_name='bouncy-mod.mp4',lw=2,marker='o')
+#po2.animate(fps = fps, movie_name='bouncy-mod.mp4',lw=2,marker='o')
 po3.plot_time()
-po3.animate(fps = fps, movie_name='bouncy-mod.mp4',lw=2,marker='o')
+#po3.animate(fps = fps, movie_name='bouncy-mod.mp4',lw=2,marker='o')

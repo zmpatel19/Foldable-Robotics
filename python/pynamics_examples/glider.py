@@ -75,7 +75,6 @@ C.rotate_fixed_axis_directed(B,[0,0,1],qC)
 E.rotate_fixed_axis_directed(C,[0,0,1],-qE)
 
 pCcm=x*N.x+y*N.y+z*N.z
-#pCcm=x*N.x+y*N.y
 pCcp=pCcm-lw*C.x
 
 mC = pi*r**2*.1
@@ -83,54 +82,30 @@ mC = pi*r**2*.1
 pC1 = pCcm
 pC2 = pCcm-l*C.x
 pE = pC2-le*E.x
-#wNC = N.getw_(C)
 
 vcm = pCcm.time_derivative()
-
-vcp=pCcp.time_derivative()
-vcp2 = vcp.dot(vcp)
-
-ve=pE.time_derivative()
-ve2 = ve.dot(ve)
 
 IC = Dyadic.build(C,I_11,I_11,I_11)
 
 Body('BodyC',C,pCcm,mC,IC)
 
-
-vcx = vcp.dot(C.x)
-vcy = vcp.dot(-C.y)
-angle_of_attack_C = sympy.atan2(vcy,vcx)
-
-
-vex = ve.dot(E.x)
-vey = ve.dot(-E.y)
-angle_of_attack_E = sympy.atan2(vey,vex)
-
-#cl = 2*sin(angle_of_attack)*cos(angle_of_attack)
-#cd = 2*sin(angle_of_attack)**2
-
-#fl = .5*rho*vcp2*cl*A
-#fd = .5*rho*vcp2*cd*A
-
 Area = 2*pi*r**2
 
-f_aero_C = rho*vcp2*sympy.sin(angle_of_attack_C)*Area *C.y
-f_aero_E = rho*ve2*sympy.sin(angle_of_attack_E)*Area*E.y
+vcp=pCcp.time_derivative()
+f_aero_C = rho * vcp.length()*(vcp.dot(C.y))*Area*C.y
+
+ve=pE.time_derivative()
+f_aero_E = rho * ve.length()*(ve.dot(E.y))*Area*E.y
+
 
 system.addforcegravity(-g*N.y)
-system.addforce(f_aero_C,vcp)
-system.addforce(f_aero_E,ve)
+system.addforce(-f_aero_C,vcp)
+system.addforce(-f_aero_E,ve)
 
 points = [pC1,pC2]
 
-#ang = [wNC.dot(C.x),wNC.dot(C.y),wNC.dot(C.z)]
-
 f,ma = system.getdynamics()
 func1 = system.state_space_post_invert(f,ma)
-
-# import scipy.optimize
-# import scipy.linalg
 
 def run(args):
     my_r = args[0]
@@ -154,9 +129,6 @@ def measure_perf(args):
     except scipy.linalg.LinAlgError:
         return 1000
 
-
-# sol = scipy.optimize.minimize(measure_perf,[0.5],tol=1e-3)
-    
 yy = []    
 xx = numpy.r_[0.1:1:5j]
 for ii in xx:
@@ -165,17 +137,8 @@ for ii in xx:
 yy = numpy.array(yy)
 plt.plot(xx,yy)
 
-# states = run([.1])
-# # output = Output(ang,system)
-# # output.calc(states)
-# # output.plot_time()
-
-# po = PointsOutput(points,system)
-# y=po.calc(states)
-# #po.plot_time()
-# #y = y.reshape((-1,2,2))
-# plt.figure()
-# for item in y:
-#     plt.plot(*(item.T),lw=2,marker='o')
-# #
+states = run([.1])
+po = PointsOutput(points,system)
+po.calc(states,t)
+po.plot_time()
 # po.animate(fps = 30, movie_name='glider.mp4',lw=2,marker='o')

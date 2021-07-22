@@ -141,7 +141,7 @@ KE = system.get_KE()
 PE = system.getPEGravity(pOrigin) - system.getPESprings()
 
 output = Output([x1,x2,l, KE-PE],system)
-y = output.calc(states)
+y = output.calc(states,t)
 
 plt.figure(0)
 plt.plot(t,y[:,0])
@@ -157,5 +157,5 @@ plt.plot(t,y[:,3])
 #plt.axis('equal')
 points = [BodyA.pCM,Particle2.pCM]
 points = PointsOutput(points)
-points.calc(states)
-points.animate(fps = 30, movie_name='bouncy2.mp4',lw=2)
+points.calc(states,t)
+#points.animate(fps = 30, movie_name='bouncy2.mp4',lw=2)

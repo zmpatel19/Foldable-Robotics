@@ -341,12 +341,6 @@ system.addforcegravity(-g*N.y)
 # In[21]:
 
 
-eq = []
-# eq.append(pCtip.dot(N.y))
-eq_d=[(system.derivative(item)) for item in eq]
-eq_dd=[(system.derivative(item)) for item in eq_d]
-
-
 # ## F=ma
 # This is where the symbolic expressions for F and ma are calculated.  This must be done after all parts of the system have been defined.  The ```getdynamics``` function uses Kane's method to derive the equations of motion.
 
@@ -377,7 +371,7 @@ ma
 # In[25]:
 
 
-func1,lambda1 = system.state_space_post_invert(f,ma,eq_dd,return_lambda = True,variable_functions={force_var:f_force})
+func1,lambda1 = system.state_space_post_invert(f,ma,return_lambda = True,variable_functions={force_var:f_force})
 
 
 # ## Integrate
@@ -412,7 +406,7 @@ plt.legend(artists,['x','y','qA','qB','qC'])
 # KE = system.get_KE()
 # PE = system.getPEGravity(pNA) - system.getPESprings()
 # energy_output = Output([KE-PE],system)
-# energy_output.calc(states)
+# energy_output.calc(states,t)
 # energy_output.plot_time()
 
 
@@ -423,7 +417,7 @@ plt.legend(artists,['x','y','qA','qB','qC'])
 
 points = [pm1,pNA,pAB,pBC,pC1,pC2]
 points_output = PointsOutput(points,system)
-y = points_output.calc(states)
+y = points_output.calc(states,t)
 points_output.plot_time(5)
 
 
@@ -433,7 +427,7 @@ points_output.plot_time(5)
 # In[30]:
 
 
-points_output.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
+#points_output.animate(fps = fps,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
 #a()
 
 

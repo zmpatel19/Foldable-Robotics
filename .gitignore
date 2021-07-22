@@ -12,3 +12,4 @@ python/pynamics/examples/render*
 /docs/build/*
 *.mp4
 **/outcmaes/**
+**/.ipynb_checkpoints**

@@ -16,8 +16,8 @@ class PointsOutput3D(PointsOutput):
         y_exp = [item for item2 in y_exp for item in [item2.dot(dotitem) for dotitem in dot]]
         Output.__init__(self,y_exp, system, constant_values,state_variables)
 
-    def calc(self,x):
-        Output.calc(self,x)
+    def calc(self,x,t):
+        Output.calc(self,x,t)
         self.y.resize(self.y.shape[0],int(self.y.shape[1]/3),3)
         return self.y
 

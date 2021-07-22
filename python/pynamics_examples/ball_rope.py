@@ -83,7 +83,7 @@ KE = system.get_KE()
 PE = system.getPEGravity(pNA) - system.getPESprings()
 
 output = Output([x1,y1,KE-PE,x,y]+eq1+b,system)
-y = output.calc(states)
+y = output.calc(states,t)
 
 plt.figure(1)
 plt.plot(y[:,0],y[:,1])

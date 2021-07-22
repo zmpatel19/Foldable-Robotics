@@ -35,11 +35,6 @@ g = Constant(9.81,'g',system)
 b = Constant(1e2,'b',system)
 k = Constant(1e2,'k',system)
 
-tinitial = 0
-tfinal = 5
-tstep = 1/30
-t = numpy.r_[tinitial:tfinal:tstep]
-
 preload1 = Constant(0*pi/180,'preload1',system)
 preload2 = Constant(0*pi/180,'preload2',system)
 preload3 = Constant(0*pi/180,'preload3',system)
@@ -128,95 +123,28 @@ system.add_spring_force1(k,(qA-preload1)*N.z,wNA)
 system.add_spring_force1(k,(qB-qA-preload2)*N.z,wAB)
 system.add_spring_force1(k,(qC-qB-preload3)*N.z,wBC)
 
-system.addforcegravity(-g*N.y)
-
-# vCtip = pCtip.time_derivative(N,system)
-eq = []
-# eq.append(pCtip.dot(N.y))
-eq_d=[(system.derivative(item)) for item in eq]
-eq_dd=[(system.derivative(item)) for item in eq_d]
-
+# system.addforcegravity(-g*N.y)
 
 f,ma = system.getdynamics()
-#func1 = system.state_space_post_invert(f,ma)
-func1 = system.state_space_post_invert(f,ma,eq_dd)
+func1 = system.state_space_post_invert(f,ma)
+
+tol = 1e-5
+tinitial = 0
+tfinal = 5
+tstep = 1/30
+t = numpy.r_[tinitial:tfinal:tstep]
 
 def myfunc(x):
     b1,k1 = x
     constants = system.constant_values
     constants[b] = b1
     constants[k] = k1
-    states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':constants},))
+    states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol, args=({'constants':constants},))
     return states, constants
 
 points = [pNA,pAB,pBC,pCtip]
 
 states0,constants0 = myfunc([1e1,1e2])
 points_output = PointsOutput(points,system,constant_values = constants0)
-y = points_output.calc(states0)
+y = points_output.calc(states0,t)
 points_output.plot_time()
-
-def my_error(x):
-    b1,k1 = x
-    constants = system.constant_values
-    constants[b] = b1
-    constants[k] = k1
-    states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=1e-12,atol=1e-12,hmin=1e-14, args=({'constants':constants},))
-    error = ((states-states0)**2).sum()
-    return error
-
-
-# states,constants = myfunc([1e2,1e1])
-# points_output = PointsOutput(points,system,constant_values = constants)
-# y = points_output.calc(states)
-# points_output.plot_time()
-
-import cma
-
-
-es = cma.CMAEvolutionStrategy(2 * [1], 0.5)
-es.logger.disp_header()  # annotate the print of disp
-# Iterat Nfevals  function value    axis ratio maxstd  minstd
-while not es.stop():
-      X = es.ask()
-      es.tell(X, [my_error(x) for x in X])
-      es.logger.add()  # log current iteration
-      es.logger.disp([-1])  # display info for last iteration   #doctest: +ELLIPSIS
-es.logger.disp_header()
-# Iterat Nfevals  function value    axis ratio maxesstd  minstd
-es.logger.plot() # will make a plot
-
-states,constants = myfunc(es.result.xbest)
-points_output = PointsOutput(points,system,constant_values = constants)
-y = points_output.calc(states)
-points_output.plot_time()
-
-# energy_output = Output([KE-PE],system)
-# energy_output.calc(states)
-
-# plt.figure()
-# plt.plot(energy_output.y)
-
-# points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
-#a()
-
-# f2 = [item**2 for item in f]
-# f3 = sum(f2)
-# f3
-# str(f3)
-# f3.atoms
-# f3.atoms()
-# f4 = f3.subs(system.constant_values)
-# str(f4)
-# f4.atoms()
-# import sympy
-# f5 = sympy.lambdify((qA,qB,qC),f4)
-
-# def f6(args):
-#     return f5(*args)
-
-# import scipy.optimize
-# sol = scipy.optimize.fmin(f6,[0,0,0])
-
-# # array([1.33214718, 3.34042042, 3.77580633])
-# # -4.21709528e-01, -5.98947760e-01, -6.42287076e-01

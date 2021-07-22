@@ -97,7 +97,7 @@ KE = system.get_KE()
 PE = system.getPEGravity(pNA) - system.getPESprings() - 1/2* k*(stretch)**2
     
 output = Output([x1,y1,q,KE-PE],system)
-y = output.calc(states)
+y = output.calc(states,t)
 
 plt.figure(1)
 plt.plot(y[:,0],y[:,1])
@@ -113,5 +113,5 @@ plt.plot(y[:,3])
 points = [pNA,pAB]
 #points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
 points_output = PointsOutput(points,system)
-y = points_output.calc(states)
-points_output.animate(fps = 100,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')
+y = points_output.calc(states,t)
+#points_output.animate(fps = 100,movie_name = 'render.mp4',lw=2,marker='o',color=(1,0,0,1),linestyle='-')

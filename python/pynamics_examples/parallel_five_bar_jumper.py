@@ -17,11 +17,13 @@ import pynamics.integration
 import sympy
 import numpy
 import matplotlib.pyplot as plt
+from pynamics.constraint import KinematicConstraint,AccelerationConstraint
+
 plt.ion()
 from math import pi
 system = System()
 pynamics.set_system(__name__,system)
-tol=1e-9
+tol=1e-5
 
 lO = Constant(name='lO',system=system)
 lA = Constant(name='lA',system=system)
@@ -105,8 +107,9 @@ initialvalues={
         qD: -pi+2.64,
         qD_d: 0}
 
+
 statevariables = system.get_state_variables()
-ini = [initialvalues[item] for item in statevariables]
+ini0 = [initialvalues[item] for item in statevariables]
 
 N = Frame('N')
 O = Frame('O')
@@ -134,36 +137,29 @@ pCD = pOC + lC*C.x
 pDtip = pCD + lD*D.x
 vDtip = pDtip.time_derivative(N,system)
 
-def gen_init():
-    eqs = []
-    eqs.append(pBtip-pDtip)
-#    eqs.append(pBtip-pOrigin)
-    a=[(item).express(N) for item in eqs]
-    b=[item.subs(constants) for item in a]
-    c = numpy.array([vec.dot(item) for vec in b for item in list(N.principal_axes)])
-    d = (c**2).sum()
-    e = system.get_state_variables()
-    #e = sorted(list(d.atoms(Differentiable)),key=lambda x:str(x))
-    f = sympy.lambdify(e,d)
-    g = lambda args:f(*args)
-    return g
-fun = gen_init()
+points = [pDtip,pCD,pOC,pOA,pAB,pBtip]
 
-import scipy.optimize
-result = scipy.optimize.minimize(fun,ini)
+eqs = []
+eqs.append((pBtip-pDtip).dot(N.x))
+eqs.append((pBtip-pDtip).dot(N.y))
 
-if result.fun<1e-7:
-    points = [pDtip,pCD,pOC,pOA,pAB,pBtip]
-    points = PointsOutput(points, constant_values=constants)
-    state = numpy.array([ini,result.x])
-    ini1 = list(result.x)
-    y = points.calc(state)
-    y = y.reshape((-1,6,2))
-    plt.figure()
-    for item in y:
-        plt.plot(*(item.T))
-#    for item,value in zip(system.get_state_variables(),result.x):
-#        initialvalues[item]=value
+
+constraint_system=KinematicConstraint(eqs)
+
+variables = [qO, qA, qB, qC, qD]
+guess = [initialvalues[item] for item in variables]
+result = constraint_system.solve_numeric(variables,guess,constants)
+
+ini = []
+for item in system.get_state_variables():
+    if item in variables:
+        ini.append(result[item])
+    else:
+        ini.append(initialvalues[item])
+
+points = PointsOutput(points, constant_values=constants)
+points.calc(numpy.array([ini0,ini]),[0,1])
+points.plot_time()
     
 pAcm=pOA+lA/2*A.x
 pBcm=pAB+lB/2*B.x
@@ -218,32 +214,41 @@ system.addforce(-torque*O.z,wOC)
 
 #
 eq = []
-eq.append((pBtip-pDtip).dot(N.x))
-eq.append((pBtip-pDtip).dot(N.y))
-eq.append((O.y.dot(N.y)))
-eq_d= [system.derivative(item) for item in eq]
-eq_dd= [system.derivative(item) for item in eq_d]
+eq.append(pBtip-pDtip)
+eq.append(O.y)
+eq_d= [item.time_derivative() for item in eq]
+eq_dd= [item.time_derivative() for item in eq_d]
+
+eq_dd_scalar = []
+eq_dd_scalar.append(eq_dd[0].dot(N.x))
+eq_dd_scalar.append(eq_dd[0].dot(N.y))
+eq_dd_scalar.append(eq_dd[1].dot(N.y))
+
+c = AccelerationConstraint(eq_dd_scalar)
+# c.linearize(0)
+system.add_constraint(c)
+
 #
 f,ma = system.getdynamics()
-func1 = system.state_space_post_invert(f,ma,eq_dd,constants = constants,variable_functions = {my_signal:ft2})
-states=pynamics.integration.integrate(func1,ini1,t,rtol=tol,atol=tol)
+func1 = system.state_space_post_invert(f,ma,constants = constants,variable_functions = {my_signal:ft2})
+states=pynamics.integration.integrate(func1,ini,t,rtol=tol,atol=tol)
 
 KE = system.get_KE()
 PE = system.getPEGravity(0*N.x) - system.getPESprings()
 energy = Output([KE-PE], constant_values=constants)
-energy.calc(states)
+energy.calc(states,t)
 energy.plot_time()
 
 #torque_plot = Output([torque])
-#torque_plot.calc(states)
+#torque_plot.calc(states,t)
 #torque_plot.plot_time()
 
 points = [pDtip,pCD,pOC,pOA,pAB,pBtip]
 points = PointsOutput(points, constant_values=constants)
-y = points.calc(states)
+y = points.calc(states,t)
 y = y.reshape((-1,6,2))
 plt.figure()
 for item in y[::30]:
     plt.plot(*(item.T))
 
-points.animate(fps = 30, movie_name='parallel_five_bar_jumper.mp4',lw=2)
+#points.animate(fps = 30, movie_name='parallel_five_bar_jumper.mp4',lw=2)

@@ -81,26 +81,21 @@ system.add_spring_force1(k,(stretch)*N.x,v1)
 system.addforce(-b*v1,v1)
 system.addforcegravity(-g*N.y)
 
-eq = []
-
-eq_d= [system.derivative(item) for item in eq]
-eq_dd= [system.derivative(item) for item in eq_d]
-
 f,ma = system.getdynamics()
-func1 = system.state_space_post_invert(f,ma,eq_dd,constants = system.constant_values)
+func1 = system.state_space_post_invert(f,ma,constants = system.constant_values)
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,args=({'constants':{},'alpha':1e2,'beta':1e1},))
 
 # =============================================================================
 KE = system.get_KE()
 PE = system.getPEGravity(0*N.x) - system.getPESprings()
 energy = Output([KE-PE])
-energy.calc(states)
+energy.calc(states,t)
 energy.plot_time()
 # =============================================================================
 points_list = [p1,p2]
 #points_list = [item2 for item in points_list for item2 in [item.dot(N.x),item.dot(N.y)]]
 #points = Output(points_list)
-#y = points.calc(states)
+#y = points.calc(states,t)
 #y = y.reshape((-1,2,2))
 
 #plt.figure()
@@ -108,7 +103,7 @@ points_list = [p1,p2]
 #plt.axis('equal')
 
 states2= Output([x,q])
-states2.calc(states)
+states2.calc(states,t)
 
 plt.figure()
 plt.plot(states[:,0])
@@ -116,7 +111,7 @@ plt.figure()
 plt.plot(states[:,1])
 
 points2 = PointsOutput(points_list)
-points2.calc(states)
+points2.calc(states,t)
 #points2.plot_time()
-points2.animate(fps = 30, movie_name='cart_pendulum.mp4',lw=2)
+#points2.animate(fps = 30, movie_name='cart_pendulum.mp4',lw=2)
 

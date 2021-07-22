@@ -61,6 +61,8 @@ B.rotate_fixed_axis_directed(A,[0,1,0],qB,system)
 C.rotate_fixed_axis_directed(B,[0,0,1],qC,system)
 
 pCcm=0*N.x
+w1 = N.getw_(C)
+
 
 IC = Dyadic.build(C,Ixx,Iyy,Izz)
 
@@ -68,21 +70,23 @@ BodyC = Body('BodyC',C,pCcm,mC,IC)
 
 system.addforcegravity(-g*N.y)
 
+# system.addforce(1*C.x+2*C.y+3*C.z,w1)
+
 points = [1*C.x,0*C.x,1*C.y,0*C.y,1*C.z]
 
 f,ma = system.getdynamics()
 
-func1 = system.state_space_pre_invert(f,ma)
-# func1 = system.state_space_post_invert(f,ma)
+# func1 = system.state_space_pre_invert(f,ma)
+func1 = system.state_space_post_invert(f,ma)
 
 ini = [initialvalues[item] for item in system.get_state_variables()]
 
 states=pynamics.integration.integrate_odeint(func1,ini,t,args=({'constants':system.constant_values},))
 
 po = PointsOutput(points,system)
-po.calc(states)
-po.animate(fps = 30,lw=2)
+po.calc(states,t)
+#po.animate(fps = 30,lw=2)
 
 so = Output([qA,qB,qC])
-so.calc(states)
+so.calc(states,t)
 so.plot_time()
