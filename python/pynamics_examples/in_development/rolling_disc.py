@@ -6,7 +6,6 @@ Please see LICENSE for full license.
 """
 
 import pynamics
-pynamics.script_mode = False
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant,Variable
 from pynamics.system import System

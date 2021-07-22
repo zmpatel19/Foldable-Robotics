@@ -16,7 +16,6 @@ from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 import pynamics.integration
 from pynamics.constraint import AccelerationConstraint,KinematicConstraint
-pynamics.script_mode = True
 
 import sympy
 import numpy

@@ -5,7 +5,6 @@ Email: danaukes<at>gmail.com
 Please see LICENSE for full license.
 """
 import pynamics
-pynamics.script_mode = False
 import logging
 logger = logging.getLogger('pynamics_tests.init')
 import subprocess

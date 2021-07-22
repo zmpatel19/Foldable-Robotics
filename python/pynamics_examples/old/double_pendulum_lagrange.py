@@ -10,7 +10,6 @@ Please see LICENSE for full license.
 from math import pi
 import sympy
 import pynamics
-#pynamics.script_mode = True
 from pynamics import *
 import numpy
 import scipy

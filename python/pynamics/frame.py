@@ -47,8 +47,6 @@ class Frame(NameGenerator):
         self.add_rotation(r)
         self.add_w(w)
         
-        pynamics.addself(self,name)
-        
     def add_rotation(self,rotation):
         self.connections_R[rotation.other(self)] = rotation
         

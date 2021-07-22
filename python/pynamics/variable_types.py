@@ -15,7 +15,6 @@ class Variable(sympy.Symbol,NameGenerator):
         name = name or self.generate_name()
         
         obj = sympy.Symbol.__new__(self,name)
-        pynamics.addself(obj,name)
         return obj
 
 class Constant(sympy.Symbol,NameGenerator):
@@ -30,7 +29,6 @@ class Constant(sympy.Symbol,NameGenerator):
         system.add_constant(obj)
         if value is not None:
             system.add_constant_value(obj,value)
-        pynamics.addself(obj,name)
         return obj
 
 class Differentiable(sympy.Symbol,NameGenerator):
@@ -59,8 +57,6 @@ class Differentiable(sympy.Symbol,NameGenerator):
                 # else:
                     # variable = sympy.Symbol.__new__(cls,subname)
                 variable = sympy.Symbol.__new__(cls,subname)
-
-            pynamics.addself(variable,subname)
 
             output.append(variable)
             # if jj!=limit-1:

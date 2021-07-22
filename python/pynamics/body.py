@@ -47,7 +47,6 @@ class Body(NameGenerator):
 #        self.angularmomentum = self.inertia.dot(self.wNBody)
         
         self.system.bodies.append(self)
-        pynamics.addself(self,name)
         
         self.effectiveforces = []
 

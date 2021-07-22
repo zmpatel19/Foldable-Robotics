@@ -15,7 +15,6 @@ from pynamics.dyadic import Dyadic
 from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 import pynamics.integration
-pynamics.script_mode = True
 
 import sympy
 import numpy

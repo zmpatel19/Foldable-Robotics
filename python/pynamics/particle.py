@@ -27,7 +27,6 @@ class PseudoParticle(NameGenerator):
         self.forcegravity = None        
         
         self.system.particles.append(self)
-        pynamics.addself(self,self.name)
 
         self.effectiveforces = []
 

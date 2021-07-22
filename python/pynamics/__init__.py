@@ -20,7 +20,6 @@ import sys
 
 ZERO = sympy.Number(0)
 dimension = 3
-script_mode = False
 
 import logging
 logger = logging.getLogger('pynamics')
@@ -43,21 +42,6 @@ if not logger.handlers:
 
 systemname = '_system'
 integrator = 0
-
-def PynamicsObject(object):
-    
-    def __init__(self,name):
-        addself(self,name)
-
-def addself(self,name,modulename='__main__',override = False):
-    pass
-#    print(__file__)
-#    if script_mode or override:
-#        module = sys.modules[modulename]
-#        if hasattr(module,name):
-#            raise NameError('variable '+name+' exists')
-#        else:
-#            setattr(module, name, self)
 
 def set_system(modulename,system):
     import pynamics
