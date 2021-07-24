@@ -11,8 +11,7 @@ from sympy import cos, sin
 from pynamics.vector import Vector
 import pynamics
 
-def build_fixed_axis(axis,q,frame,sys = None):
-    sys = sys or pynamics.get_system()
+def build_fixed_axis(axis,q,frame,sys):
 
     axis = sympy.Matrix(axis)
     l_2 = axis.dot(axis)
@@ -30,8 +29,7 @@ def build_fixed_axis(axis,q,frame,sys = None):
 
     return R,axis
 
-def w_from_fixed_axis(axis,q,frame,sys=None):
-    sys = sys or pynamics.get_system()
+def w_from_fixed_axis(axis,q,frame,sys):
 
     axis = sympy.Matrix(axis)
     l_2 = axis.dot(axis)
@@ -110,7 +108,10 @@ class Rotation(object):
             raise(Exception('frame not in this rotation'))
             
     @classmethod
-    def build_fixed_axis(cls,f1,f2,axis,q,sys = None):
+    def build_fixed_axis(cls,f1,f2,axis,q,sys):
+        import pynamics.misc_tools
+        if not all([pynamics.misc_tools.is_literal(item) for item in axis]):
+            raise(Exception('not all axis variables are constant'))
         R,fixedaxis = build_fixed_axis(axis,q,f1,sys)
         # w = w_from_fixed_axis(axis,q,f1,sys)
         new = cls(f1,f2,R)
@@ -158,11 +159,11 @@ class RotationalVelocity(object):
             raise(Exception('frame not in this rotation'))
             
     @classmethod
-    def build_fixed_axis(cls,f1,f2,axis,q,sys = None):
-        # R,fixedaxis = build_fixed_axis(axis,q,f1,sys)
+    def build_fixed_axis(cls,f1,f2,axis,q,sys):
         import pynamics.misc_tools
         if not all([pynamics.misc_tools.is_literal(item) for item in axis]):
             raise(Exception('not all axis variables are constant'))
+        # R,fixedaxis = build_fixed_axis(axis,q,f1,sys)
         w = w_from_fixed_axis(axis,q,f1,sys)
         new = cls(f1,f2,w)
         return new
