@@ -75,8 +75,8 @@ A=Frame('A')
 B=Frame('B')
 
 system.set_newtonian(N)
-A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
-B.rotate_fixed_axis_directed(A,[0,0,1],qB,system)
+A.rotate_fixed_axis(N,[0,0,1],qA,system)
+B.rotate_fixed_axis(A,[0,0,1],qB,system)
 
 #A.setpathtonewtonian(['A','N'])
 #B.setpathtonewtonian(['B','A','N'])

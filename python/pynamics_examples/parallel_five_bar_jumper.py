@@ -119,11 +119,11 @@ C = Frame('C')
 D = Frame('D')
 
 system.set_newtonian(N)
-O.rotate_fixed_axis_directed(N,[0,0,1],qO,system)
-A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
-B.rotate_fixed_axis_directed(N,[0,0,1],qB,system)
-C.rotate_fixed_axis_directed(N,[0,0,1],qC,system)
-D.rotate_fixed_axis_directed(N,[0,0,1],qD,system)
+O.rotate_fixed_axis(N,[0,0,1],qO,system)
+A.rotate_fixed_axis(N,[0,0,1],qA,system)
+B.rotate_fixed_axis(N,[0,0,1],qB,system)
+C.rotate_fixed_axis(N,[0,0,1],qC,system)
+D.rotate_fixed_axis(N,[0,0,1],qD,system)
 
 pOrigin = 0*N.x+0*N.y
 pOcm=x*N.x+y*N.y

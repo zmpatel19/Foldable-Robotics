@@ -63,8 +63,8 @@ A = Frame('A')
 B = Frame('B')
 
 system.set_newtonian(N)
-A.rotate_fixed_axis_directed(N,[1,0,0],qA,system)
-B.rotate_fixed_axis_directed(A,[0,0,1],qB,system)
+A.rotate_fixed_axis(N,[1,0,0],qA,system)
+B.rotate_fixed_axis(A,[0,0,1],qB,system)
 
 pNA=0*N.x
 

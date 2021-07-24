@@ -200,9 +200,9 @@ system.set_newtonian(N)
 # In[13]:
 
 
-A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
-B.rotate_fixed_axis_directed(A,[0,0,1],qB,system)
-C.rotate_fixed_axis_directed(B,[0,0,1],qC,system)
+A.rotate_fixed_axis(N,[0,0,1],qA,system)
+B.rotate_fixed_axis(A,[0,0,1],qB,system)
+C.rotate_fixed_axis(B,[0,0,1],qC,system)
 
 # ### Vectors
 # Define the vectors that describe the kinematics of a series of connected lengths

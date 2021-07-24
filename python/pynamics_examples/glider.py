@@ -69,10 +69,10 @@ C = Frame('C')
 E = Frame('E')
 
 system.set_newtonian(N)
-A.rotate_fixed_axis_directed(N,[1,0,0],qA,system)
-B.rotate_fixed_axis_directed(A,[0,1,0],qB,system)
-C.rotate_fixed_axis_directed(B,[0,0,1],qC,system)
-E.rotate_fixed_axis_directed(C,[0,0,1],-qE,system)
+A.rotate_fixed_axis(N,[1,0,0],qA,system)
+B.rotate_fixed_axis(A,[0,1,0],qB,system)
+C.rotate_fixed_axis(B,[0,0,1],qC,system)
+E.rotate_fixed_axis(C,[0,0,1],-qE,system)
 
 pCcm=x*N.x+y*N.y+z*N.z
 pCcp=pCcm-lw*C.x

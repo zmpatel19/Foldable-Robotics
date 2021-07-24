@@ -12,9 +12,9 @@ import pynamics
 class Vector(object):
     def __init__(self,components=None):
         self.components = {}
-        if components!=None:
-            for frame,vec in components.items():
-                self.add_component(frame,vec)
+        components=components or {}
+        for frame,vec in components.items():
+            self.add_component(frame,vec)
         self.clean()
             
     def add_component(self,frame,vector):
@@ -22,7 +22,6 @@ class Vector(object):
             self.components[frame]+=vector
         except KeyError:
             self.components[frame]=sympy.Matrix(vector)
-#        self.clean()
 
     def __str__(self):
         return str(self.symbolic())
@@ -43,14 +42,11 @@ class Vector(object):
     def __add__(self,other):
         newvec = Vector()
         newvec.components = self.components.copy()
-        if other==0:
-            return newvec
-            newvec.clean()
-        else:
+        if other!=0:
             for frame,vector in other.components.items():
                 newvec.add_component(frame,vector)
             newvec.clean()
-            return newvec
+        return newvec
 
     def __radd__(self,other):
         return self.__add__(other)
@@ -90,6 +86,9 @@ class Vector(object):
         # result = self.product_by_basis_vectors(other,result,'cross',self.frame_cross)
         result.clean()
         return result
+    
+    def unit(self):
+        return (1/self.length())*self
     
     def length(self):
         return (self.dot(self))**.5
@@ -257,13 +256,6 @@ class Vector(object):
             result+=frame.syms.dot(vec)
         return result
 
-#    def diff_local(self,sys = None):
-#        newvec = Vector()
-#        for frame,expression in self.components.items():
-#            result = sys.derivative(expression)
-#            newvec.components[frame] = result
-#        return newvec
-        
     def diff_partial_local(self,var):
         newvec = Vector()
         for frame,vec in self.components.items():
@@ -272,14 +264,14 @@ class Vector(object):
         newvec.clean()
         return newvec
         
-    def diff_simple(self,frame,sys=None):
-        sys = sys or pynamics.get_system()
+    # def diff_simple(self,frame,sys=None):
+    #     sys = sys or pynamics.get_system()
 
-        v = self.express(frame).components[frame]
-        dv = sys.derivative(v)
-        newvec = Vector({frame:dv})
-        newvec.clean()
-        return newvec
+    #     v = self.express(frame).components[frame]
+    #     dv = sys.derivative(v)
+    #     newvec = Vector({frame:dv})
+    #     newvec.clean()
+    #     return newvec
 
     def split_by_frame(self):
         output_vectors = []
@@ -324,7 +316,7 @@ class Vector(object):
         return self
             
     def frames(self):
-        nonzero_frames = [frame for frame,vector in self.components.items() if vector.is_zero==False]
+        nonzero_frames = [frame for frame,vector in self.components.items() if not vector.is_zero]
         return nonzero_frames
     
     def subs(self,*args,**kwargs):

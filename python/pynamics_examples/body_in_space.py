@@ -55,9 +55,9 @@ B = Frame('B')
 C = Frame('C')
 
 system.set_newtonian(N)
-A.rotate_fixed_axis_directed(N,[1,0,0],qA,system)
-B.rotate_fixed_axis_directed(A,[0,1,0],qB,system)
-C.rotate_fixed_axis_directed(B,[0,0,1],qC,system)
+A.rotate_fixed_axis(N,[1,0,0],qA,system)
+B.rotate_fixed_axis(A,[0,1,0],qB,system)
+C.rotate_fixed_axis(B,[0,0,1],qC,system)
 
 pCcm=0*N.x
 w1 = N.getw_(C)

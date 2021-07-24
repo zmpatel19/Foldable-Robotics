@@ -133,33 +133,30 @@ class Frame(NameGenerator):
         fromframe.tree['R'].add_branch(self.tree['R'])        
         fromframe.tree['w'].add_branch(self.tree['w'])        
 
-    def rotate_fixed_axis_directed(self,fromframe,axis,q,system):
-        self.rotate_fixed_axis(fromframe,axis,q,system)
-        
-    def efficient_rep(self,other,functionname):
-        key = (other,functionname)
-        if key in self.reps:
-            return self.reps[key]
-        else:
-            path = self.tree['R'].path_to(other.tree['R'])
-            dot = {}
-            for mysym,myvec in zip(self.syms,[self.x,self.y,self.z]):
-                for othersym,othervec in zip(other.syms,[other.x,other.y,other.z]):
-                    min_dot_len = 0
-                    for frame in path:
-                        frame = frame.myclass
-                        v1 = myvec.express(frame).components[frame]
-                        v2 = othervec.express(frame).components[frame]
-                        function = getattr(v1,functionname)
-                        dot_rep = function(v2)
-                        dot_len = len(str(dot_rep))
-                        if min_dot_len==0 or dot_len<min_dot_len:
-                            min_dot_len=dot_len
-                            min_dot_frame = frame
-                        elif dot_len==min_dot_len:
-                            if min_dot_frame in frame.decendents:
-                                min_dot_frame = frame
-                    dot[frozenset((mysym,othersym))] = min_dot_frame
-            self.reps[key] = dot
-            return dot
+    # def efficient_rep(self,other,functionname):
+    #     key = (other,functionname)
+    #     if key in self.reps:
+    #         return self.reps[key]
+    #     else:
+    #         path = self.tree['R'].path_to(other.tree['R'])
+    #         dot = {}
+    #         for mysym,myvec in zip(self.syms,[self.x,self.y,self.z]):
+    #             for othersym,othervec in zip(other.syms,[other.x,other.y,other.z]):
+    #                 min_dot_len = 0
+    #                 for frame in path:
+    #                     frame = frame.myclass
+    #                     v1 = myvec.express(frame).components[frame]
+    #                     v2 = othervec.express(frame).components[frame]
+    #                     function = getattr(v1,functionname)
+    #                     dot_rep = function(v2)
+    #                     dot_len = len(str(dot_rep))
+    #                     if min_dot_len==0 or dot_len<min_dot_len:
+    #                         min_dot_len=dot_len
+    #                         min_dot_frame = frame
+    #                     elif dot_len==min_dot_len:
+    #                         if min_dot_frame in frame.decendents:
+    #                             min_dot_frame = frame
+    #                 dot[frozenset((mysym,othersym))] = min_dot_frame
+    #         self.reps[key] = dot
+    #         return dot
                 

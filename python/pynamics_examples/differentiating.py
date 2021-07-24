@@ -31,7 +31,7 @@ N = Frame('N')
 A = Frame('A')
 
 s.set_newtonian(N)
-A.rotate_fixed_axis_directed(N,[0,0,1],q1,s)
+A.rotate_fixed_axis(N,[0,0,1],q1,s)
 
 
 p1 = 3*A.x+2*N.y

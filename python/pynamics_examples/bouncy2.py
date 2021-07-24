@@ -76,7 +76,7 @@ N = Frame('N')
 A = Frame('A')
 
 system.set_newtonian(N)
-A.rotate_fixed_axis_directed(N,[0,0,1],q1,system)
+A.rotate_fixed_axis(N,[0,0,1],q1,system)
 
 pOrigin = 0*N.x
 pm1 = x1*N.x +y1*N.y
@@ -90,19 +90,19 @@ Particle2 = Particle(pm2,m2,'Particle2',system)
 vpm1 = pm1.time_derivative(N,system)
 vpm2 = pm2.time_derivative(N,system)
 
-l_ = pm1-pm2
-l = (l_.dot(l_))**.5
-l_d =system.derivative(l)
-stretch = l - l0
-ul_ = l_*(l**-1)
-vl = l_.time_derivative(N,system)
+l = pm1-pm2
+vl = l.time_derivative(N,system)
+l_d_scalar=vl.length()
+
+stretch = l.length() - l0
+ul_ = l.unit()
 
 system.add_spring_force1(k,stretch*ul_,vl)
 #system.addforce(-k*stretch*ul_,vpm1)
 #system.addforce(k*stretch*ul_,vpm2)
 
-system.addforce(-b*l_d*ul_,vpm1)
-system.addforce(b*l_d*ul_,vpm2)
+system.addforce(-b*l_d_scalar*ul_,vpm1)
+system.addforce(b*l_d_scalar*ul_,vpm2)
 
 #system.addforce(k*l*ul_,vpm2)
 #system.addforce(-b*vl,vl)
@@ -140,7 +140,7 @@ states = states[0]
 KE = system.get_KE()
 PE = system.getPEGravity(pOrigin) - system.getPESprings()
 
-output = Output([x1,x2,l, KE-PE],system)
+output = Output([x1,x2,l.length(), KE-PE],system)
 y = output.calc(states,t)
 
 plt.figure(0)
@@ -158,4 +158,4 @@ plt.plot(t,y[:,3])
 points = [BodyA.pCM,Particle2.pCM]
 points = PointsOutput(points)
 points.calc(states,t)
-#points.animate(fps = 30, movie_name='bouncy2.mp4',lw=2)
+# points.animate(fps = 30, movie_name='bouncy2.mp4',lw=2)

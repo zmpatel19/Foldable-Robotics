@@ -114,18 +114,18 @@ B23 = Frame('B23')
 #Relative frame rotations from newtonian out to distal frames
 system.set_newtonian(N)
 
-A1.rotate_fixed_axis_directed(N,[1,0,0],qA1,system)
-A12.rotate_fixed_axis_directed(A1,[0,0,1],t1,system)
-A2.rotate_fixed_axis_directed(A12,[1,0,0],qA2,system)
-A23.rotate_fixed_axis_directed(A2,[0,0,1],t2,system)
-A3.rotate_fixed_axis_directed(A23,[1,0,0],qA3,system)
-# A34.rotate_fixed_axis_directed(A3,[0,0,1],t3,system)
+A1.rotate_fixed_axis(N,[1,0,0],qA1,system)
+A12.rotate_fixed_axis(A1,[0,0,1],t1,system)
+A2.rotate_fixed_axis(A12,[1,0,0],qA2,system)
+A23.rotate_fixed_axis(A2,[0,0,1],t2,system)
+A3.rotate_fixed_axis(A23,[1,0,0],qA3,system)
+# A34.rotate_fixed_axis(A3,[0,0,1],t3,system)
 #
-NB1.rotate_fixed_axis_directed(N,[0,0,1],-t0,system)
-B1.rotate_fixed_axis_directed(NB1,[1,0,0],qB1,system)
-B12.rotate_fixed_axis_directed(B1,[0,0,1],-t4,system)
-B2.rotate_fixed_axis_directed(B12,[1,0,0],qB2,system)
-B23.rotate_fixed_axis_directed(B2,[0,0,1],-t3,system)
+NB1.rotate_fixed_axis(N,[0,0,1],-t0,system)
+B1.rotate_fixed_axis(NB1,[1,0,0],qB1,system)
+B12.rotate_fixed_axis(B1,[0,0,1],-t4,system)
+B2.rotate_fixed_axis(B12,[1,0,0],qB2,system)
+B23.rotate_fixed_axis(B2,[0,0,1],-t3,system)
 
 
 ################################################

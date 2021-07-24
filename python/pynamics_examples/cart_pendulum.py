@@ -63,7 +63,7 @@ N = Frame('N')
 A = Frame('A')
 
 system.set_newtonian(N)
-A.rotate_fixed_axis_directed(N,[0,0,1],q,system)
+A.rotate_fixed_axis(N,[0,0,1],q,system)
 
 p1 = x*N.x
 p2 = p1 - l*A.y

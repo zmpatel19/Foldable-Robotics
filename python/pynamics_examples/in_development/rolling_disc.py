@@ -73,9 +73,9 @@ C = Frame('C')
 D = Frame('D')
 
 system.set_newtonian(A)
-B.rotate_fixed_axis_directed(A,[0,0,1],H,system)
-C.rotate_fixed_axis_directed(B,[1,0,0],-L,system)
-D.rotate_fixed_axis_directed(C,[0,1,0],Q,system)
+B.rotate_fixed_axis(A,[0,0,1],H,system)
+C.rotate_fixed_axis(B,[1,0,0],-L,system)
+D.rotate_fixed_axis(C,[0,1,0],Q,system)
 
 pNA=0*A.x
 pAD = pNA+x*A.x+y*A.y

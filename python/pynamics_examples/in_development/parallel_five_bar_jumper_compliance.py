@@ -140,17 +140,17 @@ C2 = Frame('C2')
 D2 = Frame('D2')
 
 system.set_newtonian(N)
-O.rotate_fixed_axis_directed(N,[0,0,1],qO,system)
+O.rotate_fixed_axis(N,[0,0,1],qO,system)
 
-A1.rotate_fixed_axis_directed(N,[0,0,1],qA1,system)
-B1.rotate_fixed_axis_directed(N,[0,0,1],qB1,system)
-C1.rotate_fixed_axis_directed(N,[0,0,1],qC1,system)
-D1.rotate_fixed_axis_directed(N,[0,0,1],qD1,system)
+A1.rotate_fixed_axis(N,[0,0,1],qA1,system)
+B1.rotate_fixed_axis(N,[0,0,1],qB1,system)
+C1.rotate_fixed_axis(N,[0,0,1],qC1,system)
+D1.rotate_fixed_axis(N,[0,0,1],qD1,system)
 
-A2.rotate_fixed_axis_directed(N,[0,0,1],qA2,system)
-B2.rotate_fixed_axis_directed(N,[0,0,1],qB2,system)
-C2.rotate_fixed_axis_directed(N,[0,0,1],qC2,system)
-D2.rotate_fixed_axis_directed(N,[0,0,1],qD2,system)
+A2.rotate_fixed_axis(N,[0,0,1],qA2,system)
+B2.rotate_fixed_axis(N,[0,0,1],qB2,system)
+C2.rotate_fixed_axis(N,[0,0,1],qC2,system)
+D2.rotate_fixed_axis(N,[0,0,1],qD2,system)
 
 pOrigin = 0*N.x+0*N.y
 pOcm=x*N.x+y*N.y

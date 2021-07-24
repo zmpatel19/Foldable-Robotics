@@ -57,7 +57,7 @@ N = Frame('N')
 A = Frame('A')
 
 system.set_newtonian(N)
-A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)
+A.rotate_fixed_axis(N,[0,0,1],qA,system)
 
 pNA=0*N.x
 pAB=pNA+lA*A.x
@@ -74,13 +74,6 @@ system.addforce(-b*vAB,vAB)
 #system.addforce(-b*vAB2,vAB2)
 system.addforcegravity(-g*N.y)
 
-
-#v = pAB2-pNA2
-#u = (v.dot(v))**.5
-#
-#eq1 = [(v.dot(v)) - lA**2]
-#eq1_dd=system.derivative(system.derivative(eq1[0]))
-#eq = [eq1_dd]
 
 f,ma = system.getdynamics()
 func = system.state_space_post_invert(f,ma)

@@ -45,9 +45,9 @@ f4 = Frame()
 #f5 = Frame()
 
 system.set_newtonian(f1)
-f2.rotate_fixed_axis_directed(f1,[0,0,1],q1,system)
-f3.rotate_fixed_axis_directed(f2,[1,0,0],q2,system)
-f4.rotate_fixed_axis_directed(f3,[0,1,0],q3,system)
+f2.rotate_fixed_axis(f1,[0,0,1],q1,system)
+f3.rotate_fixed_axis(f2,[1,0,0],q2,system)
+f4.rotate_fixed_axis(f3,[0,1,0],q3,system)
 
 p1 = x*f1.x+y*f1.y+z*f1.z
 p2 = -l1*f4.x
