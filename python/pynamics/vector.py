@@ -182,7 +182,7 @@ class Vector(object):
                 elif frame == 'dest':
                     expressed_frame = frame2
                 elif frame == 'mid':
-                    path = frame1.R_tree.path_to(frame2.R_tree)
+                    path = frame1.tree['R'].path_to(frame2.tree['R'])
                     m = len(path)
                     if m%2==0:
                         ii = int(m/2)-1
@@ -204,7 +204,7 @@ class Vector(object):
         frames_other = other.components.keys()
         for frame1 in frames_self:
             for frame2 in frames_other:
-                path = frame1.R_tree.path_to(frame2.R_tree)
+                path = frame1.tree['R'].path_to(frame2.tree['R'])
                 frames = [item.myclass for item in path]
                 allframes.extend(frames)
         results = []

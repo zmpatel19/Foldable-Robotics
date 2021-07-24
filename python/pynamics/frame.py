@@ -18,13 +18,20 @@ import sympy
 class Frame(NameGenerator):
     def __init__(self,name = None):
         super(Frame,self).__init__()
-        self.connections_R = {}
-        self.precomputed_R = {}
-        self.connections_w = {}
-        self.precomputed_w = {}
+        
+        self.connections={}
+        self.connections['R'] = {}
+        self.connections['w'] = {}
+
+        self.precomputed={}
+        self.precomputed['R'] = {}
+        self.precomputed['w'] = {}
+
+        self.tree={}
+        self.tree['R'] = TreeNode(self)
+        self.tree['w'] = TreeNode(self)
+
         self.reps = {}
-        self.R_tree = TreeNode(self)
-        self.w_tree = TreeNode(self)
 
         name = name or self.generate_name()
         self.name = name
@@ -44,23 +51,17 @@ class Frame(NameGenerator):
         
         r = Rotation(self,self,sympy.Matrix.eye(3))
         w = RotationalVelocity(self,self,sympy.Number(0)*self.x)
-        self.add_rotation(r)
-        self.add_w(w)
+        self.add_generic(r,'R')
+        self.add_generic(w,'w')
         
-    def add_rotation(self,rotation):
-        self.connections_R[rotation.other(self)] = rotation
-        
-    def add_precomputed_rotation(self,rotation):
-        self.precomputed_R[rotation.other(self)] = rotation
 
 
-    def add_w(self,w):
-        self.connections_w[w.other(self)] = w
-
-    def add_precomputed_w(self,w):
-        self.precomputed_w[w.other(self)] = w
+    def add_generic(self,rotation,my_type):
+        self.connections[my_type][rotation.other(self)] = rotation
         
-    
+    def add_precomputed_generic(self,rotation,my_type):
+        self.precomputed[my_type][rotation.other(self)] = rotation
+
     @property
     def principal_axes(self):
         return [self.x,self.y,self.z]
@@ -71,83 +72,68 @@ class Frame(NameGenerator):
     def __repr__(self):
         return str(self)
 
-    def calc_R(self,other):
-        if other in self.connections_R:
-            return self.connections_R[other]
-        elif other in self.precomputed_R:
-            return self.precomputed_R[other]
+    def calc_generic(self,other,my_type):
+        if other in self.connections[my_type]:
+            return self.connections[my_type][other]
+        elif other in self.precomputed[my_type]:
+            return self.precomputed[my_type][other]
         else: 
-            path = self.R_tree.path_to(other.R_tree)
+            path = self.tree['R'].path_to(other.tree['R'])
             path = [item.myclass for item in path]
             from_frames = path[:-1]
             to_frames = path[1:]
-            Rs = [from_frame.connections_R[to_frame].to_other(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]
-            # w_s = [from_frame.connections[to_frame].w__from(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]
-            R_final = Rs.pop(0)      
-            # w_final = w_s.pop(0)    
-            for R,to_frame in zip(Rs,to_frames[1:]):
-                R_final = R*R_final
-                # w_final += w_
-                rotation = Rotation(self,to_frame,R_final)
-                # rotation.set_w(w_final)
-                self.add_precomputed_rotation(rotation)
-                to_frame.add_precomputed_rotation(rotation)
-#            rotation = Rotation(self,to_frame,R_final,w_final)
-            return rotation
-
-    def calc_w(self,other):
-        if other in self.connections_w:
-            return self.connections_w[other]
-        elif other in self.precomputed_w:
-            return self.precomputed_w[other]
-        else: 
-            path = self.w_tree.path_to(other.w_tree)
-            path = [item.myclass for item in path]
-            from_frames = path[:-1]
-            to_frames = path[1:]
-            # Rs = [from_frame.connections[to_frame].to_other(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]
-            w_s = [from_frame.connections_w[to_frame].w__from(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]
-            # R_final = Rs.pop(0)      
-            w_final = w_s.pop(0)    
-            for w_,to_frame in zip(w_s,to_frames[1:]):
-                # R_final = R*R_final
-                w_final += w_
-                rotational_velocity = RotationalVelocity(self,to_frame,w_final)
-                # rotation.set_w(w_final)
-                self.add_precomputed_w(rotational_velocity)
-                to_frame.add_precomputed_w(rotational_velocity)
-#            rotation = Rotation(self,to_frame,R_final,w_final)
-            return rotational_velocity
+            if my_type=='R':
+                items = [from_frame.connections[my_type][to_frame].to_other(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]
+            elif my_type=='w':
+                items = [from_frame.connections[my_type][to_frame].w__from(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]                
+            item_final= items.pop(0)      
+            for item,to_frame in zip(items,to_frames[1:]):
+                if my_type=='R':
+                    item_final = item*item_final
+                    result = Rotation(self,to_frame,item_final)
+                elif my_type=='w':
+                    item_final += item
+                    result = RotationalVelocity(self,to_frame,item_final)
+                self.add_precomputed_generic(result,my_type)
+                to_frame.add_precomputed_generic(result,my_type)
+            return result
 
     def getR(self,other):
-        return self.calc_R(other).to_other(self)
+        return self.calc_generic(other,'R').to_other(self)
 
     def getw_(self,other):
-        return self.calc_w(other).w__from(self)
+        return self.calc_generic(other,'w').w__from(self)
+
+    def set_generic(self,other,item,my_type):
+        if my_type=='R':
+            result = Rotation(self, other, item)
+        elif my_type=='w':
+            result = RotationalVelocity(self, other, item)
+        self.add_generic(result,my_type)
+        other.add_generic(result,my_type)
+        self.tree[my_type].add_branch(other.tree[my_type])        
 
     def set_w(self,other,w):
-        rotational_velocity = RotationalVelocity(self, other, w)
-        self.add_w(rotational_velocity)
-        other.add_w(rotational_velocity)
-        self.w_tree.add_branch(other.w_tree)        
+        self.set_generic(other,w,'w')
 
+    def set_R(self,other,R):
+        self.set_generic(other,R,'R')
 
-    def rotate_fixed_axis(self,fromframe,axis,q,system = None):
-        system = system or pynamics.get_system()
+    def rotate_fixed_axis(self,fromframe,axis,q,system):
         import pynamics.misc_tools
         if not all([pynamics.misc_tools.is_literal(item) for item in axis]):
             raise(Exception('not all axis variables are constant'))
 
         rotation = Rotation.build_fixed_axis(fromframe,self,axis,q,system)
         rotational_velocity = RotationalVelocity.build_fixed_axis(fromframe,self,axis,q,system)
-        self.add_rotation(rotation)
-        self.add_w(rotational_velocity)
-        fromframe.add_rotation(rotation)
-        fromframe.add_w(rotational_velocity)
-        fromframe.R_tree.add_branch(self.R_tree)        
-        fromframe.w_tree.add_branch(self.w_tree)        
+        self.add_generic(rotation,'R')
+        self.add_generic(rotational_velocity,'w')
+        fromframe.add_generic(rotation,'R')
+        fromframe.add_generic(rotational_velocity,'w')
+        fromframe.tree['R'].add_branch(self.tree['R'])        
+        fromframe.tree['w'].add_branch(self.tree['w'])        
 
-    def rotate_fixed_axis_directed(self,fromframe,axis,q,system=None):
+    def rotate_fixed_axis_directed(self,fromframe,axis,q,system):
         self.rotate_fixed_axis(fromframe,axis,q,system)
         
     def efficient_rep(self,other,functionname):
@@ -155,7 +141,7 @@ class Frame(NameGenerator):
         if key in self.reps:
             return self.reps[key]
         else:
-            path = self.R_tree.path_to(other.R_tree)
+            path = self.tree['R'].path_to(other.tree['R'])
             dot = {}
             for mysym,myvec in zip(self.syms,[self.x,self.y,self.z]):
                 for othersym,othervec in zip(other.syms,[other.x,other.y,other.z]):
