@@ -66,7 +66,7 @@ N = Frame('N')
 system.set_newtonian(N)
 A = Frame('A')
 
-A.rotate_fixed_axis_directed(N,[0,0,1],q1)
+A.rotate_fixed_axis_directed(N,[0,0,1],q1,system)
 
 pNA=0*N.x
 pm1 = x1*N.x + y1*N.y
