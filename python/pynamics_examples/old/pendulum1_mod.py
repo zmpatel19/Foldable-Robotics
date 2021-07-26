@@ -51,12 +51,12 @@ initialvalues[qA_d]=0*pi/180
 statevariables = system.q+system.q_d
 ini = [item.subs(initialvalues) for item in statevariables]
 
-Frame('N',system,system)
-Frame('A',system,system)
-Frame('B',system,system)
-Frame('C',system,system)
-Frame('D',system,system)
-Frame('E',system,system)
+Frame('N',system)
+Frame('A',system)
+Frame('B',system)
+Frame('C',system)
+Frame('D',system)
+Frame('E',system)
 
 N.setnewtonian()
 A.RotateBodyZ(N,qA)
