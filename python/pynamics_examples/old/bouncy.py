@@ -56,7 +56,7 @@ initialvalues[x2_d]=1
 statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
-N = Frame('N')
+N = Frame('N',system)
 system.set_newtonian(N)
 
 pNA=0*N.x

@@ -36,9 +36,9 @@ qB,qB_d,qB_dd = Differentiable('qB')
 qC,qC_d,qC_dd = Differentiable('qC')
 
 
-N = Frame('N')
-A = Frame('A')
-B = Frame('B')
+N = Frame('N',system)
+A = Frame('A',system)
+B = Frame('B',system)
 
 v = e1*N.x+e2*N.y+e3*N.z
 

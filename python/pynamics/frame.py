@@ -16,7 +16,7 @@ import sympy
 
 
 class Frame(NameGenerator):
-    def __init__(self,name = None):
+    def __init__(self,name,system):
         super(Frame,self).__init__()
         
         self.connections={}
@@ -39,7 +39,6 @@ class Frame(NameGenerator):
 
         self.reps = {}
 
-        name = name or self.generate_name()
         self.name = name
         
         self.x = Vector()
@@ -62,8 +61,9 @@ class Frame(NameGenerator):
         self.add_generic(w,'w')
         self.add_generic(w,'rq')
         self.add_generic(w,'wq')
-        
+        self.system = system
 
+        self.system.add_frame(self)
 
     def add_generic(self,rotation,my_type):
         self.connections[my_type][rotation.other(self)] = rotation

@@ -136,18 +136,18 @@ else:
     initialvalues[qC2_d]=0
     initialvalues[qC3_d]=0
 
-N = Frame('N')
-A1 = Frame('A1')
-A2 = Frame('A2')
-A3 = Frame('A3')
-B1 = Frame('B1')
-B2 = Frame('B2')
-B3 = Frame('B3')
-C1 = Frame('C1')
-C2 = Frame('C2')
-C3 = Frame('C3')
+N = Frame('N',system)
+A1 = Frame('A1',system)
+A2 = Frame('A2',system)
+A3 = Frame('A3',system)
+B1 = Frame('B1',system)
+B2 = Frame('B2',system)
+B3 = Frame('B3',system)
+C1 = Frame('C1',system)
+C2 = Frame('C2',system)
+C3 = Frame('C3',system)
 
-# S = Frame('S')
+# S = Frame('S',system)
 
 system.set_newtonian(N)
 
