@@ -32,7 +32,7 @@ class Constant(sympy.Symbol,NameGenerator):
         return obj
 
 class Differentiable(sympy.Symbol,NameGenerator):
-    def __new__(cls,name=None,system = None,limit = 3,ii=0,ini = None):
+    def __new__(cls,name=None,system = None,limit = 3,ii=0,ini = None,output_full=True):
 
         system = system or pynamics.get_system()
 
@@ -40,7 +40,6 @@ class Differentiable(sympy.Symbol,NameGenerator):
 
         
         output = []
-        differentiables = []
         
         
 
@@ -59,24 +58,33 @@ class Differentiable(sympy.Symbol,NameGenerator):
                 variable = sympy.Symbol.__new__(cls,subname)
 
             output.append(variable)
-            # if jj!=limit-1:
-            #     differentiables.append(variable)
-            #     system.add_q(variable,jj)
-            differentiables.append(variable)
             system.add_q(variable,jj)
 
-        # for item in differentiables:
-        #     system.set_derivative(item,None)
+        for item in output:
+            item.set_derivative(sympy.Number(0))
 
         for kk,(a,a_d) in enumerate(zip(output[:-1],output[1:])):
             system.set_derivative(a,a_d)
+            a.set_derivative(a_d)
 
             if ini is not None:
                 system.set_ini(a,ini[kk])
         
-        if len(output)==1:
-            return output[0]
+        if output_full:
+            if len(output)==1:
+                return output[0]
+            else:
+                return output
         else:
-            return output
+            return output[0]
         # return output
 
+    @property
+    def _d(self):
+        return self.get_derivative()
+        
+    def set_derivative(self,other):
+        self._time_derivative=other
+
+    def get_derivative(self):
+        return self._time_derivative
