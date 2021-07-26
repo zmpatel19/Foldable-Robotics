@@ -129,13 +129,17 @@ class Frame(NameGenerator):
             result = RotationQuaternion_d(self, other, item)
         self.add_generic(result,my_type)
         other.add_generic(result,my_type)
-        self.tree[my_type].add_branch(other.tree[my_type])        
+        
+    def set_parent_generic(self,parent,item,my_type):
+        self.set_generic(parent,item,my_type)
+        parent.tree[my_type].add_branch(self.tree[my_type])        
+
+    def set_child_generic(self,child,item,my_type):
+        self.set_generic(child,item,my_type)
+        self.tree[my_type].add_branch(child.tree[my_type])        
 
     def set_w(self,other,w):
-        self.set_generic(other,w,'w')
-
-    def set_R(self,other,R):
-        self.set_generic(other,R,'R')
+        self.set_child_generic(other,w,'w')
 
     def rotate_fixed_axis(self,fromframe,axis,q,system):
         import pynamics.misc_tools
@@ -146,6 +150,10 @@ class Frame(NameGenerator):
         rotational_velocity = RotationalVelocity.build_fixed_axis(fromframe,self,axis,q,system)
         rq = RotationQuaternion.build_fixed_axis(fromframe,self,axis,q,system)
         wq = RotationQuaternion_d(fromframe,self,q)
+        self.set_parent_generic(fromframe,rotation,'R')
+        self.set_parent_generic(fromframe,rotational_velocity,'w')
+        self.set_parent_generic(fromframe,rq,'rq')
+        self.set_parent_generic(fromframe,wq,'wq')
         self.add_generic(rotation,'R')
         self.add_generic(rotational_velocity,'w')
         self.add_generic(rq,'rq')
@@ -154,6 +162,7 @@ class Frame(NameGenerator):
         fromframe.add_generic(rotational_velocity,'w')
         fromframe.add_generic(rq,'rq')
         fromframe.add_generic(wq,'wq')
+        
         fromframe.tree['R'].add_branch(self.tree['R'])        
         fromframe.tree['w'].add_branch(self.tree['w'])        
         fromframe.tree['rq'].add_branch(self.tree['rq'])        
