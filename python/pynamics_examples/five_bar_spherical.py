@@ -96,19 +96,19 @@ ini = [initialvalues[item] for item in statevariables]
 
 ################################################
 #Create Frames
-N = Frame('N')
-A1 = Frame('A1')
-A12 = Frame('A12')
-A2 = Frame('A2')
-A23 = Frame('A23')
-A3 = Frame('A3')
-A34 = Frame('A34')
+N = Frame('N',system)
+A1 = Frame('A1',system)
+A12 = Frame('A12',system)
+A2 = Frame('A2',system)
+A23 = Frame('A23',system)
+A3 = Frame('A3',system)
+A34 = Frame('A34',system)
 
-NB1 = Frame('NB1')
-B1 = Frame('B1')
-B12 = Frame('B12')
-B2 = Frame('B2')
-B23 = Frame('B23')
+NB1 = Frame('NB1',system)
+B1 = Frame('B1',system)
+B12 = Frame('B12',system)
+B2 = Frame('B2',system)
+B23 = Frame('B23',system)
 
 ################################################
 #Relative frame rotations from newtonian out to distal frames

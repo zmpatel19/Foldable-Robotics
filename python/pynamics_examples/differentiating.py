@@ -27,8 +27,8 @@ q1,q1_d,q1_dd=pynamics.variable_types.Differentiable('q1',s)
 eq = x**2+2*x
 eq_d = s.derivative(eq)
 
-N = Frame('N')
-A = Frame('A')
+N = Frame('N',system)
+A = Frame('A',system)
 
 s.set_newtonian(N)
 A.rotate_fixed_axis(N,[0,0,1],q1,s)

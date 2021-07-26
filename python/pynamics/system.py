@@ -6,7 +6,7 @@ Please see LICENSE for full license.
 """
 
 import sympy
-sympy.init_printing(use_latex=False)
+sympy.init_printing(use_latex=False,pretty_print=False)
 import pynamics
 import numpy
 import scipy
@@ -41,6 +41,7 @@ class System(object):
         self.springs = []
         self.t = sympy.Symbol('t')
         self.ini = {}
+        self.frames = []
         self.error_tolerance = 1e-16
 
     def set_ini(self,name,val):
@@ -74,6 +75,9 @@ class System(object):
     
     def set_newtonian(self,frame):
         self.newtonian = frame
+        
+    def add_frame(self,frame):
+        self.frames.append(frame)
         
     def generatez(self,number):
         z=sympy.Symbol('z'+str(self._z))

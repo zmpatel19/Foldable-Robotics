@@ -179,10 +179,10 @@ ini = [initialvalues[item] for item in statevariables]
 # In[11]:
 
 
-N = Frame('N')
-A = Frame('A')
-B = Frame('B')
-C = Frame('C')
+N = Frame('N',system)
+A = Frame('A',system)
+B = Frame('B',system)
+C = Frame('C',system)
 
 
 # ### Newtonian Frame

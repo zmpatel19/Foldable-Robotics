@@ -77,10 +77,10 @@ initialvalues[i]=0
 statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
-N = Frame('N')
-#A = Frame('A')
-B = Frame('B')
-M = Frame('M')
+N = Frame('N',system)
+#A = Frame('A',system)
+B = Frame('B',system)
+M = Frame('M',system)
 
 system.set_newtonian(N)
 #A.rotate_fixed_axis(N,[0,0,1],qA,system)

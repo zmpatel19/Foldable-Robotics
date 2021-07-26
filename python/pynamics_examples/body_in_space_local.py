@@ -62,10 +62,10 @@ initialvalues[wx]=1
 initialvalues[wy]=1
 initialvalues[wz]=0
 
-N = Frame('N')
-A = Frame('A')
-B = Frame('B')
-C = Frame('C')
+N = Frame('N',system)
+A = Frame('A',system)
+B = Frame('B',system)
+C = Frame('C',system)
 
 system.set_newtonian(N)
 A.rotate_fixed_axis(N,[1,0,0],qA,system)
