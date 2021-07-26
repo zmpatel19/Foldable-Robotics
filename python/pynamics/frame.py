@@ -9,7 +9,7 @@ Please see LICENSE for full license.
 import pynamics
 from pynamics.tree_node import TreeNode
 from pynamics.vector import Vector
-from pynamics.rotation import Rotation, RotationalVelocity
+from pynamics.rotation import Rotation, RotationalVelocity,RotationQuaternion,RotationQuaternion_d
 from pynamics.name_generator import NameGenerator
 
 import sympy
@@ -81,7 +81,7 @@ class Frame(NameGenerator):
     def __repr__(self):
         return str(self)
 
-    def calc_generic(self,other,my_type):
+    def get_generic(self,other,my_type):
         if other in self.connections[my_type]:
             return self.connections[my_type][other]
         elif other in self.precomputed[my_type]:
@@ -96,7 +96,7 @@ class Frame(NameGenerator):
             elif my_type=='w':
                 items = [from_frame.connections[my_type][to_frame].w__from(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]                
             elif my_type=='rq' or my_type=='wq':
-                items = [from_frame.connections[my_type][to_frame].w__from(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]                
+                items = [from_frame.connections[my_type][to_frame].to_other(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]                
             item_final= items.pop(0)      
             for item,to_frame in zip(items,to_frames[1:]):
                 if my_type=='R':
@@ -106,25 +106,27 @@ class Frame(NameGenerator):
                     item_final += item
                     result = RotationalVelocity(self,to_frame,item_final)
                 elif my_type=='rq' or my_type=='wq':
-                    item_final += item
-                    result = RotationalVelocity(self,to_frame,item_final)
+                    item_final = item*item_final
+                    result = RotationQuaternion(self,to_frame,item_final)
                 self.add_precomputed_generic(result,my_type)
                 to_frame.add_precomputed_generic(result,my_type)
             return result
 
     def getR(self,other):
-        return self.calc_generic(other,'R').to_other(self)
+        return self.get_generic(other,'R').to_other(self)
 
     def getw_(self,other):
-        return self.calc_generic(other,'w').w__from(self)
+        return self.get_generic(other,'w').w__from(self)
 
     def set_generic(self,other,item,my_type):
         if my_type=='R':
             result = Rotation(self, other, item)
         elif my_type=='w':
             result = RotationalVelocity(self, other, item)
-        elif my_type=='rq' or my_type=='wq':
-            result = calculate_quaternion(self, other, item)
+        elif my_type=='rq':
+            result = RotationQuaternion(self, other, item)
+        elif my_type=='wq':
+            result = RotationQuaternion_d(self, other, item)
         self.add_generic(result,my_type)
         other.add_generic(result,my_type)
         self.tree[my_type].add_branch(other.tree[my_type])        
@@ -142,13 +144,16 @@ class Frame(NameGenerator):
 
         rotation = Rotation.build_fixed_axis(fromframe,self,axis,q,system)
         rotational_velocity = RotationalVelocity.build_fixed_axis(fromframe,self,axis,q,system)
+        rq = RotationQuaternion.build_fixed_axis(fromframe,self,axis,q,system)
+        wq = RotationQuaternion_d(fromframe,self,q)
         self.add_generic(rotation,'R')
         self.add_generic(rotational_velocity,'w')
-        self.add_generic(rotational_velocity,'rq')
-        self.add_generic(rotational_velocity,'wq')
+        self.add_generic(rq,'rq')
+        self.add_generic(wq,'wq')
         fromframe.add_generic(rotation,'R')
-        fromframe.add_generic(rotational_velocity,'rq')
-        fromframe.add_generic(rotational_velocity,'wq')
+        fromframe.add_generic(rotational_velocity,'w')
+        fromframe.add_generic(rq,'rq')
+        fromframe.add_generic(wq,'wq')
         fromframe.tree['R'].add_branch(self.tree['R'])        
         fromframe.tree['w'].add_branch(self.tree['w'])        
         fromframe.tree['rq'].add_branch(self.tree['rq'])        

@@ -171,7 +171,7 @@ class Vector(object):
 #            return  result2
                 
 
-    def product_simplest(self,other,result_seed,function,inner_function,frame = 'mid'):
+    def product_simplest(self,other,result_seed,function,inner_function,frame = 'mid',method='R'):
         result = result_seed.copy()
         for frame2,vec2 in other.components.items():
             vector2 = Vector({frame2:vec2})
@@ -181,13 +181,22 @@ class Vector(object):
                 elif frame == 'dest':
                     expressed_frame = frame2
                 elif frame == 'mid':
-                    path = frame1.tree['R'].path_to(frame2.tree['R'])
-                    m = len(path)
-                    if m%2==0:
-                        ii = int(m/2)-1
-                    else:
-                        ii = int(m/2)
-                    expressed_frame = path[ii].myclass
+                    if method=='R':
+                        path = frame1.tree['R'].path_to(frame2.tree['R'])
+                        m = len(path)
+                        if m%2==0:
+                            ii = int(m/2)-1
+                        else:
+                            ii = int(m/2)
+                        expressed_frame = path[ii].myclass
+                    elif method=='rq':
+                        path = frame1.tree['rq'].path_to(frame2.tree['rq'])
+                        m = len(path)
+                        if m%2==0:
+                            ii = int(m/2)-1
+                        else:
+                            ii = int(m/2)
+                        expressed_frame = path[ii].myclass
                 else:
                     expressed_frame = frame                    
 
@@ -230,7 +239,7 @@ class Vector(object):
         result.clean()
         return result
             
-    def express(self,other):
+    def express(self,other,method='R'):
         self = self.copy()
 #        results = []
         try:
@@ -240,8 +249,13 @@ class Vector(object):
             result = Vector()
 #            pass
         for frame,vec in self.components.items():
-            R = frame.getR(other)
-            result+=Vector({other:R*vec})
+            if method=='R':
+                R = frame.getR(other)
+                result+=Vector({other:R*vec})
+            elif method=='rq':
+                R = frame.get_generic(other,method)
+                result+=Vector({other:R*vec})
+            
 #            results.append()
 #        result = results.pop()
 #        while not not results:

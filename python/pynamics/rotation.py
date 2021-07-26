@@ -10,6 +10,7 @@ import sympy
 from sympy import cos, sin
 from pynamics.vector import Vector
 import pynamics
+from pynamics.quaternion import Quaternion
 
 def build_fixed_axis(axis,q,frame,sys):
 
@@ -122,4 +123,40 @@ class RotationalVelocity(RotationBase):
         new = cls(f1,f2,w)
         return new
 
+class RotationQuaternion(RotationBase):
+    def to_other(self,f):
+        if f==self.f1:
+            return self._r
+        elif f==self.f2:
+            return self._r.inv()
+        else:
+            raise(Exception('frame not in this rotation'))
+
+    @classmethod
+    def build(cls,e0,e1,e2,e3):
+        q = Quaternion(e0,e1,e2,e3)
+        new = cls(f1,f2,q)
+        return new
+
+    @classmethod
+    def build_fixed_axis(cls,f1,f2,axis,q,sys):
+        import pynamics.misc_tools
+        if not all([pynamics.misc_tools.is_literal(item) for item in axis]):
+            raise(Exception('not all axis variables are constant'))
+
+        axis = sympy.Matrix(axis)
+        l_2 = axis.dot(axis)
+        axis = axis/(l_2**.5)
+        axis *= sin(q)
         
+        e1 = axis[0]        
+        e2 = axis[1]        
+        e3 = axis[2]        
+        
+        e0 = cos(q)
+        q = Quaternion(e0,e1,e2,e3)
+        new = cls(f1,f2,q)
+        return new
+
+class RotationQuaternion_d(RotationBase):
+    pass
