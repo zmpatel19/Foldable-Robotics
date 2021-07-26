@@ -19,6 +19,8 @@ from pynamics.output import Output,PointsOutput
 from pynamics.particle import Particle
 from pynamics.constraint import AccelerationConstraint
 import pynamics.integration
+from pynamics.rotation import RotationQuaternion
+from pynamics.quaternion import Quaternion
 
 import numpy
 import matplotlib.pyplot as plt
@@ -37,23 +39,31 @@ k = Constant(1e1,'k',system)
 
 preload1 = Constant(0*pi/180,'preload1',system)
 
-qA,qA_d,qA_dd = Differentiable('qA',system)
-x,x_d,x_dd = Differentiable('x',system)
-y,y_d,y_dd = Differentiable('y',system)
+qA= Differentiable('qA',system,output_full = False)
+x = Differentiable('x',system,output_full = False)
+y= Differentiable('y',system,output_full = False)
+e0 = Differentiable('e0',system,output_full = False)
+e1 = Differentiable('e1',system,output_full = False)
+e2 = Differentiable('e2',system,output_full = False)
+e3= Differentiable('e3',system,output_full = False)
 
 initialvalues = {}
 initialvalues[qA]=0*pi/180
-initialvalues[qA_d]=0*pi/180
+initialvalues[qA._d]=0*pi/180
 initialvalues[x]=1
 initialvalues[y]=0
-initialvalues[x_d]=0
-initialvalues[y_d]=0
+initialvalues[x._d]=0
+initialvalues[y._d]=0
 
 N = Frame('N')
 A = Frame('A')
+# B = Frame('B')
 
 system.set_newtonian(N)
 A.rotate_fixed_axis(N,[0,0,1],qA,system)
+
+q = Quaternion(e0,e1,e2,e3)
+# B.set_r_from(N,q,system)
 
 pNA=0*N.x
 pAB=pNA+lA*A.x
@@ -93,13 +103,13 @@ f,ma = system.getdynamics()
 func = system.state_space_post_invert(f,ma,constants=system.constant_values)
 
 statevariables = system.get_state_variables()
-ini = [initialvalues[item] for item in statevariables]
+# ini = [initialvalues[item] for item in statevariables]
 
 
-states=pynamics.integration.integrate(func,ini,t,rtol=tol,atol=tol)
+# states=pynamics.integration.integrate(func,ini,t,rtol=tol,atol=tol)
 
-points = [pNA,pAB,pNA,pNA2,pAB2]
-points_output = PointsOutput(points,system)
-points_output.calc(states,t)
-points_output.plot_time()
-#points_output.animate(fps = 30,lw=2)
+# points = [pNA,pAB,pNA,pNA2,pAB2]
+# points_output = PointsOutput(points,system)
+# points_output.calc(states,t)
+# points_output.plot_time()
+# #points_output.animate(fps = 30,lw=2)

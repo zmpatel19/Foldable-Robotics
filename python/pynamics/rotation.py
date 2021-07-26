@@ -133,7 +133,7 @@ class RotationQuaternion(RotationBase):
             raise(Exception('frame not in this rotation'))
 
     @classmethod
-    def build(cls,e0,e1,e2,e3):
+    def build(cls,f1,f2,e0,e1,e2,e3):
         q = Quaternion(e0,e1,e2,e3)
         new = cls(f1,f2,q)
         return new
