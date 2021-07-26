@@ -150,14 +150,14 @@ initialvalues[qMC_d]=0
 statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
-N = Frame('N')
-O = Frame('O')
-MA = Frame('MA')
-A = Frame('A')
-B = Frame('B')
-MC = Frame('MC')
-C = Frame('C')
-D = Frame('D')
+N = Frame('N',system)
+O = Frame('O',system)
+MA = Frame('MA',system)
+A = Frame('A',system)
+B = Frame('B',system)
+MC = Frame('MC',system)
+C = Frame('C',system)
+D = Frame('D',system)
 
 
 system.set_newtonian(N)

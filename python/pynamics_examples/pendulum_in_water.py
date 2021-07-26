@@ -52,8 +52,8 @@ initialvalues = {}
 initialvalues[qA]=0*pi/180
 initialvalues[qA_d]=0*pi/180
 
-N = Frame('N')
-A = Frame('A')
+N = Frame('N',system)
+A = Frame('A',system)
 
 system.set_newtonian(N)
 A.rotate_fixed_axis_directed(N,[0,0,1],qA,system)

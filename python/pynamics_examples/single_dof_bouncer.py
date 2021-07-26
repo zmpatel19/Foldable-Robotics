@@ -47,7 +47,7 @@ initialvalues[y_d]=0
 statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
-N = Frame('N')
+N = Frame('N',system)
 
 system.set_newtonian(N)
 

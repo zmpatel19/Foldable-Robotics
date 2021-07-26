@@ -111,12 +111,12 @@ initialvalues={
 statevariables = system.get_state_variables()
 ini0 = [initialvalues[item] for item in statevariables]
 
-N = Frame('N')
-O = Frame('O')
-A = Frame('A')
-B = Frame('B')
-C = Frame('C')
-D = Frame('D')
+N = Frame('N',system)
+O = Frame('O',system)
+A = Frame('A',system)
+B = Frame('B',system)
+C = Frame('C',system)
+D = Frame('D',system)
 
 system.set_newtonian(N)
 O.rotate_fixed_axis_directed(N,[0,0,1],qO,system)

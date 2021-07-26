@@ -108,10 +108,10 @@ initialvalues[qC_d]=qC_d_exp[0]
 statevariables = system.get_state_variables()
 ini = [initialvalues[item] for item in statevariables]
 
-N = Frame('N')
-A = Frame('A')
-B = Frame('B')
-C = Frame('C')
+N = Frame('N',system)
+A = Frame('A',system)
+B = Frame('B',system)
+C = Frame('C',system)
 
 system.set_newtonian(N)
 if not global_q:

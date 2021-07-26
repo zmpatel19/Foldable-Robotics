@@ -19,12 +19,12 @@ if __name__=='__main__':
     from math import pi
     sys = System()
 
-    N = Frame('N')
-    A = Frame('A')
-    B = Frame('B')
-    C = Frame('C')
-    D = Frame('D')
-    E = Frame('E')
+    N = Frame('N',system)
+    A = Frame('A',system)
+    B = Frame('B',system)
+    C = Frame('C',system)
+    D = Frame('D',system)
+    E = Frame('E',system)
 
     a = Constant('a',4,sys)
 #    a = sympy.Symbol('a')    
