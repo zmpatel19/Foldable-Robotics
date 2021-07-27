@@ -53,7 +53,7 @@ p1 = x*f1.x+y*f1.y+z*f1.z
 p2 = -l1*f4.x
 #v1=p1.time_derivative(f1)
 
-wNA = f1.getw_(f2)
+wNA = f1.get_w_to(f2)
 
 
 particle1 = Particle(p1,mp1)

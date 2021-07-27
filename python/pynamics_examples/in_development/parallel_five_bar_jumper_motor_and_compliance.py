@@ -242,23 +242,23 @@ pDcm=pCD+lD/2*D.x
 pA2cm=pA1A2+lA/4*A2.x
 pC2cm=pC1C2+lC/4*C2.x
 
-wOMA = O.getw_(MA)
-wOMC = O.getw_(MC)
+wOMA = O.get_w_to(MA)
+wOMC = O.get_w_to(MC)
 
-wOA1 = O.getw_(A1)
-wA1A2 = A1.getw_(A2)
-wA2B = A2.getw_(B)
-#wB1B2 = B1.getw_(B2)
-wOC1 = O.getw_(C1)
-wC1C2 = C1.getw_(C2)
-wC2D = C2.getw_(D)
-#wD1D2 = D1.getw_(D2)
-wBD = B.getw_(D)
+wOA1 = O.get_w_to(A1)
+wA1A2 = A1.get_w_to(A2)
+wA2B = A2.get_w_to(B)
+#wB1B2 = B1.get_w_to(B2)
+wOC1 = O.get_w_to(C1)
+wC1C2 = C1.get_w_to(C2)
+wC2D = C2.get_w_to(D)
+#wD1D2 = D1.get_w_to(D2)
+wBD = B.get_w_to(D)
 
 
-wNMA = N.getw_(MA)
+wNMA = N.get_w_to(MA)
 aNMA = wNMA.time_derivative()
-wNMC = N.getw_(MC)
+wNMC = N.get_w_to(MC)
 aNMC = wNMC.time_derivative()
 
 I_motorA = Dyadic.build(MA,Im,Im,Im)
@@ -353,7 +353,7 @@ eq.append((O.y.dot(N.y)))
 eq_d= [system.derivative(item) for item in eq]
 eq_d.append(wOMA.dot(N.z) - G*wOA1.dot(N.z))
 eq_d.append(wOMC.dot(N.z) - G*wOC1.dot(N.z))
-#eq_d = [N.getw_(A).dot(N.z) - G*N.getw_(B).dot(N.z)]
+#eq_d = [N.get_w_to(A).dot(N.z) - G*N.get_w_to(B).dot(N.z)]
 
 eq_dd= [system.derivative(item) for item in eq_d]
 #

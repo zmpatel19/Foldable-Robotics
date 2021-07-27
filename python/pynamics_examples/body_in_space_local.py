@@ -76,7 +76,7 @@ pCcm=0*N.x
 
 IC = Dyadic.build(C,Ixx,Iyy,Izz)
 
-w1 = N.getw_(C)
+w1 = N.get_w_to(C)
 w2 = wx*C.x+wy*C.y+wz*C.z
 N.set_w(C,w2)
 

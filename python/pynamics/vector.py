@@ -171,7 +171,7 @@ class Vector(object):
 #            return  result2
                 
 
-    def product_simplest(self,other,result_seed,function,inner_function,frame = 'mid',method='R'):
+    def product_simplest(self,other,result_seed,function,inner_function,frame = 'mid'):
         result = result_seed.copy()
         for frame2,vec2 in other.components.items():
             vector2 = Vector({frame2:vec2})
@@ -181,22 +181,13 @@ class Vector(object):
                 elif frame == 'dest':
                     expressed_frame = frame2
                 elif frame == 'mid':
-                    if method=='R':
-                        path = frame1.tree['R'].path_to(frame2.tree['R'])
-                        m = len(path)
-                        if m%2==0:
-                            ii = int(m/2)-1
-                        else:
-                            ii = int(m/2)
-                        expressed_frame = path[ii].myclass
-                    elif method=='rq':
-                        path = frame1.tree['rq'].path_to(frame2.tree['rq'])
-                        m = len(path)
-                        if m%2==0:
-                            ii = int(m/2)-1
-                        else:
-                            ii = int(m/2)
-                        expressed_frame = path[ii].myclass
+                    path = frame1.tree['R'].path_to(frame2.tree['R'])
+                    m = len(path)
+                    if m%2==0:
+                        ii = int(m/2)-1
+                    else:
+                        ii = int(m/2)
+                    expressed_frame = path[ii].myclass
                 else:
                     expressed_frame = frame                    
 
@@ -234,12 +225,12 @@ class Vector(object):
         for frame,vector in self.components.items():
             result+= Vector({frame:system.derivative(vector)})
             v1 = Vector({frame:vector})
-            w_ = reference_frame.getw_(frame).express(frame)
+            w_ = reference_frame.get_w_to(frame).express(frame)
             result+=w_.cross(v1,frame = 'mid')
         result.clean()
         return result
             
-    def express(self,other,method='R'):
+    def express(self,other):
         self = self.copy()
 #        results = []
         try:
@@ -249,12 +240,8 @@ class Vector(object):
             result = Vector()
 #            pass
         for frame,vec in self.components.items():
-            if method=='R':
-                R = frame.get_r_to(other)
-                result+=Vector({other:R*vec})
-            elif method=='rq':
-                R = frame.get_generic(other,method)
-                result+=Vector({other:R*vec})
+            R = frame.get_r_to(other)
+            result+=Vector({other:R*vec})
             
 #            results.append()
 #        result = results.pop()

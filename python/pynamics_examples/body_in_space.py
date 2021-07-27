@@ -60,7 +60,7 @@ B.rotate_fixed_axis(A,[0,1,0],qB,system)
 C.rotate_fixed_axis(B,[0,0,1],qC,system)
 
 pCcm=0*N.x
-w1 = N.getw_(C)
+w1 = N.get_w_to(C)
 
 
 IC = Dyadic.build(C,Ixx,Iyy,Izz)

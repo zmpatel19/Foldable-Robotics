@@ -177,15 +177,15 @@ C2.rotate_fixed_axis(C1,[0,1,0],qC2,system)
 C3.rotate_fixed_axis(C2,[0,0,1],qC3,system)
 S.rotate_fixed_axis(A3,[0,0,1],qS,system)
 
-wA1 = N.getw_(A3)
+wA1 = N.get_w_to(A3)
 wA2 = wAx*A3.x + wAy*A3.y + wAz*A3.z
 N.set_w(A3,wA2)
 
-wB1 = N.getw_(B3)
+wB1 = N.get_w_to(B3)
 wB2 = wBx*B3.x + wBy*B3.y + wBz*B3.z
 N.set_w(B3,wB2)
 
-wC1 = N.getw_(C3)
+wC1 = N.get_w_to(C3)
 wC2 = wCx*C3.x + wCy*C3.y + wCz*C3.z
 N.set_w(C3,wC2)
 
@@ -230,9 +230,9 @@ system.addforce(-f_aero_C,vctip)
 # 
 # ### Angular Velocity
 
-wA3B3 = A3.getw_(B3)
-wB3C3 = B3.getw_(C3)
-wA3S = A3.getw_(S)
+wA3B3 = A3.get_w_to(B3)
+wB3C3 = B3.get_w_to(C3)
+wA3S = A3.get_w_to(S)
 
 # ### Define Inertias and Bodies
 # The next several lines compute the inertia dyadics of each body and define a rigid body on each frame.  In the case of frame C, we represent the mass as a particle located at point pCcm.  

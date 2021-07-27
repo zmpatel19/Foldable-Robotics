@@ -87,7 +87,7 @@ class Frame(NameGenerator):
             if my_type=='R':
                 items = [from_frame.connections[my_type][to_frame].to_other(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]
             elif my_type=='w':
-                items = [from_frame.connections[my_type][to_frame].w__from(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]                
+                items = [from_frame.connections[my_type][to_frame].get_w_to(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]                
             item_final= items.pop(0)      
             for item,to_frame in zip(items,to_frames[1:]):
                 if my_type=='R':
@@ -100,11 +100,11 @@ class Frame(NameGenerator):
                 to_frame.add_precomputed_generic(result,my_type)
             return result
 
-    def get_R_to(self,other):
-        return self.get_generic(other,'R').get_R_to(self)
+    def get_r_to(self,other):
+        return self.get_generic(other,'R').get_r_to(self)
 
-    def get_R_from(self,other):
-        return self.get_generic(other,'R').get_R_from(self)
+    def get_r_from(self,other):
+        return self.get_generic(other,'R').get_r_from(self)
 
     def get_w_from(self,other):
         return self.get_generic(other,'w').get_w_from(self)

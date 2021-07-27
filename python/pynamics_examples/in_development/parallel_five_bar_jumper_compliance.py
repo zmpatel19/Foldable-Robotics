@@ -209,15 +209,15 @@ pB2cm=pB1B2+lB/4*B2.x
 pC2cm=pC1C2+lC/4*C2.x
 pD2cm=pD1D2+lD/4*D2.x
 
-wOA1 = O.getw_(A1)
-wA1A2 = A1.getw_(A2)
-wA2B1 = A2.getw_(B1)
-wB1B2 = B1.getw_(B2)
-wOC1 = O.getw_(C1)
-wC1C2 = C1.getw_(C2)
-wC2D1 = C2.getw_(D1)
-wD1D2 = D1.getw_(D2)
-wB2D2 = B2.getw_(D2)
+wOA1 = O.get_w_to(A1)
+wA1A2 = A1.get_w_to(A2)
+wA2B1 = A2.get_w_to(B1)
+wB1B2 = B1.get_w_to(B2)
+wOC1 = O.get_w_to(C1)
+wC1C2 = C1.get_w_to(C2)
+wC2D1 = C2.get_w_to(D1)
+wD1D2 = D1.get_w_to(D2)
+wB2D2 = B2.get_w_to(D2)
 
 #BodyO = Body('BodyO',O,pOcm,mO,Dyadic.build(O,I_main,I_main,I_main),system)
 #BodyA = Body('BodyA',A,pAcm,mA,Dyadic.build(A,I_leg,I_leg,I_leg),system)

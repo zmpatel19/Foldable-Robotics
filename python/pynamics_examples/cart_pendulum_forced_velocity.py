@@ -69,7 +69,7 @@ A.rotate_fixed_axis(N,[0,0,1],q,system)
 p1 = x*N.x
 p2 = p1 - l*A.y
 
-wNA = N.getw_(A)
+wNA = N.get_w_to(A)
 
 v1 = p1.time_derivative(N,system)
 v2 = p2.time_derivative(N, system)

@@ -63,7 +63,7 @@ pAcm=pNA+lA/2*A.x
 pAtip=pNA+lA*A.x
 vAcm=pAcm.time_derivative(N,system)
 
-wNA = N.getw_(A)
+wNA = N.get_w_to(A)
 
 IA_motor = Dyadic.build(A,Ixx_motor,Iyy_motor,Izz_motor)
 IA_plate = Dyadic.build(A,Ixx_plate,Iyy_plate,Izz_plate)
