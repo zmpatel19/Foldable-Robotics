@@ -250,7 +250,7 @@ class Vector(object):
 #            pass
         for frame,vec in self.components.items():
             if method=='R':
-                R = frame.getR(other)
+                R = frame.get_r_to(other)
                 result+=Vector({other:R*vec})
             elif method=='rq':
                 R = frame.get_generic(other,method)

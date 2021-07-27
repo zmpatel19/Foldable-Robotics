@@ -9,8 +9,9 @@ Please see LICENSE for full license.
 import pynamics
 from pynamics.tree_node import TreeNode
 from pynamics.vector import Vector
-from pynamics.rotation import Rotation, RotationalVelocity,RotationQuaternion,RotationQuaternion_d
+from pynamics.rotation import Rotation, RotationalVelocity
 from pynamics.name_generator import NameGenerator
+from pynamics.quaternion import Quaternion
 
 import sympy
 
@@ -22,20 +23,14 @@ class Frame(NameGenerator):
         self.connections={}
         self.connections['R'] = {}
         self.connections['w'] = {}
-        self.connections['rq'] = {}
-        self.connections['wq'] = {}
 
         self.precomputed={}
         self.precomputed['R'] = {}
         self.precomputed['w'] = {}
-        self.precomputed['rq'] = {}
-        self.precomputed['wq'] = {}
 
         self.tree={}
         self.tree['R'] = TreeNode(self)
         self.tree['w'] = TreeNode(self)
-        self.tree['rq'] = TreeNode(self)
-        self.tree['wq'] = TreeNode(self)
 
         self.reps = {}
 
@@ -54,13 +49,11 @@ class Frame(NameGenerator):
         self.y.add_component(self,[0,1,0])
         self.z.add_component(self,[0,0,1])
         
-        r = Rotation(self,self,sympy.Matrix.eye(3))
-        w = RotationalVelocity(self,self,sympy.Number(0)*self.x)
+        r = Rotation(self,self,sympy.Matrix.eye(3),Quaternion(0,0,0,0))
+        w = RotationalVelocity(self,self,sympy.Number(0)*self.x,Quaternion(0,0,0,0))
 
         self.add_generic(r,'R')
         self.add_generic(w,'w')
-        self.add_generic(w,'rq')
-        self.add_generic(w,'wq')
         self.system = system
 
         self.system.add_frame(self)
@@ -95,8 +88,6 @@ class Frame(NameGenerator):
                 items = [from_frame.connections[my_type][to_frame].to_other(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]
             elif my_type=='w':
                 items = [from_frame.connections[my_type][to_frame].w__from(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]                
-            elif my_type=='rq' or my_type=='wq':
-                items = [from_frame.connections[my_type][to_frame].to_other(from_frame) for from_frame,to_frame in zip(from_frames,to_frames)]                
             item_final= items.pop(0)      
             for item,to_frame in zip(items,to_frames[1:]):
                 if my_type=='R':
@@ -105,28 +96,27 @@ class Frame(NameGenerator):
                 elif my_type=='w':
                     item_final += item
                     result = RotationalVelocity(self,to_frame,item_final)
-                elif my_type=='rq' or my_type=='wq':
-                    item_final = item*item_final
-                    result = RotationQuaternion(self,to_frame,item_final)
                 self.add_precomputed_generic(result,my_type)
                 to_frame.add_precomputed_generic(result,my_type)
             return result
 
-    def getR(self,other):
-        return self.get_generic(other,'R').to_other(self)
+    def get_R_to(self,other):
+        return self.get_generic(other,'R').get_R_to(self)
 
-    def getw_(self,other):
-        return self.get_generic(other,'w').w__from(self)
+    def get_R_from(self,other):
+        return self.get_generic(other,'R').get_R_from(self)
+
+    def get_w_from(self,other):
+        return self.get_generic(other,'w').get_w_from(self)
+
+    def get_w_to(self,other):
+        return self.get_generic(other,'w').get_w_to(self)
 
     def set_generic(self,other,item,my_type):
         if my_type=='R':
-            result = Rotation(self, other, item)
+            result = Rotation(self, other, item,Quaternion(0,0,0,0))
         elif my_type=='w':
-            result = RotationalVelocity(self, other, item)
-        elif my_type=='rq':
-            result = RotationQuaternion(self, other, item)
-        elif my_type=='wq':
-            result = RotationQuaternion_d(self, other, item)
+            result = RotationalVelocity(self, other, item,Quaternion(0,0,0,0))
         self.add_generic(result,my_type)
         other.add_generic(result,my_type)
         
@@ -148,25 +138,15 @@ class Frame(NameGenerator):
 
         rotation = Rotation.build_fixed_axis(fromframe,self,axis,q,system)
         rotational_velocity = RotationalVelocity.build_fixed_axis(fromframe,self,axis,q,system)
-        rq = RotationQuaternion.build_fixed_axis(fromframe,self,axis,q,system)
-        wq = RotationQuaternion_d(fromframe,self,q)
         self.set_parent_generic(fromframe,rotation,'R')
         self.set_parent_generic(fromframe,rotational_velocity,'w')
-        self.set_parent_generic(fromframe,rq,'rq')
-        self.set_parent_generic(fromframe,wq,'wq')
         self.add_generic(rotation,'R')
         self.add_generic(rotational_velocity,'w')
-        self.add_generic(rq,'rq')
-        self.add_generic(wq,'wq')
         fromframe.add_generic(rotation,'R')
         fromframe.add_generic(rotational_velocity,'w')
-        fromframe.add_generic(rq,'rq')
-        fromframe.add_generic(wq,'wq')
         
         fromframe.tree['R'].add_branch(self.tree['R'])        
         fromframe.tree['w'].add_branch(self.tree['w'])        
-        fromframe.tree['rq'].add_branch(self.tree['rq'])        
-        fromframe.tree['wq'].add_branch(self.tree['wq'])        
 
     # def efficient_rep(self,other,functionname):
     #     key = (other,functionname)
