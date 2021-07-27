@@ -241,7 +241,9 @@ class Vector(object):
 #            pass
         for frame,vec in self.components.items():
             R = frame.get_r_to(other)
-            result+=Vector({other:R*vec})
+            rq = frame.get_rq_to(other)
+            # result+=Vector({other:R*vec})
+            result+=Vector({other:rq.rotate(vec)})
             
 #            results.append()
 #        result = results.pop()

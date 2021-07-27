@@ -124,7 +124,7 @@ states=pynamics.integration.integrate_odeint(func1,ini,t,args=({'constants':syst
 
 po = PointsOutput(points,system)
 po.calc(states,t)
-#po.animate(fps = 30,lw=2)
+po.animate(fps = 30,lw=2)
 
 so = Output([qA,qB,qC])
 so.calc(states,t)

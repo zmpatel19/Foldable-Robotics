@@ -10,9 +10,9 @@ import sympy
 from sympy import cos, sin
 from pynamics.vector import Vector
 import pynamics
-from pynamics.quaternion import Quaternion
+from pynamics.quaternion import Quaternion,UnitQuaternion
 
-def build_fixed_axis(axis,q,frame,sys):
+def build_R_from_fixed_axis(axis,q,frame,sys):
 
     axis = sympy.Matrix(axis)
     l_2 = axis.dot(axis)
@@ -59,35 +59,47 @@ class RotationBase(object):
 class Rotation(RotationBase):
     def get_r_to(self,f):
         if f==self.f1:
-            return self._r
-        elif f==self.f2:
             return self._r.T
+        elif f==self.f2:
+            return self._r
+        else:
+            raise(Exception('frame not in this rotation'))
+
+    def get_rq_to(self,f):
+        if f==self.f1:
+            return self._q.inv()
+        elif f==self.f2:
+            return self._q
         else:
             raise(Exception('frame not in this rotation'))
 
     def get_r_from(self,f):
         return self.get_r_to(f).T
 
+    def get_rq_from(self,f):
+        return self.get_rq_to(f).inv()
+
     @classmethod
     def build_fixed_axis(cls,f1,f2,axis,q,sys):
         import pynamics.misc_tools
         if not all([pynamics.misc_tools.is_literal(item) for item in axis]):
             raise(Exception('not all axis variables are constant'))
-        R,fixedaxis = build_fixed_axis(axis,q,f1,sys)
-        new = cls(f1,f2,R,Quaternion(0,0,0,0))
+        R,fixedaxis = build_R_from_fixed_axis(axis,q,f1,sys)
+        q = UnitQuaternion.build_from_axis_angle(-q,*fixedaxis)
+        new = cls(f1,f2,R,q)
         return new
     
 class RotationalVelocity(RotationBase):
-    def get_w_from(self,f):
-        return -self.get_w_from(f)
-    
     def get_w_to(self,f):
         if f==self.f1:
-            return self._r
-        elif f==self.f2:
             return -self._r
+        elif f==self.f2:
+            return self._r
         else:
             raise(Exception('frame not in this rotation'))
+
+    def get_w_from(self,f):
+        return -self.get_w_from(f)
             
     @classmethod
     def build_fixed_axis(cls,f1,f2,axis,q,sys):
