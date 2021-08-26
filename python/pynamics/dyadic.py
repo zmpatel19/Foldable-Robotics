@@ -113,6 +113,6 @@ class Dyadic(object):
     
 if __name__=='__main__':
     from pynamics.frame import Frame
-    A = Frame('A')
+    A = Frame('A',system)
     dyad = Dyad(A.x,A.x)
     d = dyad+dyad
