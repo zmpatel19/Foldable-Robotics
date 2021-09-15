@@ -42,6 +42,7 @@ if not logger.handlers:
 
 systemname = '_system'
 integrator = 0
+use_quaternions = False
 
 def set_system(modulename,system):
     import pynamics

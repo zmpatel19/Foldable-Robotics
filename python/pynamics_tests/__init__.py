@@ -11,6 +11,10 @@ import subprocess
 import pynamics_examples
 import os
 import sys
+import importlib
+import glob
+import inspect
+
 my_module = sys.modules['pynamics_examples']
 my_dir = path = os.path.dirname(my_module.__file__)
 s_template='jupyter nbconvert "{0}" --to python'
@@ -21,32 +25,24 @@ def convert_notebook(filename):
     print(s)
     subprocess.run(s,shell=True,capture_output=True)    
 
-import pynamics_examples.babyboot
-import pynamics_examples.ball_rope
-import pynamics_examples.body_in_space
-import pynamics_examples.body_in_space_local
-import pynamics_examples.bouncy2
-import pynamics_examples.bouncy_mod
-import pynamics_examples.cart_pendulum
-import pynamics_examples.cart_pendulum_forced_velocity
-import pynamics_examples.differentiating
-import pynamics_examples.falling_rod
-# import pynamics_examples.five_bar_spherical
-import pynamics_examples.four_bar
-import pynamics_examples.glider
-import pynamics_examples.motor_load_side
-import pynamics_examples.motor_motor_side
-import pynamics_examples.parallel_five_bar_jumper
-import pynamics_examples.parallel_five_bar_jumper_foot
-import pynamics_examples.pendulum_2_ways
-import pynamics_examples.pendulum_in_water
-import pynamics_examples.single_dof_bouncer
-import pynamics_examples.springy_pendulum
-import pynamics_examples.standing_stability_test
-# import pynamics_examples.fitting.triple_pendulum_fitting
-import pynamics_examples.triple_pendulum_inverse_dynamics
-import pynamics_examples.triple_pendulum_rft
-import pynamics_examples.triple_pendulum_swimmer
+
+m = sys.modules[__name__]
+
+f = inspect.getfile(my_module)
+print(f)
+d = os.path.split(f)[0]
+
+p = os.path.join(d,'*.py')
+files = glob.glob(p)
+print(files)
+if f in files:
+    files.pop(files.index((f)))
+print(files)
+
+for item in files:
+    item = os.path.split(item)[1]
+    modulename = item.split('.py')[0]
+    importlib.import_module(modulename)
 
 
 convert_notebook('triple_pendulum.ipynb')

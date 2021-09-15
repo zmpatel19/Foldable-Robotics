@@ -102,9 +102,9 @@ M.rotate_fixed_axis(A,[0,0,1],qM,system)
 
 pO = 0*N.x
 pAcm = x*N.x+y*N.y
-wNA = N.getw_(A)
-wAB = A.getw_(B)
-wAM = A.getw_(M)
+wNA = N.get_w_to(A)
+wAB = A.get_w_to(B)
+wAM = A.get_w_to(M)
 pBcm = pAcm+l*B.x
 
 vAcm = pAcm.time_derivative()

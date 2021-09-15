@@ -242,8 +242,11 @@ class Vector(object):
         for frame,vec in self.components.items():
             R = frame.get_r_to(other)
             rq = frame.get_rq_to(other)
-            result+=Vector({other:R*vec})
-            #result+=Vector({other:rq.rotate(vec)})
+            if pynamics.use_quaternions:
+                result+=Vector({other:rq.rotate(vec)})
+            else:
+                result+=Vector({other:R*vec})
+
             
 #            results.append()
 #        result = results.pop()
