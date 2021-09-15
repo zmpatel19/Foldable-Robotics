@@ -87,8 +87,8 @@ system.set_newtonian(N)
 B.rotate_fixed_axis(N,[0,0,1],qB,system)
 
 pO = 0*N.x
-#wNA = N.getw_(A)
-wNB = N.getw_(B)
+#wNA = N.get_w_to(A)
+wNB = N.get_w_to(B)
 wNA = G*wNB
 aNA = wNA.time_derivative()
 #wNB = wB*B.z

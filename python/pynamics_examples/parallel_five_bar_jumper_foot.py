@@ -161,12 +161,12 @@ vE1 = pE1.time_derivative(N,system)
 pE2 = pEcm-lE/2*E.x
 vE2 = pE2.time_derivative(N,system)
 
-wOA = O.getw_(A)
-wAB = A.getw_(B)
-wOC = O.getw_(C)
-wCD = C.getw_(D)
-wBD = B.getw_(D)
-wOE = O.getw_(E)
+wOA = O.get_w_to(A)
+wAB = A.get_w_to(B)
+wOC = O.get_w_to(C)
+wCD = C.get_w_to(D)
+wBD = B.get_w_to(D)
+wOE = O.get_w_to(E)
 
 BodyO = Body('BodyO',O,pOcm,mO,Dyadic.build(O,I_main,I_main,I_main),system)
 #BodyA = Body('BodyA',A,pAcm,mA,Dyadic.build(A,I_leg,I_leg,I_leg),system)

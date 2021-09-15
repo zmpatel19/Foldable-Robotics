@@ -217,19 +217,19 @@ pBcm=pAB+lB/2*B.x
 pCcm=pOC+lC/2*C.x
 pDcm=pCD+lD/2*D.x
 
-wOMA = O.getw_(MA)
-wOA = O.getw_(A)
-wAB = A.getw_(B)
-wOMC = O.getw_(MC)
-wOC = O.getw_(C)
-wCD = C.getw_(D)
-wBD = B.getw_(D)
+wOMA = O.get_w_to(MA)
+wOA = O.get_w_to(A)
+wAB = A.get_w_to(B)
+wOMC = O.get_w_to(MC)
+wOC = O.get_w_to(C)
+wCD = C.get_w_to(D)
+wBD = B.get_w_to(D)
 
 
 
-wNMA = N.getw_(MA)
+wNMA = N.get_w_to(MA)
 aNMA = wNMA.time_derivative()
-wNMC = N.getw_(MC)
+wNMC = N.get_w_to(MC)
 aNMC = wNMC.time_derivative()
 
 I_motorA = Dyadic.build(MA,Im,Im,Im)
@@ -301,7 +301,7 @@ eq.append((O.y.dot(N.y)))
 eq_d= [system.derivative(item) for item in eq]
 eq_d.append(wOMA.dot(N.z) - G*wOA.dot(N.z))
 eq_d.append(wOMC.dot(N.z) - G*wOC.dot(N.z))
-#eq_d = [N.getw_(A).dot(N.z) - G*N.getw_(B).dot(N.z)]
+#eq_d = [N.get_w_to(A).dot(N.z) - G*N.get_w_to(B).dot(N.z)]
 
 eq_dd= [system.derivative(item) for item in eq_d]
 #

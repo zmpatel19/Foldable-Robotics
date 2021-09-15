@@ -140,11 +140,11 @@ ParticleB2 = Particle(B2.x+B23.x,m,'ParticleB2',system)
 
 ################################################
 #Get the relative rotational velocity between frames
-wA1 = N.getw_(A1)
-wA2 = A12.getw_(A2)
-wA3 = A23.getw_(A3)
-wB1 = NB1.getw_(B1)
-wB2 = B12.getw_(B2)
+wA1 = N.get_w_to(A1)
+wA2 = A12.get_w_to(A2)
+wA3 = A23.get_w_to(A3)
+wB1 = NB1.get_w_to(B1)
+wB2 = B12.get_w_to(B2)
 
 ################################################
 #Add damping between joints

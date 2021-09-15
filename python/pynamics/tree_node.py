@@ -8,7 +8,7 @@ Please see LICENSE for full license.
 
 
 class TreeNode(object):
-    def __init__(self,myclass):
+    def __init__(self,myclass=None):
         self.myclass = myclass
         self.parent = None
         self.children = []

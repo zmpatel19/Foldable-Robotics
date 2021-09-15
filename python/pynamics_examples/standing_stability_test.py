@@ -250,9 +250,9 @@ pCcm=pBC
 # In[16]:
 
 
-wNA = N.getw_(A)
-wAB = A.getw_(B)
-wBC = B.getw_(C)
+wNA = N.get_w_to(A)
+wAB = A.get_w_to(B)
+wBC = B.get_w_to(C)
 
 
 # ### Vector derivatives

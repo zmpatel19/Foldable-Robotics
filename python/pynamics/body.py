@@ -40,7 +40,7 @@ class Body(NameGenerator):
         self.gravityvector = None
         self.forcegravity = None        
         
-        self.wNBody = wNBody or self.system.newtonian.getw_(self.frame)
+        self.wNBody = wNBody or self.system.newtonian.get_w_to(self.frame)
         self.alNBody = alNBody or self.wNBody.time_derivative(self.system.newtonian,self.system)
         
 #        self.linearmomentum = self.mass*self.vCM

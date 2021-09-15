@@ -10,8 +10,9 @@ import sympy
 from sympy import cos, sin
 from pynamics.vector import Vector
 import pynamics
+from pynamics.quaternion import Quaternion,UnitQuaternion
 
-def build_fixed_axis(axis,q,frame,sys):
+def build_R_from_fixed_axis(axis,q,frame,sys):
 
     axis = sympy.Matrix(axis)
     l_2 = axis.dot(axis)
@@ -39,45 +40,14 @@ def w_from_fixed_axis(axis,q,frame,sys):
     w_ = w*Vector({frame:axis})
     return w_
 
-# def w_from_der(R,f,sys):
-    
-#     Rxx = R[0,0]
-#     Rxy = R[0,1]
-#     Rxz = R[0,2]
-
-#     Ryx = R[1,0]
-#     Ryy = R[1,1]
-#     Ryz = R[1,2]
-
-#     Rzx = R[2,0]
-#     Rzy = R[2,1]
-#     Rzz = R[2,2]
-    
-#     Rxx_d = sys.derivative(R[0,0])
-#     Rxy_d = sys.derivative(R[0,1])
-#     Rxz_d = sys.derivative(R[0,2])
-
-#     Ryx_d = sys.derivative(R[1,0])
-#     Ryy_d = sys.derivative(R[1,1])
-#     Ryz_d = sys.derivative(R[1,2])
-
-#     Rzx_d = sys.derivative(R[2,0])
-#     Rzy_d = sys.derivative(R[2,1])
-#     Rzz_d = sys.derivative(R[2,2])
-    
-#     wx = Rxz*Rxy_d + Ryz*Ryy_d + Rzz*Rzy_d
-#     wy = Rxx*Rxz_d + Ryx*Ryz_d + Rzx*Rzz_d
-#     wz = Rxy*Rxx_d + Ryy*Ryx_d + Rzy*Rzx_d
-    
-#     w = wx*f.x + wy*f.y + wz*f.z
-#     return w
-
 
 class RotationBase(object):
-    def __init__(self,f1,f2,r):
+    def __init__(self,f1,f2,r,q):
         self.f1 = f1
         self.f2 = f2
         self._r = r
+        self._q = q
+        
     def other(self,f):
         if f==self.f1:
             return self.f2
@@ -87,31 +57,49 @@ class RotationBase(object):
             raise(Exception('frame not in this rotation'))
 
 class Rotation(RotationBase):
-    def to_other(self,f):
+    def get_r_to(self,f):
         if f==self.f1:
-            return self._r
-        elif f==self.f2:
             return self._r.T
+        elif f==self.f2:
+            return self._r
         else:
             raise(Exception('frame not in this rotation'))
+
+    def get_rq_to(self,f):
+        if f==self.f1:
+            return self._q.inv()
+        elif f==self.f2:
+            return self._q
+        else:
+            raise(Exception('frame not in this rotation'))
+
+    def get_r_from(self,f):
+        return self.get_r_to(f).T
+
+    def get_rq_from(self,f):
+        return self.get_rq_to(f).inv()
 
     @classmethod
     def build_fixed_axis(cls,f1,f2,axis,q,sys):
         import pynamics.misc_tools
         if not all([pynamics.misc_tools.is_literal(item) for item in axis]):
             raise(Exception('not all axis variables are constant'))
-        R,fixedaxis = build_fixed_axis(axis,q,f1,sys)
-        new = cls(f1,f2,R)
+        R,fixedaxis = build_R_from_fixed_axis(axis,q,f1,sys)
+        q = UnitQuaternion.build_from_axis_angle(-q,*fixedaxis)
+        new = cls(f1,f2,R,q)
         return new
     
 class RotationalVelocity(RotationBase):
-    def w__from(self,f):
+    def get_w_to(self,f):
         if f==self.f1:
-            return self._r
-        elif f==self.f2:
             return -self._r
+        elif f==self.f2:
+            return self._r
         else:
             raise(Exception('frame not in this rotation'))
+
+    def get_w_from(self,f):
+        return -self.get_w_from(f)
             
     @classmethod
     def build_fixed_axis(cls,f1,f2,axis,q,sys):
@@ -119,7 +107,6 @@ class RotationalVelocity(RotationBase):
         if not all([pynamics.misc_tools.is_literal(item) for item in axis]):
             raise(Exception('not all axis variables are constant'))
         w = w_from_fixed_axis(axis,q,f1,sys)
-        new = cls(f1,f2,w)
+        new = cls(f1,f2,w,Quaternion(0,0,0,0))
         return new
 
-        

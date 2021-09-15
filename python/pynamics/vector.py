@@ -225,7 +225,7 @@ class Vector(object):
         for frame,vector in self.components.items():
             result+= Vector({frame:system.derivative(vector)})
             v1 = Vector({frame:vector})
-            w_ = reference_frame.getw_(frame).express(frame)
+            w_ = reference_frame.get_w_to(frame).express(frame)
             result+=w_.cross(v1,frame = 'mid')
         result.clean()
         return result
@@ -240,8 +240,11 @@ class Vector(object):
             result = Vector()
 #            pass
         for frame,vec in self.components.items():
-            R = frame.getR(other)
+            R = frame.get_r_to(other)
+            rq = frame.get_rq_to(other)
             result+=Vector({other:R*vec})
+            #result+=Vector({other:rq.rotate(vec)})
+            
 #            results.append()
 #        result = results.pop()
 #        while not not results:

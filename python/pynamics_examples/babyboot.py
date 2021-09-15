@@ -71,8 +71,8 @@ pNA=0*N.x
 pAcm=pNA-lA*A.y
 pBcm=pNA-lB*A.y
 
-wNA = N.getw_(A)
-wAB = A.getw_(B)
+wNA = N.get_w_to(A)
+wAB = A.get_w_to(B)
 
 IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)

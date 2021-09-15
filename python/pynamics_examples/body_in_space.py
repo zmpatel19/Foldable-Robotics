@@ -6,7 +6,7 @@ Please see LICENSE for full license.
 """
 
 import pynamics
-pynamics.automatic_differentiate=False
+# pynamics.automatic_differentiate=False
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
 from pynamics.system import System
@@ -26,6 +26,7 @@ pynamics.set_system(__name__,system)
 
 g = Constant(9.81,'g',system)
 
+tol = 1e-5
 tinitial = 0
 tfinal = 5
 tstep = 1/30
@@ -60,7 +61,7 @@ B.rotate_fixed_axis(A,[0,1,0],qB,system)
 C.rotate_fixed_axis(B,[0,0,1],qC,system)
 
 pCcm=0*N.x
-w1 = N.getw_(C)
+w1 = N.get_w_to(C)
 
 
 IC = Dyadic.build(C,Ixx,Iyy,Izz)
@@ -80,11 +81,11 @@ func1 = system.state_space_post_invert(f,ma)
 
 ini = [initialvalues[item] for item in system.get_state_variables()]
 
-states=pynamics.integration.integrate_odeint(func1,ini,t,args=({'constants':system.constant_values},))
+states=pynamics.integration.integrate_odeint(func1,ini,t,rtol = tol, atol=tol,args=({'constants':system.constant_values},))
 
 po = PointsOutput(points,system)
 po.calc(states,t)
-#po.animate(fps = 30,lw=2)
+po.animate(fps = 30,lw=2)
 
 so = Output([qA,qB,qC])
 so.calc(states,t)

@@ -113,8 +113,8 @@ constraint2 = pAB-pBA
 constraint2_d = constraint2.time_derivative(N,system)
 constraint2_dd = constraint2_d.time_derivative(N,system)
 
-wNA = N.getw_(A)
-wAB = A.getw_(B)
+wNA = N.get_w_to(A)
+wAB = A.get_w_to(B)
 
 IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 IB = Dyadic.build(A,Ixx_B,Iyy_B,Izz_B)

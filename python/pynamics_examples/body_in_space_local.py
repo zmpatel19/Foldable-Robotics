@@ -76,7 +76,7 @@ pCcm=0*N.x
 
 IC = Dyadic.build(C,Ixx,Iyy,Izz)
 
-w1 = N.getw_(C)
+w1 = N.get_w_to(C)
 w2 = wx*C.x+wy*C.y+wz*C.z
 N.set_w(C,w2)
 
@@ -124,7 +124,7 @@ states=pynamics.integration.integrate_odeint(func1,ini,t,args=({'constants':syst
 
 po = PointsOutput(points,system)
 po.calc(states,t)
-#po.animate(fps = 30,lw=2)
+po.animate(fps = 30,lw=2)
 
 so = Output([qA,qB,qC])
 so.calc(states,t)

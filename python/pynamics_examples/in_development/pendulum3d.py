@@ -50,7 +50,7 @@ p0 = 0*f1.x
 p1 = p0-l1*f4.x
 v1=p1.time_derivative(f1)
 
-wNA = f1.getw_(f2)
+wNA = f1.get_w_to(f2)
 
 
 particle1 = Particle(p1,mp1)

@@ -67,7 +67,7 @@ vAB=pAB.time_derivative(N,system)
 IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 BodyA = Body('BodyA',A,pAB,mA,IA,system)
 
-wNA = N.getw_(A)
+wNA = N.get_w_to(A)
 
 lab2 = vAB.dot(vAB)
 uab = vAB * (1/(lab2**.5+tol))

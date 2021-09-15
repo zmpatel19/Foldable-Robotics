@@ -166,11 +166,11 @@ pBcm=pAB+lB/2*B.x
 pCcm=pOC+lC/2*C.x
 pDcm=pCD+lD/2*D.x
 
-wOA = O.getw_(A)
-wAB = A.getw_(B)
-wOC = O.getw_(C)
-wCD = C.getw_(D)
-wBD = B.getw_(D)
+wOA = O.get_w_to(A)
+wAB = A.get_w_to(B)
+wOC = O.get_w_to(C)
+wCD = C.get_w_to(D)
+wBD = B.get_w_to(D)
 
 BodyO = Body('BodyO',O,pOcm,mO,Dyadic.build(O,I_main,I_main,I_main),system)
 #BodyA = Body('BodyA',A,pAcm,mA,Dyadic.build(A,I_leg,I_leg,I_leg),system)

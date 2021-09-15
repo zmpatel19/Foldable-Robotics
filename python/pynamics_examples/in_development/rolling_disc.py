@@ -82,7 +82,7 @@ pAD = pNA+x*A.x+y*A.y
 pBcm = pAD+r*C.z
 pDA = pBcm-r*D.z
 
-wAD = A.getw_(D)
+wAD = A.get_w_to(D)
 
 II = Dyadic.build(B,J,I,J)
 

@@ -163,15 +163,15 @@ C2.rotate_fixed_axis(C1,[0,1,0],qC2,system)
 C3.rotate_fixed_axis(C2,[0,0,1],qC3,system)
 
 if simplify_w:
-    wA1 = N.getw_(A3)
+    wA1 = N.get_w_to(A3)
     wA2 = wAx*A3.x + wAy*A3.y + wAz*A3.z
     N.set_w(A3,wA2)
     
-    wB1 = N.getw_(B3)
+    wB1 = N.get_w_to(B3)
     wB2 = wBx*B3.x + wBy*B3.y + wBz*B3.z
     N.set_w(B3,wB2)
     
-    wC1 = N.getw_(C3)
+    wC1 = N.get_w_to(C3)
     wC2 = wCx*C3.x + wCy*C3.y + wCz*C3.z
     N.set_w(C3,wC2)
 
@@ -187,11 +187,11 @@ pCcm=x3*C3.x+y3*C3.y+z3*C3.z
 pCB = pCcm - lC/2*C3.x
 pCtip=pCcm+lC/2*C3.x
 
-wA3B3 = A3.getw_(B3)
-wB3C3 = B3.getw_(C3)
+wA3B3 = A3.get_w_to(B3)
+wB3C3 = B3.get_w_to(C3)
 
-wA3N = A3.getw_(N)
-wNA3 = N.getw_(A3)
+wA3N = A3.get_w_to(N)
+wNA3 = N.get_w_to(A3)
 
 IA = Dyadic.build(A3,Ixx_A,Iyy_A,Izz_A)
 IB = Dyadic.build(B3,Ixx_B,Iyy_B,Izz_B)
