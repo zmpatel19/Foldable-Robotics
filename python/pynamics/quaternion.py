@@ -187,17 +187,17 @@ class VectorQuaternion(Quaternion):
     def __init__(self,e1,e2,e3):
         self.e=[0,e1,e2,e3]
     
-        
-import sympy
-a,b,c,d = sympy.symbols('a,b,c,d')    
-e,f,g,h = sympy.symbols('e,f,g,h')    
-q = sympy.Symbol('q')        
-
-v1 = Quaternion(a,b,c,d) 
-v12 = [b,c,d]
-q = UnitQuaternion(e,f,g,h) 
-# q = Quaternion.build_from_axis_angle(q, 0,0,1)
-# v1 = Quaternion(0,2,3,4)
-v2 = v1.rotate_by(q)
-v22 = q*v1*q.inv()
-v3 = q.rotate(v12)
+if __name__=='__main__':
+    import sympy
+    a,b,c,d = sympy.symbols('a,b,c,d')    
+    e,f,g,h = sympy.symbols('e,f,g,h')    
+    q = sympy.Symbol('q')        
+    
+    v1 = Quaternion(a,b,c,d) 
+    v12 = [b,c,d]
+    q = UnitQuaternion(e,f,g,h) 
+    # q = Quaternion.build_from_axis_angle(q, 0,0,1)
+    # v1 = Quaternion(0,2,3,4)
+    v2 = v1.rotate_by(q)
+    v22 = q*v1*q.inv()
+    v3 = q.rotate(v12)

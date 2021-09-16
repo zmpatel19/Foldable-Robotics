@@ -13,6 +13,7 @@ from pynamics.rotation import Rotation, RotationalVelocity
 from pynamics.name_generator import NameGenerator
 from pynamics.quaternion import Quaternion
 
+import numpy
 import sympy
 
 
@@ -159,3 +160,17 @@ class Frame(NameGenerator):
         fromframe.tree['R'].add_branch(self.tree['R'])        
         fromframe.tree['w'].add_branch(self.tree['w'])        
 
+    def set_quaternion(self,from_frame,quaternion):
+        
+        rotation = Rotation(from_frame,self,numpy.zeros((3,3)),quaternion)
+        # rotational_velocity = RotationalVelocity.build_fixed_axis(fromframe,self,axis,q,system)
+        self.set_parent_generic(from_frame,rotation,'R')
+        # self.set_parent_generic(fromframe,rotational_velocity,'w')
+        self.add_generic(rotation,'R')
+        # self.add_generic(rotational_velocity,'w')
+        from_frame.add_generic(rotation,'R')
+        # fromframe.add_generic(rotational_velocity,'w')
+        
+        from_frame.tree['R'].add_branch(self.tree['R'])        
+        # fromframe.tree['w'].add_branch(self.tree['w'])        
+        
