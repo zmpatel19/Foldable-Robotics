@@ -57,10 +57,17 @@ t = numpy.r_[tinitial:tfinal:tstep]
 # T1 = Constant(1,'T1',system)
 # T2 = Constant(1,'T2',system)
 
-# T1 = sympy.Symbol('T1')
-# T2 = sympy.Symbol('T2')
-# T3 = sympy.Symbol('T3')
-# T4 = sympy.Symbol('T4')
+T1 = sympy.Symbol('T1')
+T2 = sympy.Symbol('T2')
+T3 = sympy.Symbol('T3')
+T4 = sympy.Symbol('T4')
+
+# Fconst = sympy.Symbol('Fconst')
+
+Fx_tip = sympy.Symbol('Fx_tip')
+Fy_tip= sympy.Symbol('Fy_tip')
+T_tip= sympy.Symbol('T_tip')
+
 
 qA,qA_d,qA_dd = Differentiable('qA',system)
 qB,qB_d,qB_dd = Differentiable('qB',system)
@@ -68,13 +75,13 @@ qC,qC_d,qC_dd = Differentiable('qC',system)
 qD,qD_d,qD_dd = Differentiable('qD',system)
 
 initialvalues = {}
-initialvalues[qA]=45*pi/180
+initialvalues[qA]=60*pi/180
 initialvalues[qA_d]=0*pi/180
-initialvalues[qB]=-90*pi/180
+initialvalues[qB]=30*pi/180
 initialvalues[qB_d]=0*pi/180
-initialvalues[qC]=135*pi/180
+initialvalues[qC]=120*pi/180
 initialvalues[qC_d]=0*pi/180
-initialvalues[qD]=-90*pi/180
+initialvalues[qD]=-30*pi/180
 initialvalues[qD_d]=0*pi/180
 
 statevariables = system.get_state_variables()
@@ -142,11 +149,14 @@ pBcm=pAB+lB/2*B.x
 pCcm=pNC+lC/2*C.x
 pDcm=pCD+lD/2*D.x
 
+vBD= pBD.time_derivative()
 
 wNA = N.get_w_to(A)
 wAB = A.get_w_to(B)
 wNC = N.get_w_to(C)
 wCD = C.get_w_to(D)
+
+wNB = N.get_w_to(B)
 
 # IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 # IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)
@@ -163,15 +173,19 @@ BodyD = Particle(pDcm,m,'ParticleD',system)
 system.addforce(-b*wNA,wNA)
 system.addforce(-b*wNC,wNC)
 
-# system.addforce(T2*uCD_AB,vCD)
-# system.addforce(-T2*uCD_AB,vAB)
-# system.addforce(-T2*N.y,vAB)
-# system.addforce(-T1*N.y,vAB)
+system.addforce(T2*uCD_AB,vCD)
+system.addforce(-T2*uCD_AB,vAB)
+system.addforce(-T2*N.y,vAB)
+system.addforce(-T1*N.y,vAB)
 
-# system.addforce(-T3*uCD_AB,vAB)
-# system.addforce(T3*uCD_AB,vCD)
-# system.addforce(-T3*N.y,vCD)
-# system.addforce(-T4*N.y,vCD)
+system.addforce(-T3*uCD_AB,vAB)
+system.addforce(T3*uCD_AB,vCD)
+system.addforce(-T3*N.y,vCD)
+system.addforce(-T4*N.y,vCD)
+
+system.addforce(Fx_tip*N.x,vBD)
+system.addforce(Fy_tip*N.y,vBD)
+system.addforce(T_tip*N.z,wNB)
 
 # system.addforce(-b*wAB,wAB)
 # system.addforce(-b*wBC,wBC)
@@ -223,37 +237,76 @@ f,ma = system.getdynamics()
 # subs = dict([(ii,jj) for ii,jj in zip(qd,qd2)])
 
 # # A_new = A+(B*D.inv()*C)
-func1 = system.state_space_post_invert(f,ma)
-states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol, args=({'constants':system.constant_values},))
+# func1 = system.state_space_post_invert(f,ma)
+# states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol, args=({'constants':system.constant_values},))
 
-KE = system.get_KE()
-PE = system.getPEGravity(pNA) - system.getPESprings()
+# KE = system.get_KE()
+# PE = system.getPEGravity(pNA) - system.getPESprings()
 
-# points = [pNA,pAB,pBC,pCtip]
-#points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
-points_output = PointsOutput(points,system)
-y = points_output.calc(states,t)
-#y.resize(y.shape[0],int(y.shape[1]/2),2)
+# # points = [pNA,pAB,pBC,pCtip]
+# #points = [item for item2 in points for item in [item2.dot(system.newtonian.x),item2.dot(system.newtonian.y)]]
+# points_output = PointsOutput(points,system)
+# y = points_output.calc(states,t)
+# #y.resize(y.shape[0],int(y.shape[1]/2),2)
 
-plt.figure()
-plt.plot(t,states[:,:3])
+# plt.figure()
+# plt.plot(t,states[:,:3])
 
-plt.figure()
-plt.plot(*(y[::int(len(y)/20)].T))
-plt.axis('equal')
+# plt.figure()
+# plt.plot(*(y[::int(len(y)/20)].T))
+# plt.axis('equal')
 
-energy_output = Output([KE-PE],system)
-energy_output.calc(states,t)
+# energy_output = Output([KE-PE],system)
+# energy_output.calc(states,t)
 
-plt.figure()
-plt.plot(energy_output.y)
+# plt.figure()
+# plt.plot(energy_output.y)
 
-points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2)
+# points_output.animate(fps = 30,movie_name = 'render.mp4',lw=2)
 # #a()
 
 
-# fm = sympy.Matrix(f)
-# # fm = fm.subs(initialvalues)
+fm = sympy.Matrix(f)
+fm = fm.subs(initialvalues)
 # fm = fm.subs({qA_d:0,qB_d:0,qC_d:0,qD_d:0})
-# fm = fm.subs(system.constant_values)
+fm = fm.subs(system.constant_values)
 # fm = fm.subs(dict(zip(qd,qd_subs)))
+
+result = sympy.solve(fm[:], [T1,T2,T3,T4])
+
+vx = vBD.dot(N.x)
+vy = vBD.dot(N.y)
+wNB_scalar = wNB.dot(N.z)
+
+
+q_d = sympy.Matrix([qA_d,qB_d,qC_d,qD_d])
+q_ind = sympy.Matrix([qA_d,qC_d])
+q_dep = sympy.Matrix([qB_d,qD_d])
+v = sympy.Matrix([vx,vy,wNB_scalar])
+J = v.jacobian(q_d)
+J_ind = v.jacobian(q_ind)
+J_dep = v.jacobian(q_dep)
+
+zero  = J_ind*q_ind+J_dep*q_dep - J*q_d
+
+eq = pBD-pDB
+eq_d = eq.time_derivative()
+eq_d_scalar = []
+eq_d_scalar.append(eq_d.dot(N.x))
+eq_d_scalar.append(eq_d.dot(N.y))
+eq_d_scalar= sympy.Matrix(eq_d_scalar)
+J_constraint = eq_d_scalar.jacobian(q_d)
+A= eq_d_scalar.jacobian(q_ind)
+B= eq_d_scalar.jacobian(q_dep)
+
+C = -B.inv()*A
+
+J_new = (J_ind+J_dep*C)
+J_new = J_new.subs(initialvalues)
+J_new = J_new.subs(system.constant_values)
+# zero2 = J_ind*q_ind+J_dep*C*q_ind - J*sympy.Matrix(q_d)
+zero2 = J_new*q_ind - J*q_d
+
+f = sympy.Matrix([Fx_tip,Fy_tip,T_tip])
+
+T = J.T*f
