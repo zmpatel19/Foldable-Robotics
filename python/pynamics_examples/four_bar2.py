@@ -25,9 +25,9 @@ system = System()
 pynamics.set_system(__name__,system)
 
 lA = Constant(1,'lA',system)
-lB = Constant(1,'lB',system)
-lC = Constant(1,'lC',system)
-lD = Constant(1,'lD',system)
+# lA = Constant(1,'lA',system)
+# lA = Constant(1,'lA',system)
+# lA = Constant(1,'lA',system)
 
 m = Constant(1,'m',system)
 
@@ -77,11 +77,11 @@ qD,qD_d,qD_dd = Differentiable('qD',system)
 initialvalues = {}
 initialvalues[qA]=60*pi/180
 initialvalues[qA_d]=0*pi/180
-initialvalues[qB]=30*pi/180
+initialvalues[qB]=60*pi/180
 initialvalues[qB_d]=0*pi/180
 initialvalues[qC]=120*pi/180
 initialvalues[qC_d]=0*pi/180
-initialvalues[qD]=-30*pi/180
+initialvalues[qD]=-60*pi/180
 initialvalues[qD_d]=0*pi/180
 
 statevariables = system.get_state_variables()
@@ -100,11 +100,11 @@ D.rotate_fixed_axis(B,[0,0,1],qD,system)
 
 pNA=0*N.x
 pAB=pNA+lA*A.x
-pBD = pAB + lB*B.x
+pBD = pAB + lA*B.x
 
 pNC=pNA
-pCD = pNC+lC*C.x
-pDB = pCD + lD*D.x
+pCD = pNC+lA*C.x
+pDB = pCD + lA*D.x
 
 vCD_AB = pAB-pCD
 uCD_AB = 1/(vCD_AB.length()) * vCD_AB
@@ -141,13 +141,15 @@ po1 = PointsOutput(points, constant_values=system.constant_values)
 po1.calc(numpy.array([ini0,ini]),[0,1])
 po1.plot_time()
 
+# po1.calc(numpy.array([ini,ini]),[0,1])
+# po1.plot_time()
 
 
 
 pAcm=pNA+lA/2*A.x
-pBcm=pAB+lB/2*B.x
-pCcm=pNC+lC/2*C.x
-pDcm=pCD+lD/2*D.x
+pBcm=pAB+lA/2*B.x
+pCcm=pNC+lA/2*C.x
+pDcm=pCD+lA/2*D.x
 
 vBD= pBD.time_derivative()
 
@@ -310,3 +312,13 @@ zero2 = J_new*q_ind - J*q_d
 f = sympy.Matrix([Fx_tip,Fy_tip,T_tip])
 
 T = J.T*f
+
+
+T1 = T.subs(initialvalues)
+cond1 = {}
+cond1[lA] = 0.04
+cond1[Fx_tip] = 10
+cond1[Fy_tip] = 10
+cond1[T_tip] = 10
+T2 = T1.subs(cond1)
+T2
