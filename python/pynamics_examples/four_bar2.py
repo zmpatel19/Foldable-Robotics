@@ -19,7 +19,9 @@ from pynamics.constraint import AccelerationConstraint,KinematicConstraint
 import sympy
 import numpy
 import matplotlib.pyplot as plt
+plt.close('all')
 plt.ion()
+
 from math import pi
 system = System()
 pynamics.set_system(__name__,system)
@@ -75,14 +77,24 @@ qC,qC_d,qC_dd = Differentiable('qC',system)
 qD,qD_d,qD_dd = Differentiable('qD',system)
 
 initialvalues = {}
-initialvalues[qA]=60*pi/180
-initialvalues[qA_d]=0*pi/180
-initialvalues[qB]=60*pi/180
-initialvalues[qB_d]=0*pi/180
-initialvalues[qC]=120*pi/180
-initialvalues[qC_d]=0*pi/180
-initialvalues[qD]=-60*pi/180
-initialvalues[qD_d]=0*pi/180
+angle_value = 15
+initialvalues[qA]   =(angle_value+5)*pi/180
+initialvalues[qA_d] =0*pi/180
+initialvalues[qB]   =pi-2*(angle_value-20)*pi/180
+initialvalues[qB_d] =0*pi/180
+initialvalues[qC]   =pi - angle_value*pi/180
+initialvalues[qC_d] =0*pi/180
+initialvalues[qD]   =2*angle_value*pi/180 -pi
+initialvalues[qD_d] =0*pi/180
+
+# initialvalues[qA]   =60*pi/180
+# initialvalues[qA_d] =0*pi/180
+# initialvalues[qB]   =60*pi/180
+# initialvalues[qB_d] =0*pi/180
+# initialvalues[qC]   =120*pi/180
+# initialvalues[qC_d] =0*pi/180
+# initialvalues[qD]   =-60*pi/180
+# initialvalues[qD_d] =0*pi/180
 
 statevariables = system.get_state_variables()
 
@@ -145,11 +157,10 @@ po1.plot_time()
 # po1.plot_time()
 
 
-
-pAcm=pNA+lA/2*A.x
-pBcm=pAB+lA/2*B.x
-pCcm=pNC+lA/2*C.x
-pDcm=pCD+lA/2*D.x
+pAcm = pNA+lA/2*A.x
+pBcm = pAB+lA/2*B.x
+pCcm = pNC+lA/2*C.x
+pDcm = pCD+lA/2*D.x
 
 vBD= pBD.time_derivative()
 
@@ -172,22 +183,39 @@ BodyB = Particle(pBcm,m,'ParticleB',system)
 BodyC = Particle(pCcm,m,'ParticleC',system)
 BodyD = Particle(pDcm,m,'ParticleD',system)
 
-system.addforce(-b*wNA,wNA)
-system.addforce(-b*wNC,wNC)
+# system.addforce(-b*wNA,wNA)
+# system.addforce(-b*wNC,wNC)
 
 system.addforce(T2*uCD_AB,vCD)
 system.addforce(-T2*uCD_AB,vAB)
 system.addforce(-T2*N.y,vAB)
 system.addforce(-T1*N.y,vAB)
 
-system.addforce(-T3*uCD_AB,vAB)
 system.addforce(T3*uCD_AB,vCD)
+system.addforce(-T3*uCD_AB,vAB)
 system.addforce(-T3*N.y,vCD)
 system.addforce(-T4*N.y,vCD)
 
-system.addforce(Fx_tip*N.x,vBD)
-system.addforce(Fy_tip*N.y,vBD)
-system.addforce(T_tip*N.z,wNB)
+# nvAB = 1/(vAB.length()+1e-6)*vAB
+# nvCD = 1/(vCD.length()+1e-6)*vCD
+
+# angle1 = nvAB.dot(N.y)
+# angle2 = nvCD.dot(N.y)
+
+# system.addforce(T2*uCD_AB,vCD)
+# system.addforce(-T2*uCD_AB,vAB)
+# system.addforce(-T2*vAB,vAB)
+# system.addforce(-T1*angle1,vAB)
+
+# system.addforce(-T3*uCD_AB,vAB)
+# system.addforce(T3*uCD_AB,vCD)
+# system.addforce(-T3*N.y,vCD)
+# system.addforce(-T4*angle2,vCD)
+
+
+# system.addforce(Fx_tip*N.x,vBD)
+# system.addforce(Fy_tip*N.y,vBD)
+# system.addforce(T_tip*N.z,wNB)
 
 # system.addforce(-b*wAB,wAB)
 # system.addforce(-b*wBC,wBC)
@@ -304,21 +332,43 @@ B= eq_d_scalar.jacobian(q_dep)
 C = -B.inv()*A
 
 J_new = (J_ind+J_dep*C)
+# J_new = (J_ind+J_dep)*C
 J_new = J_new.subs(initialvalues)
 J_new = J_new.subs(system.constant_values)
 # zero2 = J_ind*q_ind+J_dep*C*q_ind - J*sympy.Matrix(q_d)
 zero2 = J_new*q_ind - J*q_d
+zero2.subs(initialvalues)
 
 f = sympy.Matrix([Fx_tip,Fy_tip,T_tip])
 
 T = J.T*f
 
+T_ind = J_new.T*f
 
-T1 = T.subs(initialvalues)
+T_ind_symb=sympy.Matrix([T1,T2])
+# T_dep = 
+
+
+# T2
+
+T_ind_num = T_ind.subs(initialvalues)
 cond1 = {}
-cond1[lA] = 0.04
-cond1[Fx_tip] = 10
-cond1[Fy_tip] = 10
-cond1[T_tip] = 10
-T2 = T1.subs(cond1)
-T2
+# cond1[lA] = 0.0425
+cond1[Fx_tip] = 6
+cond1[Fy_tip] = 0.1
+cond1[T_tip] = 10*20
+T_ind_num = T_ind_num.subs(cond1)
+T_ind_num = T_ind_num.subs(system.constant_values)
+
+T_dep = C.inv().T*T_ind_num
+
+
+T_dep_num = T_dep.subs(initialvalues)
+cond1 = {}
+# cond1[lA] = 0.0425
+cond1[Fx_tip] = 6
+cond1[Fy_tip] = 0.1
+cond1[T_tip] = 10*20
+T_dep_num = T_dep_num.subs(cond1)
+T_dep_num = T_dep_num.subs(system.constant_values)
+# T2
