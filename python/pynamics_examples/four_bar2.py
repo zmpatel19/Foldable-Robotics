@@ -76,10 +76,14 @@ qB,qB_d,qB_dd = Differentiable('qB',system)
 qC,qC_d,qC_dd = Differentiable('qC',system)
 qD,qD_d,qD_dd = Differentiable('qD',system)
 
+qE,qE_d,qE_dd = Differentiable('qE',system)
+qF,qF_d,qF_dd = Differentiable('qF',system)
+qG,qG_d,qG_dd = Differentiable('qG',system)
+
 
 initialvalues = {}
 angle_value = 60
-initialvalues[qA]   =(angle_value)*pi/180
+initialvalues[qA]   =(angle_value+5)*pi/180
 initialvalues[qA_d] =0*pi/180
 initialvalues[qB]   =pi-2*(angle_value)*pi/180
 initialvalues[qB_d] =0*pi/180
@@ -88,6 +92,12 @@ initialvalues[qC_d] =0*pi/180
 initialvalues[qD]   =2*angle_value*pi/180 -pi
 initialvalues[qD_d] =0*pi/180
 
+initialvalues[qE]   = -180*pi/180
+initialvalues[qE_d] = 0
+initialvalues[qF]   = 10*pi/180
+initialvalues[qF_d] = 0
+initialvalues[qG]   = -10*pi/180
+initialvalues[qG_d] = 0
 # initialvalues[qA]   =60*pi/180
 # initialvalues[qA_d] =0*pi/180
 # initialvalues[qB]   =60*pi/180
@@ -105,6 +115,10 @@ B = Frame('B',system)
 C = Frame('C',system)
 D = Frame('D',system)
 
+E = Frame('E',system)
+F = Frame('F',system)
+G = Frame('G',system)
+
 # V1 = Frame('V_1',system)
 # V2 = Frame('V_2',system)
 
@@ -115,6 +129,10 @@ C.rotate_fixed_axis(N,[0,0,1],qC,system)
 D.rotate_fixed_axis(B,[0,0,1],qD,system)
 
 
+E.rotate_fixed_axis(N,[0,0,1],qE,system)
+F.rotate_fixed_axis(E,[0,0,1],qF,system)
+G.rotate_fixed_axis(F,[0,0,1],qG,system)
+
 pNA=0*N.x
 pAB=pNA+lA*A.x
 pBD = pAB + lA*B.x
@@ -123,6 +141,20 @@ pNC=pNA
 pCD = pNC+lA*C.x
 pDB = pCD + lA*D.x
 
+pNE = pNA +lA*E.y
+pEF = pNE +lA*F.y
+pFG = pEF +lA*G.y
+
+pER = pNE - lA*E.x
+pEL = pNE + lA*E.x
+
+pFR = pEF - lA*F.x
+pFL = pEF + lA*F.x
+
+pGR = pFG - lA*G.x
+pGL = pFG + lA*G.x
+
+
 vCD_AB = pAB-pCD
 uCD_AB = 1/(vCD_AB.length()) * vCD_AB
 
@@ -130,7 +162,7 @@ vCD=pCD.time_derivative()
 vAB=pAB.time_derivative()
 
 
-points = [pDB,pCD,pNC,pNA,pAB,pBD]
+points = [pDB,pCD,pNC,pER,pEL,pNA,pNE,pFR,pFL,pNE,pEF,pGL,pGR,pEF,pNE,pNA,pAB,pBD]
 
 statevariables = system.get_state_variables()
 ini0 = [initialvalues[item] for item in statevariables]
@@ -277,19 +309,38 @@ l_4 = (pCD-pAB)
 l_3_length = (l_3.dot(l_3))**0.5
 l_4_length = (l_4.dot(l_4))**0.5
 
-pV3_0 = pAB - 0.5*lA*N.y - l_3_length*N.y
-pV4_0 = pCD - 0.5*lA*N.y - l_4_length*N.y
 
-pV5_0 = pAB - l_3_length*N.x
-pV6_0 = pCD - l_4_length*N.x
+l_BE_R = pAB - pER
+l_BE_L = pCD - pEL
+l_EF_R = pER - pFR
+l_EF_L = pEL - pFL
+l_FG_R = pFR - pGR
+l_FG_L = pFL - pGL
 
-pV1_0 = pAB - lA*N.y
-pV2_0 = pCD - lA*N.y
+u_L_BE_R = (1/l_BE_R.length())*l_BE_R
+u_L_BE_L = (1/l_BE_L.length())*l_BE_L
 
-v_l1 = pV1_0.time_derivative().dot(N.y)
-v_l2 = pV2_0.time_derivative().dot(N.y)
-v_l3 = pV3_0.time_derivative().dot(N.y)
-v_l4 = pV4_0.time_derivative().dot(N.y)
+l_BE_R_length = (l_BE_R.dot(l_BE_R))**0.5
+l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
+l_EF_R_length = (l_EF_R.dot(l_EF_R))**0.5
+l_EF_L_length = (l_EF_L.dot(l_EF_L))**0.5
+l_FG_R_length = (l_FG_R.dot(l_FG_R))**0.5
+l_FG_L_length = (l_FG_L.dot(l_FG_L))**0.5
+
+
+pV3_0 = pAB - 0.5*lA*u_L_BE_R- l_3_length*u_L_BE_R
+pV4_0 = pCD - 0.5*lA*u_L_BE_L- l_4_length*u_L_BE_L
+
+# pV5_0 = pAB - l_3_length*u_L_BE_L
+# pV6_0 = pCD - l_4_length*u_L_BE_L
+
+pV1_0 = pAB - lA*u_L_BE_R
+pV2_0 = pCD - lA*u_L_BE_L
+
+v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
+v_l2 = pV2_0.time_derivative().dot(u_L_BE_R)
+v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
+v_l4 = pV4_0.time_derivative().dot(u_L_BE_L)
 # v_l5 = pV5_0.time_derivative().dot(N.x)
 # v_l6 = pV6_0.time_derivative().dot(N.x)
 
@@ -305,10 +356,11 @@ f1 = sympy.Matrix([Fx_tip,Fy_tip])
 
 f_t = (J_t_ind* J_new_inv)*f1
 
+
 cond1 = {}
 cond1[lA] = 0.05
-cond1[Fx_tip] = 0
-cond1[Fy_tip] = 0
+cond1[Fx_tip] = 10
+cond1[Fy_tip] = 10
 # cond1[T_tip] = 10
 
 initialvalues = {}
@@ -322,6 +374,12 @@ initialvalues[qC_d] =0*pi/180
 initialvalues[qD]   =2*angle_value*pi/180 -pi
 initialvalues[qD_d] =0*pi/180
 
+initialvalues[qE]   = -180*pi/180
+initialvalues[qE_d] = 0
+initialvalues[qF]   = 10*pi/180
+initialvalues[qF_d] = 0
+initialvalues[qG]   = -10*pi/180
+initialvalues[qG_d] = 0
 
 f_t_num = f_t.subs(initialvalues)
 f_t_num1 = f_t_num.subs(cond1)
