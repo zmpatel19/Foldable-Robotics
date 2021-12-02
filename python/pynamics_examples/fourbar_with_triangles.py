@@ -349,8 +349,7 @@ J_new_T1 = (J_ind_T1+J_dep_T1*C_m)
 
 f = sympy.Matrix([Fx_tip,Fy_tip,T_tip])
 T_ind = J_new.T*f
-T_dep = C_m.inv().T*T_ind
-
+# T_dep = C_m.inv().T*T_ind
 
 T_ind_T1 = J_new_T1.T*f
 
@@ -426,7 +425,8 @@ J_t_ind_T1 = v_t_t1.jacobian(q_ind_T1)
 
 f_tip = sympy.Matrix([Fx_tip,Fy_tip,T_tip])
 
-f_t = (J_t_ind)*f_tip
+f_t = (J_t_ind_T1)*f_tip
+
 f1 = sympy.Symbol('f1')
 f2 = sympy.Symbol('f2')
 f3 = sympy.Symbol('f3')
@@ -442,13 +442,13 @@ cond1[Fx_tip] = 10
 cond1[Fy_tip] = 0
 cond1[T_tip] = 0
 
-f_t_sym = sympy.Matrix([f1,f2,f3,f4])
+# f_t_sym = sympy.Matrix([f1,f2,f3,f4])
 f_t_T1_sym = sympy.Matrix([f1,f2,f3,f4,f5,f6])
 
 
-ft1 = (J_t_ind.T)*f_t_sym
-ft_error = T_ind-ft1
-ft_error_sym = ft_error.subs(initialvalues).subs(cond1)
+# ft1 = (J_t_ind.T)*f_t_sym
+# ft_error = T_ind-ft1
+# ft_error_sym = ft_error.subs(initialvalues).subs(cond1)
 # f_tendon = J_t_ind*T_ind_symft_error_sym[0]
 
 # ft_atoms = ft_error_sym.atoms(sympy.Number)
@@ -462,9 +462,12 @@ def calculate_f_dump(x1):
     cond2[f2]=x1[1]
     cond2[f3]=x1[2]
     cond2[f4]=x1[3]  
-    value1 = ft_error_sym.subs(cond2)
+    cond2[f5]=x1[4]  
+    cond2[f6]=x1[5]  
+    value1 = ft_error_sym_T1.subs(cond2)
     value1 = numpy.array(value1)
     value2 = numpy.sum(value1**2)*10
+    
     
     value3 = numpy.sum(numpy.asanyarray(x1)**2)
     
@@ -475,14 +478,14 @@ def calculate_f_dump(x1):
     return value2+value3+value4
     # print(value2)
 
-bounds1 = [(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4)]
-bounds1 = [(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5)]
+bounds1 = [(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4)]
+# bounds1 = [(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5)]
 res = differential_evolution(calculate_f_dump,bounds1,disp=True,maxiter=1000)
 res
 
 
 
 
-# print(J_t_ind.subs(initialvalues).subs(cond1).T.dot(res.x))
+print(J_t_ind_T1.subs(initialvalues).subs(cond1).T.dot(res.x))
 
-# print(T_ind.subs(initialvalues).subs(cond1))
+print(T_ind_T1.subs(initialvalues).subs(cond1))

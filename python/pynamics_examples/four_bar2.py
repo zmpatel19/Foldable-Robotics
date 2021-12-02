@@ -27,6 +27,8 @@ system = System()
 pynamics.set_system(__name__,system)
 
 lA = Constant(1,'lA',system)
+lh = Constant(1,'lh',system)
+lT = Constant(1,'lT',system)
 # lA = Constant(1,'lA',system)
 # lA = Constant(1,'lA',system)
 # lA = Constant(1,'lA',system)
@@ -82,7 +84,7 @@ qE,qE_d,qE_dd = Differentiable('qE',system)
 
 
 initialvalues = {}
-angle_value = 45
+angle_value = 30
 initialvalues[qA]   =(angle_value+5)*pi/180
 initialvalues[qA_d] =0*pi/180
 initialvalues[qB]   =pi-2*(angle_value)*pi/180
@@ -141,12 +143,13 @@ pNC=pNA
 pCD = pNC+lA*C.x
 pDB = pCD + lA*D.x
 
-pNE = pNA +lA*E.y
+pNE = pNA + lh*E.y
 # pEF = pNE +lA*F.y
 # pFG = pEF +lA*G.y
 
-pER = pNE - lA*E.x
-pEL = pNE + lA*E.x
+pER = pNE - 0.5*lT*E.x
+pEL = pNE + 0.5*lT*E.x
+
 
 # pFR = pEF - lA*F.x
 # pFL = pEF + lA*F.x
@@ -376,8 +379,10 @@ f4 = sympy.Symbol('f4')
 
 cond1 = {}
 cond1[lA] = 0.05
-cond1[Fx_tip] = 10
-cond1[Fy_tip] = 0
+cond1[lh] = 0.05
+cond1[lT] = 0.05
+cond1[Fx_tip] = 0
+cond1[Fy_tip] = -10
 cond1[T_tip] = 0
 
 f_t_sym = sympy.Matrix([f1,f2,f3,f4])
@@ -396,10 +401,10 @@ from scipy.optimize import Bounds
 from scipy.optimize import LinearConstraint
 
 from scipy.optimize import dual_annealing
+from scipy.optimize import shgo
 import cma
 
    
-
 def calculate_f_dump(x1):
     cond2 = {}
     cond2[f1]=x1[0]
@@ -407,6 +412,7 @@ def calculate_f_dump(x1):
     cond2[f3]=x1[2]
     cond2[f4]=x1[3]  
     value1 = ft_error_sym.subs(cond2)
+    
     value1 = numpy.array(value1)
     value2 = numpy.sum(value1**2)
     
@@ -416,12 +422,17 @@ def calculate_f_dump(x1):
     # value4+=(x1[0]-abs(x1[0]))**2 +(x1[1]-abs(x1[1]))**2+(x1[2]-abs(x1[2]))**2+(x1[3]-abs(x1[3]))**2      
     # value4+=(x1[0]+abs(-x1[0]))**2 +(x1[1]+abs(-x1[1]))**2+(x1[2]+abs(-x1[2]))**2+(x1[3]+abs(-x1[3]))**2      
 
-    return value2+value3+value4
+    return value2+value3**2+value4
     # print(value2)
 
 bounds1 = [(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4)]
 # bounds1 = [(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5)]
-res = differential_evolution(calculate_f_dump,bounds1,disp=True,maxiter=1000)
+# res = differential_evolution(calculate_f_dump,bounds1,disp=True,maxiter=3000)
+
+# dual_annealing(calculate_f_dump,bounds1)
+
+res = shgo(calculate_f_dump,bounds1)
+
 res
 
 
