@@ -89,7 +89,7 @@ qF,qF_d,qF_dd = Differentiable('qF',system)
 
 initialvalues = {}
 
-initialvalues[qE]   = -10*pi/180
+initialvalues[qE]   = 10*pi/180
 initialvalues[qE_d] = 0
 initialvalues[qF]   = -10*pi/180
 initialvalues[qF_d] = 0
@@ -132,46 +132,22 @@ F = Frame('F',system)
 # V1 = Frame('V_1',system)
 # V2 = Frame('V_2',system)
 
-system.set_newtonian(E)
-A.rotate_fixed_axis(N,[0,0,1],qA,system)
+system.set_newtonian(N)
+
+F.rotate_fixed_axis(N,[0,0,1],qF,system)
+E.rotate_fixed_axis(F,[0,0,1],qE,system)
+
+A.rotate_fixed_axis(E,[0,0,1],qA,system)
 B.rotate_fixed_axis(A,[0,0,1],qB,system)
-C.rotate_fixed_axis(N,[0,0,1],qC,system)
+C.rotate_fixed_axis(E,[0,0,1],qC,system)
 D.rotate_fixed_axis(B,[0,0,1],qD,system)
 
-N.rotate_fixed_axis(E,[0,0,1],qE,system)
 
-# E.rotate_fixed_axis(N,[0,0,1],qE,system)
-F.rotate_fixed_axis(E,[0,0,1],qF,system)
-# G.rotate_fixed_axis(F,[0,0,1],qG,system)
-
-# pNA=0*N.x
-# pAB=pNA+lA*A.x
-# pBD = pAB + lA*B.x
-
-# pNC=pNA
-# pCD = pNC+lA*C.x
-# pDB = pCD + lA*D.x
-
-# pNE = pNA +lA*E.y
-# pEF = pNE +lA*F.y
-# # pFG = pEF +lA*G.y
-
-# pER = pNE - lA*E.x
-# pEL = pNE + lA*E.x
-
-# pFR = pEF - lA*F.x
-# pFL = pEF + lA*F.x
-
-# pGR = pFG - lA*G.x
-# pGL = pFG + lA*G.x
-
-
-pNE = 0*E.x
-pEF = pNE - lA*E.y
+pNF = 0*N.x
+pFE = pNF + lA*F.y
 # pFG = pEF +lA*G.y
 
-pNA = pNE + lA*N.y
-
+pNA = pFE + lA*E.y
 pAB=pNA+lA*A.x
 pBD = pAB + lA*B.x
 
@@ -180,8 +156,8 @@ pCD = pNC+lA*C.x
 pDB = pCD + lA*D.x
 
 
-pER = pNE - lA*N.x
-pEL = pNE + lA*N.x
+pER = pFE - lA*E.x
+pEL = pFE + lA*E.x
 
 # pFR = pEF - lA*F.x
 # pFL = pEF + lA*F.x
@@ -195,7 +171,8 @@ vAB=pAB.time_derivative()
 
 
 # points = [pDB,pCD,pNC,pER,pEL,pNA,pNE,pFR,pFL,pNE,pEF,pGL,pGR,pEF,pNE,pNA,pAB,pBD]
-points = [pDB,pCD,pNC,pER,pEL,pNA,pNE,pNA,pAB,pBD]
+# points = [pDB,pCD,pNC,pNA,pFE,pNF,pFE,pNA,pAB,pBD]
+points = [pNF,pFE,pNA,pAB,pBD,pDB,pCD,pNC]
 
 
 statevariables = system.get_state_variables()
@@ -203,8 +180,8 @@ ini0 = [initialvalues[item] for item in statevariables]
 
 
 eq = []
-eq.append((pBD-pDB).dot(N.x))
-eq.append((pBD-pDB).dot(N.y))
+eq.append((pBD-pDB).dot(E.x))
+eq.append((pBD-pDB).dot(E.y))
 eq_d=[(system.derivative(item)) for item in eq]
 eq_dd=[(system.derivative(item)) for item in eq_d]
 
@@ -237,12 +214,12 @@ pDcm = pCD+lA/2*D.x
 vBD = pBD.time_derivative()
 vDB = pDB.time_derivative()
 
-wNA = N.get_w_to(A)
+wNA = E.get_w_to(A)
 wAB = A.get_w_to(B)
-wNC = N.get_w_to(C)
+wNC = E.get_w_to(C)
 wCD = C.get_w_to(D)
 
-wNB = N.get_w_to(B)
+wNB = E.get_w_to(B)
 
 uBD = 1/(vBD.length())*vBD
 uDB = 1/(vDB.length())*vDB
@@ -319,6 +296,7 @@ J_dep = v.jacobian(q_dep)
 
 q_d_T1 = sympy.Matrix([qA_d,qB_d,qC_d,qD_d,qE_d])
 q_ind_T1 = sympy.Matrix([qA_d,qC_d,qE_d])
+# q_ind_T1 = sympy.Matrix([qE_d])
 J_ind_T1 = v.jacobian(q_ind_T1)
 J_dep_T1 = v.jacobian(q_dep)
 
@@ -466,26 +444,23 @@ def calculate_f_dump(x1):
     cond2[f6]=x1[5]  
     value1 = ft_error_sym_T1.subs(cond2)
     value1 = numpy.array(value1)
-    value2 = numpy.sum(value1**2)*10
-    
-    
-    value3 = numpy.sum(numpy.asanyarray(x1)**2)
+    value2 = numpy.sum(value1**2)**2
+        
+    value3 = numpy.sum(numpy.asanyarray(x1)**2)*0
     
     value4=0
     # value4+=(x1[0]-abs(x1[0]))**2 +(x1[1]-abs(x1[1]))**2+(x1[2]-abs(x1[2]))**2+(x1[3]-abs(x1[3]))**2      
     # value4+=(x1[0]+abs(-x1[0]))**2 +(x1[1]+abs(-x1[1]))**2+(x1[2]+abs(-x1[2]))**2+(x1[3]+abs(-x1[3]))**2      
 
-    return value2+value3+value4
+    return (value2+value3+value4)
     # print(value2)
 
-bounds1 = [(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4)]
-# bounds1 = [(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5)]
+# bounds1 = [(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4)]
+# bounds1 = [(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5)]
+bounds1 = [(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4)]
 res = differential_evolution(calculate_f_dump,bounds1,disp=True,maxiter=1000)
 res
 
 
-
-
 print(J_t_ind_T1.subs(initialvalues).subs(cond1).T.dot(res.x))
-
 print(T_ind_T1.subs(initialvalues).subs(cond1))

@@ -84,7 +84,7 @@ qE,qE_d,qE_dd = Differentiable('qE',system)
 
 
 initialvalues = {}
-angle_value = 30
+angle_value = 55
 initialvalues[qA]   =(angle_value+5)*pi/180
 initialvalues[qA_d] =0*pi/180
 initialvalues[qB]   =pi-2*(angle_value)*pi/180
@@ -334,31 +334,31 @@ l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
 # l_FG_R_length = (l_FG_R.dot(l_FG_R))**0.5
 # l_FG_L_length = (l_FG_L.dot(l_FG_L))**0.5
 
-# pV1_0 = pAB - lA*N.y
-# pV2_0 = pCD - lA*N.y
-# pV3_0 = pCD - 0.5*lA*N.y - l_3_length*N.y
-# pV4_0 = pAB - 0.5*lA*N.y - l_4_length*N.y
+pV1_0 = pAB - lA*N.y
+pV2_0 = pCD - lA*N.y
+pV3_0 = pAB - 0.5*lA*N.y - l_3_length*N.y
+pV4_0 = pCD - 0.5*lA*N.y - l_4_length*N.y
 
-pV1_0 = pAB - lA*u_L_BE_R
-pV2_0 = pCD - lA*u_L_BE_L
+v_l1 = pV1_0.time_derivative().dot(N.y)
+v_l2 = pV2_0.time_derivative().dot(N.y)
+v_l3 = pV3_0.time_derivative().dot(N.y)
+v_l4 = pV4_0.time_derivative().dot(N.y)
 
-pV3_0 = pAB - 0.5*lA*u_L_BE_R- l_3_length*u_L_BE_R
-pV4_0 = pCD - 0.5*lA*u_L_BE_L- l_4_length*u_L_BE_L
+# pV1_0 = pAB - lA*u_L_BE_R
+# pV2_0 = pCD - lA*u_L_BE_L
+
+# pV3_0 = pAB - 0.5*lA*u_L_BE_R- l_3_length*u_L_BE_R
+# pV4_0 = pCD - 0.5*lA*u_L_BE_L- l_4_length*u_L_BE_L
 
 # pV5_0 = pAB - l_3_length*u_L_BE_L
 # pV6_0 = pCD - l_4_length*u_L_BE_L
 
 
 
-v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
-v_l2 = pV2_0.time_derivative().dot(u_L_BE_R)
-v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
-v_l4 = pV4_0.time_derivative().dot(u_L_BE_L)
-
-# v_l1 = pV1_0.time_derivative().dot(N.y)
-# v_l2 = pV2_0.time_derivative().dot(N.y)
-# v_l3 = pV3_0.time_derivative().dot(N.y)
-# v_l4 = pV4_0.time_derivative().dot(N.y)
+# v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
+# v_l2 = pV2_0.time_derivative().dot(u_L_BE_R)
+# v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
+# v_l4 = pV4_0.time_derivative().dot(u_L_BE_L)
 
 # v_l5 = pV5_0.time_derivative().dot(N.x)
 # v_l6 = pV6_0.time_derivative().dot(N.x)
@@ -368,10 +368,10 @@ v_t = sympy.Matrix([v_l1,v_l2,v_l3,v_l4])
 J_t  = v_t.jacobian(q_d)
 J_t_ind = v_t.jacobian(q_ind)
 
-
 f_tip = sympy.Matrix([Fx_tip,Fy_tip])
 
 f_t = (J_t_ind)*f_tip
+
 f1 = sympy.Symbol('f1')
 f2 = sympy.Symbol('f2')
 f3 = sympy.Symbol('f3')
@@ -381,8 +381,8 @@ cond1 = {}
 cond1[lA] = 0.05
 cond1[lh] = 0.05
 cond1[lT] = 0.05
-cond1[Fx_tip] = 0
-cond1[Fy_tip] = -10
+cond1[Fx_tip] = 10
+cond1[Fy_tip] = 0
 cond1[T_tip] = 0
 
 f_t_sym = sympy.Matrix([f1,f2,f3,f4])
@@ -414,29 +414,45 @@ def calculate_f_dump(x1):
     value1 = ft_error_sym.subs(cond2)
     
     value1 = numpy.array(value1)
-    value2 = numpy.sum(value1**2)
+    value2 = numpy.sum(value1**2)*0
     
     value3 = numpy.sum(numpy.asanyarray(x1)**2)
     
-    value4=0
-    # value4+=(x1[0]-abs(x1[0]))**2 +(x1[1]-abs(x1[1]))**2+(x1[2]-abs(x1[2]))**2+(x1[3]-abs(x1[3]))**2      
-    # value4+=(x1[0]+abs(-x1[0]))**2 +(x1[1]+abs(-x1[1]))**2+(x1[2]+abs(-x1[2]))**2+(x1[3]+abs(-x1[3]))**2      
-
-    return value2+value3**2+value4
+    value4 = numpy.sum((abs(x1)+x1)**2)*0
+    return value2+value3+value4
     # print(value2)
 
-bounds1 = [(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4)]
+# bounds1 = [(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4)]
+bounds1 = [(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3)]
 # bounds1 = [(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5)]
-# res = differential_evolution(calculate_f_dump,bounds1,disp=True,maxiter=3000)
 
+# bounds1 = [(-1e4,1e-5),(-1e-5,1e4),(-1e4,1e-5),(-1e-5,1e4)]
+
+# cons = ({'type':'eq','fun':-0.025*x[0] - 0.0671695722906443*x[2] - 0.0421695722906443*x[3] - 0.433012701892219},
+#         {'type':'eq','fun':0.0286788218175523*x[1] + 0.0421695722906443*x[2] + 0.0708483941081966*x[3] - 0.369414438646029})
+
+A_eq = [[-0.025, 0   ,                  -0.0671695722906443,  -0.0421695722906443],
+        [0,      0.0286788218175523,     0.0421695722906443,     0.0708483941081966]]
+lb = numpy.array([0.433012701892219,0.369414438646029]) - 1e-3
+ub = numpy.array([0.433012701892219,0.369414438646029]) + 1e-3
+con1 = LinearConstraint(A_eq, lb, ub)
+
+res = differential_evolution(calculate_f_dump,bounds1,constraints=con1,disp=True,maxiter=3000)
+
+# res = minimize(calculate_f_dump,[0,0,0,0],method='BFGS')
+print(res.x)
+print(J_t_ind.subs(initialvalues).subs(cond1).T.dot(res.x))
+print(T_ind.subs(initialvalues).subs(cond1))
 # dual_annealing(calculate_f_dump,bounds1)
 
-res = shgo(calculate_f_dump,bounds1)
-
-res
+# res = shgo(calculate_f_dump,bounds1)
 
 
-print(J_t_ind.subs(initialvalues).subs(cond1).T.dot(res.x))
-
-print(T_ind.subs(initialvalues).subs(cond1))
-
+# from scipy.optimize import linprog
+# c_value = [1,1,1,1]
+# A_value = [[-0.025,0, -0.0671695722906443,-0.0421695722906443],[0,0.0286788218175523,0.0421695722906443,0.0708483941081966]]
+# b_value = [0.433012701892219,0.369414438646029]
+# # bounds1 = [(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4)]
+# bounds1 = [(-1e2,1e2),(-1e2,1e2),(-1e2,1e2),(-1e2,1e2)]
+# res = linprog(c_value, A_eq=A_value,b_eq=b_value, bounds=bounds1)
+# res.x
