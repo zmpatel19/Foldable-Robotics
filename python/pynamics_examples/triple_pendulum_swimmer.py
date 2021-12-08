@@ -27,7 +27,7 @@ import math
 system = System()
 pynamics.set_system(__name__,system)
 
-constrain_base=True
+constrain_base=False
 pp = 30
 small = 1e-10
 

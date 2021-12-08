@@ -457,10 +457,10 @@ def calculate_f_dump(x1):
 
 # bounds1 = [(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4)]
 # bounds1 = [(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5)]
-bounds1 = [(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4)]
-res = differential_evolution(calculate_f_dump,bounds1,disp=True,maxiter=1000)
-res
+# bounds1 = [(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4)]
+# res = differential_evolution(calculate_f_dump,bounds1,disp=True,maxiter=1000)
+# res.x
 
 
-print(J_t_ind_T1.subs(initialvalues).subs(cond1).T.dot(res.x))
-print(T_ind_T1.subs(initialvalues).subs(cond1))
+# print(J_t_ind_T1.subs(initialvalues).subs(cond1).T.dot(res.x))
+# print(T_ind_T1.subs(initialvalues).subs(cond1))
