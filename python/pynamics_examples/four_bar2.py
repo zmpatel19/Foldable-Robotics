@@ -75,7 +75,7 @@ qB,qB_d,qB_dd = Differentiable('qB',system)
 qC,qC_d,qC_dd = Differentiable('qC',system)
 qD,qD_d,qD_dd = Differentiable('qD',system)
 
-# qE,qE_d,qE_dd = Differentiable('qE',system)
+qE,qE_d,qE_dd = Differentiable('qE',system)
 # qF,qF_d,qF_dd = Differentiable('qF',system)
 # qG,qG_d,qG_dd = Differentiable('qG',system)
 
@@ -91,8 +91,8 @@ initialvalues[qC_d] =0*pi/180
 initialvalues[qD]   =2*angle_value*pi/180 -pi
 initialvalues[qD_d] =0*pi/180
 
-# initialvalues[qE]   = -180*pi/180
-# initialvalues[qE_d] = 0
+initialvalues[qE]   = -180*pi/180
+initialvalues[qE_d] = 0
 # initialvalues[qF]   = 10*pi/180
 # initialvalues[qF_d] = 0
 # initialvalues[qG]   = -10*pi/180
@@ -115,8 +115,8 @@ C = Frame('C',system)
 D = Frame('D',system)
 
 E = Frame('E',system)
-F = Frame('F',system)
-G = Frame('G',system)
+# F = Frame('F',system)
+# G = Frame('G',system)
 
 # V1 = Frame('V_1',system)
 # V2 = Frame('V_2',system)
@@ -128,7 +128,7 @@ C.rotate_fixed_axis(N,[0,0,1],qC,system)
 D.rotate_fixed_axis(B,[0,0,1],qD,system)
 
 
-# E.rotate_fixed_axis(N,[0,0,1],qE,system)
+E.rotate_fixed_axis(N,[0,0,1],qE,system)
 # F.rotate_fixed_axis(E,[0,0,1],qF,system)
 # G.rotate_fixed_axis(F,[0,0,1],qG,system)
 
@@ -140,12 +140,12 @@ pNC=pNA
 pCD = pNC+lA*C.x
 pDB = pCD + lA*D.x
 
-# pNE = pNA + lh*E.y
+pNE = pNA + lh*E.y
 # pEF = pNE +lA*F.y
 # pFG = pEF +lA*G.y
 
-# pER = pNE - 0.5*lT*E.x
-# pEL = pNE + 0.5*lT*E.x
+pER = pNE - 0.5*lT*E.x
+pEL = pNE + 0.5*lT*E.x
 
 
 # pFR = pEF - lA*F.x
@@ -164,7 +164,8 @@ vAB=pAB.time_derivative()
 
 # points = [pDB,pCD,pNC,pER,pEL,pNA,pNE,pFR,pFL,pNE,pEF,pGL,pGR,pEF,pNE,pNA,pAB,pBD]
 # points = [pDB,pCD,pNC,pER,pEL,pNA,pNE,pNA,pAB,pBD]
-points = [pDB,pCD,pNC,pNA,pAB,pBD]
+points = [pDB,pCD,pNC,pER,pNA,pNE,pNA,pAB,pBD]
+# points = [pDB,pCD,pNC,pNA,pAB,pBD]
 
 
 statevariables = system.get_state_variables()
@@ -315,23 +316,24 @@ l_3_length = (l_3.dot(l_3))**0.5
 # l_4_length = (l_4.dot(l_4))**0.5
 
 
-# l_BE_R = pAB - pER
-# l_BE_L = pCD - pEL
+l_BE_R = pAB - pER
+l_BE_L = pCD - pEL
 # l_EF_R = pER - pFR
 # l_EF_L = pEL - pFL
 # l_FG_R = pFR - pGR
 # l_FG_L = pFL - pGL
 
-# u_L_BE_R = (1/l_BE_R.length())*l_BE_R
-# u_L_BE_L = (1/l_BE_L.length())*l_BE_L
-
-# l_BE_R_length = (l_BE_R.dot(l_BE_R))**0.5
-# l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
+l_BE_R_length = (l_BE_R.dot(l_BE_R))**0.5
+l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
 # l_EF_R_length = (l_EF_R.dot(l_EF_R))**0.5
 # l_EF_L_length = (l_EF_L.dot(l_EF_L))**0.5
 # l_FG_R_length = (l_FG_R.dot(l_FG_R))**0.5
 # l_FG_L_length = (l_FG_L.dot(l_FG_L))**0.5
 
+u_L_BE_R = (1/l_BE_R.length())*l_BE_R
+u_L_BE_L = (1/l_BE_L.length())*l_BE_L
+
+# Vertical version
 pV1_0 = pAB - 2*lA*N.y
 pV2_0 = pCD - 2*lA*N.y
 pV3_0 = pAB - 2*lA*N.y + l_3_length*N.y
@@ -344,8 +346,18 @@ v_l2 = pV2_0.time_derivative().dot(N.y)
 v_l3 = pV3_0.time_derivative().dot(N.y)
 v_l4 = pV4_0.time_derivative().dot(N.y)
 
-# v_l3 = (pCD - 2*lA*N.y).dot(N.y) - l_3_length*N.y.dot(N.y)
-# v_l4 = (pAB - 2*lA*N.y).dot(N.y) - l_3_length*N.y.dot(N.y)
+# with triangle version
+pV1_0 = pAB - 2*lA*u_L_BE_R
+pV2_0 = pCD - 2*lA*u_L_BE_L
+pV3_0 = pAB - 2*lA*u_L_BE_L + l_3_length*u_L_BE_L
+pV4_0 = pCD - 2*lA*u_L_BE_R + l_3_length*u_L_BE_R
+
+# v_l1 = pV1_0.time_derivative().dot(N.y)
+# v_l2 = pV2_0.time_derivative().dot(N.y)
+v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
+v_l2 = pV2_0.time_derivative().dot(u_L_BE_L)
+v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
+v_l4 = pV4_0.time_derivative().dot(u_L_BE_R)
 
 # v_l1 = pV1_0.time_derivative().dot(-N.y)
 # v_l2 = pV2_0.time_derivative().dot(-N.y)
@@ -392,18 +404,6 @@ cond1[Fy_tip] = 10
 cond1[T_tip] = 0
 
 
-initialvalues = {}
-angle_value = 55
-initialvalues[qA]   =(angle_value)*pi/180
-initialvalues[qA_d] =0*pi/180
-initialvalues[qB]   =pi-2*(angle_value)*pi/180
-initialvalues[qB_d] =0*pi/180
-initialvalues[qC]   =pi - (angle_value)*pi/180
-initialvalues[qC_d] =0*pi/180
-initialvalues[qD]   =2*angle_value*pi/180 -pi
-initialvalues[qD_d] =0*pi/180
-
-
 f_t_sym = sympy.Matrix([f1,f2,f3,f4])
 
 ft1 = (J_t_ind.T)*f_t_sym
@@ -444,8 +444,8 @@ bounds1 = [(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3)]
 A_eq  =numpy.array ( ft_error_sym.jacobian(sympy.Matrix([f1,f2,f3,f4]))).astype(numpy.float64)
 lb1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
 ub1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
-lb = numpy.transpose(lb1).reshape(2) - 1e-3
-ub = numpy.transpose(ub1).reshape(2) + 1e-3
+lb = numpy.transpose(lb1).reshape(2) - 1e-4
+ub = numpy.transpose(ub1).reshape(2) + 1e-4
 con1 = LinearConstraint(A_eq, lb, ub)
 
 # res = differential_evolution(calculate_f_dump,bounds1,constraints=con1,disp=True,maxiter=1000)
@@ -453,9 +453,9 @@ con1 = LinearConstraint(A_eq, lb, ub)
 
 # res = dual_annealing(calculate_f_dump,bounds1)
 res = minimize(calculate_f_dump,[1,1,-1,-1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':True})
-res.x
-# res = shgo(calculate_f_dump,bounds1)
 
+print(res.x)
+# res = shgo(calculate_f_dump,bounds1)
 
 print((J_t_ind.subs(initialvalues).subs(cond1).T).dot(res.x))
 print(T_ind.subs(initialvalues).subs(cond1))
