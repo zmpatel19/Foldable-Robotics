@@ -35,9 +35,8 @@ system = System()
 pynamics.set_system(__name__,system)
 
 lA = Constant(1,'lA',system)
-# lA = Constant(1,'lA',system)
-# lA = Constant(1,'lA',system)
-# lA = Constant(1,'lA',system)
+lh = Constant(1,'lh',system)
+lT = Constant(1,'lT',system)
 
 m = Constant(1,'m',system)
 
@@ -156,8 +155,8 @@ pCD = pNC+lA*C.x
 pDB = pCD + lA*D.x
 
 
-pER = pFE - lA*E.x
-pEL = pFE + lA*E.x
+pER = pFE + 0.5*lT*E.x
+pEL = pFE - 0.5*lT*E.x
 
 # pFR = pEF - lA*F.x
 # pFL = pEF + lA*F.x
@@ -211,6 +210,9 @@ pBcm = pAB+lA/2*B.x
 pCcm = pNC+lA/2*C.x
 pDcm = pCD+lA/2*D.x
 
+pEcm = pFE + lA/2*E.y
+pFcm = pNF + lA/2*F.y
+
 vBD = pBD.time_derivative()
 vDB = pDB.time_derivative()
 
@@ -236,19 +238,22 @@ BodyB = Particle(pBcm,m,'ParticleB',system)
 BodyC = Particle(pCcm,m,'ParticleC',system)
 BodyD = Particle(pDcm,m,'ParticleD',system)
 
+BodyE = Particle(pEcm,m,'ParticleE',system)
+BodyF = Particle(pFcm,m,'ParticleF',system)
+
 system.addforce(-b*wNA,wNA)
 system.addforce(-b*wNC,wNC)
 
 
-system.addforce(T2*uCD_AB,vCD)
-system.addforce(-T2*uCD_AB,vAB)
-system.addforce(-T2*N.y,vAB)
-system.addforce(-T1*N.y,vAB)
+# system.addforce(T2*uCD_AB,vCD)
+# system.addforce(-T2*uCD_AB,vAB)
+# system.addforce(-T2*N.y,vAB)
+# system.addforce(-T1*N.y,vAB)
 
-system.addforce(T3*uCD_AB,vCD)
-system.addforce(-T3*uCD_AB,vAB)
-system.addforce(-T3*N.y,vCD)
-system.addforce(-T4*N.y,vCD)
+# system.addforce(T3*uCD_AB,vCD)
+# system.addforce(-T3*uCD_AB,vAB)
+# system.addforce(-T3*N.y,vCD)
+# system.addforce(-T4*N.y,vCD)
 
 eq = []
 eq.append((pBD-pDB))
@@ -364,8 +369,8 @@ l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
 pV1_0 = pAB - lA*u_L_BE_R
 pV2_0 = pCD - lA*u_L_BE_L
 
-pV3_0 = pAB - 0.5*lA*u_L_BE_R- l_3_length*u_L_BE_R
-pV4_0 = pCD - 0.5*lA*u_L_BE_L- l_4_length*u_L_BE_L
+pV3_0 = pAB - 0.5*lA*u_L_BE_R + l_3_length*u_L_BE_R
+pV4_0 = pCD - 0.5*lA*u_L_BE_L + l_4_length*u_L_BE_L
 
 pV5_0 = pER - lA*N.y
 pV6_0 = pEL - lA*N.y
@@ -416,8 +421,10 @@ f6 = sympy.Symbol('f6')
 
 cond1 = {}
 cond1[lA] = 0.05
-cond1[Fx_tip] = 10
-cond1[Fy_tip] = 0
+cond1[lh] = 0.05
+cond1[lT] = 1
+cond1[Fx_tip] = 0
+cond1[Fy_tip] = 10
 cond1[T_tip] = 0
 
 # f_t_sym = sympy.Matrix([f1,f2,f3,f4])
@@ -435,32 +442,35 @@ ft_error_T1 = T_ind_T1-ft1_T1
 ft_error_sym_T1 = ft_error_T1.subs(initialvalues).subs(cond1)
 
 def calculate_f_dump(x1):
-    cond2 = {}
-    cond2[f1]=x1[0]
-    cond2[f2]=x1[1]
-    cond2[f3]=x1[2]
-    cond2[f4]=x1[3]  
-    cond2[f5]=x1[4]  
-    cond2[f6]=x1[5]  
-    value1 = ft_error_sym_T1.subs(cond2)
-    value1 = numpy.array(value1)
-    value2 = numpy.sum(value1**2)**2
-        
-    value3 = numpy.sum(numpy.asanyarray(x1)**2)*0
-    
-    value4=0
-    # value4+=(x1[0]-abs(x1[0]))**2 +(x1[1]-abs(x1[1]))**2+(x1[2]-abs(x1[2]))**2+(x1[3]-abs(x1[3]))**2      
-    # value4+=(x1[0]+abs(-x1[0]))**2 +(x1[1]+abs(-x1[1]))**2+(x1[2]+abs(-x1[2]))**2+(x1[3]+abs(-x1[3]))**2      
-
-    return (value2+value3+value4)
+    # cond2 = {}
+    # cond2[f1]=x1[0]
+    # cond2[f2]=x1[1] 
+    # cond2[f3]=x1[2]    
+    # cond2[f4]=x1[3]        
+    # value1 = ft_error_sym.subs(cond2)    
+    # value1 = numpy.array(value1)
+    # value2 = numpy.sum(value1**2)*0
+    value3 = numpy.sum(numpy.asanyarray(x1)**2)*1
+    # value4 = numpy.sum((abs(x1)+x1)**2)*0
+    # return value2+value3+value4
+    # print(value2)
+    return value3
     # print(value2)
 
-# bounds1 = [(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4),(1e-5,1e4)]
-# bounds1 = [(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5),(-1e4,1e-5)]
-# bounds1 = [(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4),(-1e4,1e4)]
-# res = differential_evolution(calculate_f_dump,bounds1,disp=True,maxiter=1000)
-# res.x
+bounds1 = [(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3)]
 
+A_eq  =numpy.array ( ft_error_sym_T1.jacobian(sympy.Matrix([f1,f2,f3,f4,f5,f6]))).astype(numpy.float64)
+lb1 = -numpy.array(ft_error_sym_T1.subs({f1:0,f2:0,f3:0,f4:0,f5:0,f6:0})).astype(numpy.float64)
+ub1 = -numpy.array(ft_error_sym_T1.subs({f1:0,f2:0,f3:0,f4:0,f5:0,f6:0})).astype(numpy.float64)
+lb = numpy.transpose(lb1).reshape(3) - 1e-4
+ub = numpy.transpose(ub1).reshape(3) + 1e-4
+con1 = LinearConstraint(A_eq, lb, ub)
 
-# print(J_t_ind_T1.subs(initialvalues).subs(cond1).T.dot(res.x))
-# print(T_ind_T1.subs(initialvalues).subs(cond1))
+# res = dual_annealing(calculate_f_dump,bounds1)
+res = minimize(calculate_f_dump,[1,1,-1,-1,1,1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':True})
+
+print(res.x)
+# res = shgo(calculate_f_dump,bounds1)
+
+print((J_t_ind_T1.subs(initialvalues).subs(cond1).T).dot(res.x))
+print(T_ind_T1.subs(initialvalues).subs(cond1))
