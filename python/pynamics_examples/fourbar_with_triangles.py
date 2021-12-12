@@ -83,14 +83,16 @@ qD,qD_d,qD_dd = Differentiable('qD',system)
 
 qE,qE_d,qE_dd = Differentiable('qE',system)
 qF,qF_d,qF_dd = Differentiable('qF',system)
+
+# qTip,qTip_d,qTip_dd = Differentiable('qF',system)
 # qG,qG_d,qG_dd = Differentiable('qG',system)
 
 
 initialvalues = {}
 
-initialvalues[qE]   = 10*pi/180
+initialvalues[qE]   = 0*pi/180
 initialvalues[qE_d] = 0
-initialvalues[qF]   = -10*pi/180
+initialvalues[qF]   = 0*pi/180
 initialvalues[qF_d] = 0
 
 
@@ -299,42 +301,42 @@ J = v.jacobian(q_d)
 J_ind = v.jacobian(q_ind)
 J_dep = v.jacobian(q_dep)
 
-q_d_T1 = sympy.Matrix([qA_d,qB_d,qC_d,qD_d,qE_d])
-q_ind_T1 = sympy.Matrix([qA_d,qC_d,qE_d])
+q_T1 = sympy.Matrix([qA_d,qB_d,qE_d,qF_d])
+# q_ind_T1 = sympy.Matrix([qA_d,qC_d,qE_d])
 # q_ind_T1 = sympy.Matrix([qE_d])
-J_ind_T1 = v.jacobian(q_ind_T1)
-J_dep_T1 = v.jacobian(q_dep)
+J_T1 = v.jacobian(q_T1)
+# J_dep_T1 = v.jacobian(q_dep)
 
 
 zero  = J_ind*q_ind+J_dep*q_dep - J*q_d
 
-eq = pBD-pDB
-eq_d = eq.time_derivative()
-eq_d_scalar = []
-eq_d_scalar.append(eq_d.dot(N.x))
-eq_d_scalar.append(eq_d.dot(N.y))
-eq_d_scalar= sympy.Matrix(eq_d_scalar)
+# eq = pBD-pDB
+# eq_d = eq.time_derivative()
+# eq_d_scalar = []
+# eq_d_scalar.append(eq_d.dot(N.x))
+# eq_d_scalar.append(eq_d.dot(N.y))
+# eq_d_scalar= sympy.Matrix(eq_d_scalar)
 
-J_constraint = eq_d_scalar.jacobian(q_d)
-A_m= eq_d_scalar.jacobian(q_ind)
-B_m= eq_d_scalar.jacobian(q_dep)
-C_m = -B_m.inv()*A_m
+# J_constraint = eq_d_scalar.jacobian(q_d)
+# A_m= eq_d_scalar.jacobian(q_ind)
+# B_m= eq_d_scalar.jacobian(q_dep)
+# C_m = -B_m.inv()*A_m
 
-J_new = (J_ind+J_dep*C_m)
+# J_new = (J_ind+J_dep*C_m)
 
 
-J_constraint_T1 = eq_d_scalar.jacobian(q_d_T1)
-A_m= eq_d_scalar.jacobian(q_ind_T1)
-B_m= eq_d_scalar.jacobian(q_dep)
-C_m = -B_m.inv()*A_m
-J_new_T1 = (J_ind_T1+J_dep_T1*C_m)
+# J_constraint_T1 = eq_d_scalar.jacobian(q_d_T1)
+# A_m= eq_d_scalar.jacobian(q_ind_T1)
+# B_m= eq_d_scalar.jacobian(q_dep)
+# C_m = -B_m.inv()*A_m
+# J_new_T1 = (J_ind_T1+J_dep_T1*C_m)
 
 
 f = sympy.Matrix([Fx_tip,Fy_tip,T_tip])
-T_ind = J_new.T*f
+T_ind = J_T1.T*f
 # T_dep = C_m.inv().T*T_ind
 
-T_ind_T1 = J_new_T1.T*f
+# T_ind_T1 = J_new_T1.T*f
 
 
 l_3 = (pAB-pCD)
@@ -369,8 +371,8 @@ l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
 pV1_0 = pAB - lA*u_L_BE_R
 pV2_0 = pCD - lA*u_L_BE_L
 
-pV3_0 = pAB - 0.5*lA*u_L_BE_R + l_3_length*u_L_BE_R
-pV4_0 = pCD - 0.5*lA*u_L_BE_L + l_4_length*u_L_BE_L
+pV3_0 = pAB - 5*lA*u_L_BE_R + l_3_length*u_L_BE_R
+pV4_0 = pCD - 5*lA*u_L_BE_L + l_4_length*u_L_BE_L
 
 pV5_0 = pER - lA*N.y
 pV6_0 = pEL - lA*N.y
@@ -393,22 +395,21 @@ v_l6 = pV6_0.time_derivative().dot(N.y)
 # v_l5 = pV5_0.time_derivative().dot(N.x)
 # v_l6 = pV6_0.time_derivative().dot(N.x)
 
-v_t = sympy.Matrix([v_l1,v_l2,v_l3,v_l4])
+# v_t = sympy.Matrix([v_l1,v_l2,v_l3,v_l4])
 
 v_t_t1 = sympy.Matrix([v_l1,v_l2,v_l3,v_l4,v_l5,v_l6])
 
-J_t  = v_t.jacobian(q_d)
-J_t_ind = v_t.jacobian(q_ind)
+# J_t  = v_t.jacobian(q_d)
+# J_t_ind = v_t.jacobian(q_ind)
 
 # J_t_T1  = v_t.jacobian(q_d_T1)
-J_t_ind_T1 = v_t_t1.jacobian(q_ind_T1)
-
+J_t_ind_T1 = v_t_t1.jacobian(q_T1)
 
 # J_new_inv = J_new.inv()
 
 f_tip = sympy.Matrix([Fx_tip,Fy_tip,T_tip])
 
-f_t = (J_t_ind_T1)*f_tip
+# f_t = (J_t_ind_T1)*f_tip
 
 f1 = sympy.Symbol('f1')
 f2 = sympy.Symbol('f2')
@@ -430,7 +431,6 @@ cond1[T_tip] = 0
 # f_t_sym = sympy.Matrix([f1,f2,f3,f4])
 f_t_T1_sym = sympy.Matrix([f1,f2,f3,f4,f5,f6])
 
-
 # ft1 = (J_t_ind.T)*f_t_sym
 # ft_error = T_ind-ft1
 # ft_error_sym = ft_error.subs(initialvalues).subs(cond1)
@@ -438,7 +438,7 @@ f_t_T1_sym = sympy.Matrix([f1,f2,f3,f4,f5,f6])
 
 # ft_atoms = ft_error_sym.atoms(sympy.Number)
 ft1_T1 = (J_t_ind_T1.T)*f_t_T1_sym
-ft_error_T1 = T_ind_T1-ft1_T1
+ft_error_T1 = T_ind-ft1_T1
 ft_error_sym_T1 = ft_error_T1.subs(initialvalues).subs(cond1)
 
 def calculate_f_dump(x1):
@@ -462,15 +462,15 @@ bounds1 = [(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3)]
 A_eq  =numpy.array ( ft_error_sym_T1.jacobian(sympy.Matrix([f1,f2,f3,f4,f5,f6]))).astype(numpy.float64)
 lb1 = -numpy.array(ft_error_sym_T1.subs({f1:0,f2:0,f3:0,f4:0,f5:0,f6:0})).astype(numpy.float64)
 ub1 = -numpy.array(ft_error_sym_T1.subs({f1:0,f2:0,f3:0,f4:0,f5:0,f6:0})).astype(numpy.float64)
-lb = numpy.transpose(lb1).reshape(3) - 1e-4
-ub = numpy.transpose(ub1).reshape(3) + 1e-4
+lb = numpy.transpose(lb1).reshape(4) - 1e-4
+ub = numpy.transpose(ub1).reshape(4) + 1e-4
 con1 = LinearConstraint(A_eq, lb, ub)
 
 # res = dual_annealing(calculate_f_dump,bounds1)
-res = minimize(calculate_f_dump,[1,1,-1,-1,1,1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':True})
+res = minimize(calculate_f_dump,[1,1,1,1,1,1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':True})
 
 print(res.x)
 # res = shgo(calculate_f_dump,bounds1)
 
 print((J_t_ind_T1.subs(initialvalues).subs(cond1).T).dot(res.x))
-print(T_ind_T1.subs(initialvalues).subs(cond1))
+print(T_ind.subs(initialvalues).subs(cond1))
