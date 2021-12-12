@@ -301,14 +301,14 @@ J = v.jacobian(q_d)
 J_ind = v.jacobian(q_ind)
 J_dep = v.jacobian(q_dep)
 
-q_T1 = sympy.Matrix([qA_d,qB_d,qE_d,qF_d])
+q_T1 = sympy.Matrix([qE_d,qF_d])
 # q_ind_T1 = sympy.Matrix([qA_d,qC_d,qE_d])
 # q_ind_T1 = sympy.Matrix([qE_d])
 J_T1 = v.jacobian(q_T1)
 # J_dep_T1 = v.jacobian(q_dep)
 
 
-zero  = J_ind*q_ind+J_dep*q_dep - J*q_d
+# zero  = J_ind*q_ind+J_dep*q_dep - J*q_d
 
 # eq = pBD-pDB
 # eq_d = eq.time_derivative()
@@ -374,9 +374,11 @@ pV2_0 = pCD - lA*u_L_BE_L
 pV3_0 = pAB - 5*lA*u_L_BE_R + l_3_length*u_L_BE_R
 pV4_0 = pCD - 5*lA*u_L_BE_L + l_4_length*u_L_BE_L
 
-pV5_0 = pER - lA*N.y
-pV6_0 = pEL - lA*N.y
 
+# Need to change here
+pV5_0 = pER - 5*lA*N.y
+pV6_0 = pEL - 5*lA*N.y
+# Need to change here
 
 
 v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
@@ -397,7 +399,7 @@ v_l6 = pV6_0.time_derivative().dot(N.y)
 
 # v_t = sympy.Matrix([v_l1,v_l2,v_l3,v_l4])
 
-v_t_t1 = sympy.Matrix([v_l1,v_l2,v_l3,v_l4,v_l5,v_l6])
+v_t_t1 = sympy.Matrix([v_l5,v_l6])
 
 # J_t  = v_t.jacobian(q_d)
 # J_t_ind = v_t.jacobian(q_ind)
@@ -429,7 +431,7 @@ cond1[Fy_tip] = 10
 cond1[T_tip] = 0
 
 # f_t_sym = sympy.Matrix([f1,f2,f3,f4])
-f_t_T1_sym = sympy.Matrix([f1,f2,f3,f4,f5,f6])
+f_t_T1_sym = sympy.Matrix([f5,f6])
 
 # ft1 = (J_t_ind.T)*f_t_sym
 # ft_error = T_ind-ft1
@@ -457,17 +459,17 @@ def calculate_f_dump(x1):
     return value3
     # print(value2)
 
-bounds1 = [(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3)]
+bounds1 = [(-1e3,1e3),(-1e3,1e3)]
 
-A_eq  =numpy.array ( ft_error_sym_T1.jacobian(sympy.Matrix([f1,f2,f3,f4,f5,f6]))).astype(numpy.float64)
+A_eq  =numpy.array ( ft_error_sym_T1.jacobian(sympy.Matrix([f5,f6]))).astype(numpy.float64)
 lb1 = -numpy.array(ft_error_sym_T1.subs({f1:0,f2:0,f3:0,f4:0,f5:0,f6:0})).astype(numpy.float64)
 ub1 = -numpy.array(ft_error_sym_T1.subs({f1:0,f2:0,f3:0,f4:0,f5:0,f6:0})).astype(numpy.float64)
-lb = numpy.transpose(lb1).reshape(4) - 1e-4
-ub = numpy.transpose(ub1).reshape(4) + 1e-4
+lb = numpy.transpose(lb1).reshape(2) - 1e-4
+ub = numpy.transpose(ub1).reshape(2) + 1e-4
 con1 = LinearConstraint(A_eq, lb, ub)
 
 # res = dual_annealing(calculate_f_dump,bounds1)
-res = minimize(calculate_f_dump,[1,1,1,1,1,1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':True})
+res = minimize(calculate_f_dump,[1,-1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':True})
 
 print(res.x)
 # res = shgo(calculate_f_dump,bounds1)
