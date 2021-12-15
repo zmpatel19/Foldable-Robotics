@@ -54,10 +54,13 @@ class PointsOutput(Output):
             self.anim.save(movie_name, fps=fps,writer='ffmpeg')
         return ax
             
-    def plot_time(self,stepsize=1):
+    def plot_time(self,stepsize=1,newPlot=True):
         import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax = fig.add_subplot()
+        if newPlot==True:
+            fig = plt.figure()
+            ax = fig.add_subplot()
+        else:
+            ax = plt.subplot()
         try:
             self.y
         except AttributeError:

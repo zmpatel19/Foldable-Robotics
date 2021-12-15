@@ -91,7 +91,7 @@ initialvalues[qC_d] =0*pi/180
 initialvalues[qD]   =2*angle_value*pi/180 -pi
 initialvalues[qD_d] =0*pi/180
 
-initialvalues[qE]   = -180*pi/180
+initialvalues[qE]   = 0*pi/180
 initialvalues[qE_d] = 0
 # initialvalues[qF]   = 10*pi/180
 # initialvalues[qF_d] = 0
@@ -140,12 +140,12 @@ pNC=pNA
 pCD = pNC+lA*C.x
 pDB = pCD + lA*D.x
 
-pNE = pNA + lh*E.y
+pNE = pNA - lh*E.y
 # pEF = pNE +lA*F.y
 # pFG = pEF +lA*G.y
 
-pER = pNE - 0.5*lT*E.x
-pEL = pNE + 0.5*lT*E.x
+pER = pNE + 0.5*lT*E.x
+pEL = pNE - 0.5*lT*E.x
 
 
 # pFR = pEF - lA*F.x
@@ -323,63 +323,37 @@ l_BE_L = pCD - pEL
 # l_FG_R = pFR - pGR
 # l_FG_L = pFL - pGL
 
-l_BE_R_length = (l_BE_R.dot(l_BE_R))**0.5
-l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
-# l_EF_R_length = (l_EF_R.dot(l_EF_R))**0.5
-# l_EF_L_length = (l_EF_L.dot(l_EF_L))**0.5
-# l_FG_R_length = (l_FG_R.dot(l_FG_R))**0.5
-# l_FG_L_length = (l_FG_L.dot(l_FG_L))**0.5
+# l_BE_R_length = (l_BE_R.dot(l_BE_R))**0.5
+# l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
+# # l_EF_R_length = (l_EF_R.dot(l_EF_R))**0.5
+# # l_EF_L_length = (l_EF_L.dot(l_EF_L))**0.5
+# # l_FG_R_length = (l_FG_R.dot(l_FG_R))**0.5
+# # l_FG_L_length = (l_FG_L.dot(l_FG_L))**0.5
 
-u_L_BE_R = (1/l_BE_R.length())*l_BE_R
-u_L_BE_L = (1/l_BE_L.length())*l_BE_L
+# u_L_BE_R = (1/l_BE_R.length())*l_BE_R
+# u_L_BE_L = (1/l_BE_L.length())*l_BE_L
 
 # Vertical version
-pV1_0 = pAB - 2*lA*N.y
-pV2_0 = pCD - 2*lA*N.y
-pV3_0 = pAB - 2*lA*N.y + l_3_length*N.y
-pV4_0 = pCD - 2*lA*N.y + l_3_length*N.y
+pV1_0 = pAB - 5*lA*N.y
+pV2_0 = pCD - 5*lA*N.y
+pV3_0 = pAB - 5*lA*N.y + l_3_length*N.y
+pV4_0 = pCD - 5*lA*N.y + l_3_length*N.y
 
-# v_l1 = pV1_0.time_derivative().dot(N.y)
-# v_l2 = pV2_0.time_derivative().dot(N.y)
 v_l1 = pV1_0.time_derivative().dot(N.y)
 v_l2 = pV2_0.time_derivative().dot(N.y)
 v_l3 = pV3_0.time_derivative().dot(N.y)
 v_l4 = pV4_0.time_derivative().dot(N.y)
 
 # with triangle version
-pV1_0 = pAB - 2*lA*u_L_BE_R
-pV2_0 = pCD - 2*lA*u_L_BE_L
-pV3_0 = pAB - 2*lA*u_L_BE_L + l_3_length*u_L_BE_L
-pV4_0 = pCD - 2*lA*u_L_BE_R + l_3_length*u_L_BE_R
-
-# v_l1 = pV1_0.time_derivative().dot(N.y)
-# v_l2 = pV2_0.time_derivative().dot(N.y)
-v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
-v_l2 = pV2_0.time_derivative().dot(u_L_BE_L)
-v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
-v_l4 = pV4_0.time_derivative().dot(u_L_BE_R)
-
-# v_l1 = pV1_0.time_derivative().dot(-N.y)
-# v_l2 = pV2_0.time_derivative().dot(-N.y)
-# v_l3 = pV3_0.time_derivative().dot(-N.y)
-# v_l4 = pV4_0.time_derivative().dot(-N.y)
-# pV1_0 = pAB - lA*u_L_BE_R
-# pV2_0 = pCD - lA*u_L_BE_L
-
-# pV3_0 = pAB - 0.5*lA*u_L_BE_R- l_3_length*u_L_BE_R
-# pV4_0 = pCD - 0.5*lA*u_L_BE_L- l_4_length*u_L_BE_L
-
-# pV5_0 = pAB - l_3_length*u_L_BE_L
-# pV6_0 = pCD - l_4_length*u_L_BE_L
-
+# pV1_0 = pAB - 5*lA*u_L_BE_R
+# pV2_0 = pCD - 5*lA*u_L_BE_L
+# pV3_0 = pAB - 5*lA*u_L_BE_L + l_3_length*u_L_BE_L
+# pV4_0 = pCD - 5*lA*u_L_BE_R + l_3_length*u_L_BE_R
 
 # v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
-# v_l2 = pV2_0.time_derivative().dot(u_L_BE_R)
+# v_l2 = pV2_0.time_derivative().dot(u_L_BE_L)
 # v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
-# v_l4 = pV4_0.time_derivative().dot(u_L_BE_L)
-
-# v_l5 = pV5_0.time_derivative().dot(N.x)
-# v_l6 = pV6_0.time_derivative().dot(N.x)
+# v_l4 = pV4_0.time_derivative().dot(u_L_BE_R)
 
 v_t = sympy.Matrix([v_l1,v_l2,v_l3,v_l4])
 
@@ -395,6 +369,7 @@ f2 = sympy.Symbol('f2')
 f3 = sympy.Symbol('f3')
 f4 = sympy.Symbol('f4')
 
+
 cond1 = {}
 cond1[lA] = 0.05
 cond1[lh] = 0.05
@@ -403,69 +378,99 @@ cond1[Fx_tip] = 0
 cond1[Fy_tip] = 10
 cond1[T_tip] = 0
 
-
-f_t_sym = sympy.Matrix([f1,f2,f3,f4])
-
-ft1 = (J_t_ind.T)*f_t_sym
-ft_error = T_ind-ft1
-ft_error_sym = ft_error.subs(initialvalues).subs(cond1)
-
-
-from scipy.optimize import minimize
-from scipy.optimize import shgo
-from scipy.optimize import differential_evolution
-from scipy.optimize import Bounds
-from scipy.optimize import LinearConstraint
-
-from scipy.optimize import dual_annealing
-from scipy.optimize import shgo
-import cma
-
-  
 def calculate_f_dump(x1):
-    cond2 = {}
-    cond2[f1]=x1[0]
-    cond2[f2]=x1[1] 
-    cond2[f3]=x1[2]    
-    cond2[f4]=x1[3]        
-    value1 = ft_error_sym.subs(cond2)    
-    value1 = numpy.array(value1)
-    value2 = numpy.sum(value1**2)*0
+    # cond2 = {}
+    # cond2[f1]=x1[0]
+    # cond2[f2]=x1[1] 
+    # cond2[f3]=x1[2]    
+    # cond2[f4]=x1[3]        
+    # value1 = ft_error_sym.subs(cond2)    
+    # value1 = numpy.array(value1)
+    # value2 = numpy.sum(value1**2)*0
     value3 = numpy.sum(numpy.asanyarray(x1)**2)*1
     # value4 = numpy.sum((abs(x1)+x1)**2)*0
     # return value2+value3+value4
     # print(value2)
-    return (value3+value2)
-# calculate_f_dump([0.001,0.001,0.11,0.001])
+    return value3
 
-# bounds1 = [(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4)]
-bounds1 = [(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3)]
 
-A_eq  =numpy.array ( ft_error_sym.jacobian(sympy.Matrix([f1,f2,f3,f4]))).astype(numpy.float64)
-lb1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
-ub1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
-lb = numpy.transpose(lb1).reshape(2) - 1e-4
-ub = numpy.transpose(ub1).reshape(2) + 1e-4
-con1 = LinearConstraint(A_eq, lb, ub)
+def calculate_force_angle(angle):
+    initialvalues = {}
+    angle_value = angle
+    initialvalues[qA]   =(angle_value)*pi/180
+    initialvalues[qA_d] =0*pi/180
+    initialvalues[qB]   =pi-2*(angle_value)*pi/180
+    initialvalues[qB_d] =0*pi/180
+    initialvalues[qC]   =pi - (angle_value)*pi/180
+    initialvalues[qC_d] =0*pi/180
+    initialvalues[qD]   =2*angle_value*pi/180 -pi
+    initialvalues[qD_d] =0*pi/180    
+    initialvalues[qE]   = 0*pi/180
+    initialvalues[qE_d] = 0
+    
+    f_t_sym = sympy.Matrix([f1,f2,f3,f4])
+    
+    ft1 = (J_t_ind.T)*f_t_sym
+    ft_error = T_ind-ft1
+    ft_error_sym = ft_error.subs(initialvalues).subs(cond1)
+    
+    
+    from scipy.optimize import minimize
+    from scipy.optimize import differential_evolution
+    from scipy.optimize import Bounds
+    from scipy.optimize import LinearConstraint
+       
+    # calculate_f_dump([0.001,0.001,0.11,0.001])
+    
+    # bounds1 = [(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4)]
+    bounds1 = [(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3)]
+    # bounds1 = [(0,1e3),(0,1e3),(0,1e3),(0,1e3)]
+    
+    A_eq  =numpy.array ( ft_error_sym.jacobian(sympy.Matrix([f1,f2,f3,f4]))).astype(numpy.float64)
+    lb1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
+    ub1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
+    lb = numpy.transpose(lb1).reshape(2) - 1e-4
+    ub = numpy.transpose(ub1).reshape(2) + 1e-4
+    con1 = LinearConstraint(A_eq, lb, ub)
+    
+    # res = dual_annealing(calculate_f_dump,bounds1)
+    res = minimize(calculate_f_dump,[1,1,-1,-1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':False})
+    
+    cal1 = (J_t_ind.subs(initialvalues).subs(cond1).T).dot(res.x)
+    cal2 = T_ind.subs(initialvalues).subs(cond1)
+    # error = cal1-cal2
+    print(cal1)
+    print(cal2)
+    return res.x
 
-# res = differential_evolution(calculate_f_dump,bounds1,constraints=con1,disp=True,maxiter=1000)
-# res.x
+# calculate_force_angle(30)
 
-# res = dual_annealing(calculate_f_dump,bounds1)
-res = minimize(calculate_f_dump,[1,1,-1,-1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':True})
+values =[[0,0,0,0]]
+num = 50
+for item in numpy.linspace(0,89,num):
+    print(item)
+    # print(calculate_force_angle(item))
+    value = calculate_force_angle(item)
+    values = numpy.vstack([values,value])
+    
+plt.figure()
+plt.plot(numpy.linspace(0,89,num),values[1::,:])
+plt.legend(["f1","f2","f3","f4"])
+plt.grid()
 
-print(res.x)
-# res = shgo(calculate_f_dump,bounds1)
+# plt.figure()
+# plt.plot(numpy.linspace(0,89,num),values[1::,2])
+# plt.legend(["f1","f2","f3","f4"])
+# plt.grid()
 
-print((J_t_ind.subs(initialvalues).subs(cond1).T).dot(res.x))
-print(T_ind.subs(initialvalues).subs(cond1))
 
-# A_eq.dot(res.x)
+# print((J_t_ind.subs(initialvalues).subs(cond1).T).dot(res.x))
+# print(T_ind.subs(initialvalues).subs(cond1))
 
-print(ft_error_sym)
+# print(ft_error_sym)
 
-a = ft_error_sym.subs({f1:0,f3:0})
-print(sympy.solve(a))
+# a = ft_error_sym.subs({f1:0,f3:0})
+# print(sympy.solve(a))
 
-b = ft_error_sym.subs({f2:0,f4:0})
-print(sympy.solve(b))
+# b = ft_error_sym.subs({f2:0,f4:0})
+# print(sympy.solve(b))
