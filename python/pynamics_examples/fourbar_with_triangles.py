@@ -367,20 +367,30 @@ l_4_length = (l_4.dot(l_4))**0.5
 
 l_BE_R = pAB - pER
 l_BE_L = pCD - pEL
-# l_EF_R = pER - pFR
-# l_EF_L = pEL - pFL
-# l_FG_R = pFR - pGR
-# l_FG_L = pFL - pGL
 
-u_L_BE_R = (1/l_BE_R.length())*l_BE_R
-u_L_BE_L = (1/l_BE_L.length())*l_BE_L
+l_EF_R = pER - pFR
+l_EF_L = pEL - pFL
 
-l_BE_R_length = (l_BE_R.dot(l_BE_R))**0.5
-l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
+l_FG_R = pFR - pGR
+l_FG_L = pFL - pGL
+
+
+# l_BE_R_length = (l_BE_R.dot(l_BE_R))**0.5
+# l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
 # l_EF_R_length = (l_EF_R.dot(l_EF_R))**0.5
 # l_EF_L_length = (l_EF_L.dot(l_EF_L))**0.5
 # l_FG_R_length = (l_FG_R.dot(l_FG_R))**0.5
 # l_FG_L_length = (l_FG_L.dot(l_FG_L))**0.5
+
+u_L_BE_R = (1/l_BE_R.length())*l_BE_R
+u_L_BE_L = (1/l_BE_L.length())*l_BE_L
+
+u_L_EF_R = (1/l_EF_R.length())*l_EF_R
+u_L_EF_L = (1/l_EF_L.length())*l_EF_L
+
+u_L_FG_R = (1/l_FG_R.length())*l_FG_R
+u_L_FG_L = (1/l_FG_L.length())*l_FG_L
+
 
 # pV1_0 = pAB - lA*N.y
 # pV2_0 = pCD - lA*N.y
@@ -395,9 +405,15 @@ pV4_0 = pCD - 5*lA*u_L_BE_L + l_4_length*u_L_BE_L
 
 
 # Need to change here
-pV5_0 = pER - 5*lA*N.y
-pV6_0 = pEL - 5*lA*N.y
+pV5_0 = pER - 5*lA*u_L_EF_R
+pV6_0 = pEL - 5*lA*u_L_EF_L
 # Need to change here
+pV7_0 = pFR - 5*lA*u_L_FG_R
+pV8_0 = pFL - 5*lA*u_L_FG_L
+
+pV9_0  = pGR - 5*lA*G.y
+pV10_0 = pGL - 5*lA*G.y
+
 
 
 v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
@@ -405,8 +421,12 @@ v_l2 = pV2_0.time_derivative().dot(u_L_BE_R)
 v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
 v_l4 = pV4_0.time_derivative().dot(u_L_BE_L)
 
-v_l5 = pV5_0.time_derivative().dot(N.y)
-v_l6 = pV6_0.time_derivative().dot(N.y)
+v_l5 = pV5_0.time_derivative().dot(u_L_EF_R)
+v_l6 = pV6_0.time_derivative().dot(u_L_EF_L)
+v_l7 = pV7_0.time_derivative().dot(u_L_FG_R)
+v_l8 = pV8_0.time_derivative().dot(u_L_FG_L)
+v_l9 = pV9_0.time_derivative().dot(G.y)
+v_l10 = pV10_0.time_derivative().dot(G.y)
 
 # v_l1 = pV1_0.time_derivative().dot(N.y)
 # v_l2 = pV2_0.time_derivative().dot(N.y)
