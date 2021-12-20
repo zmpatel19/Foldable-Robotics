@@ -423,8 +423,8 @@ def calculate_force_angle(angle):
     # calculate_f_dump([0.001,0.001,0.11,0.001])
     
     # bounds1 = [(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4)]
-    bounds1 = [(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3)]
-    # bounds1 = [(0,1e3),(0,1e3),(0,1e3),(0,1e3)]
+    # bounds1 = [(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3)]
+    bounds1 = [(0,1e3),(0,1e3),(0,1e3),(0,1e3)]
     
     A_eq  =numpy.array ( ft_error_sym.jacobian(sympy.Matrix([f1,f2,f3,f4]))).astype(numpy.float64)
     lb1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
@@ -457,6 +457,7 @@ plt.figure()
 plt.plot(numpy.linspace(0,89,num),values[1::,:])
 plt.legend(["f1","f2","f3","f4"])
 plt.grid()
+plt
 
 # plt.figure()
 # plt.plot(numpy.linspace(0,89,num),values[1::,2])
