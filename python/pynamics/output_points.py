@@ -54,7 +54,7 @@ class PointsOutput(Output):
             self.anim.save(movie_name, fps=fps,writer='ffmpeg')
         return ax
             
-    def plot_time(self,stepsize=1,newPlot=True):
+    def plot_time(self,stepsize=1,newPlot=True,linestyle='solid'):
         import matplotlib.pyplot as plt
         if newPlot==True:
             fig = plt.figure()
@@ -66,6 +66,6 @@ class PointsOutput(Output):
         except AttributeError:
             self.calc()
 
-        ax.plot(self.y[::stepsize,:,0].T,self.y[::stepsize,:,1].T)
+        ax.plot(self.y[::stepsize,:,0].T,self.y[::stepsize,:,1].T,linestyle=linestyle)
         ax.axis('equal')
         return ax

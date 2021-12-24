@@ -53,7 +53,7 @@ angle_t4 = pi/10
 l_d1 = 0.05
 l_t_w = 0.1
 l_t_h = 0.1
-nth=3
+nth=2
 
 lA = Constant(l_d1,'lA',system)
 lh = Constant(l_t_h,'lh',system)
@@ -157,8 +157,8 @@ elif nth==2:
     pGM= pNG
     pGR = pGM + 0.5*lT*G.x
     pGL = pGM - 0.5*lT*G.x
+
 elif nth==3:
- 
     pFM = pGF
     angle_e1 = (angle_t4)/2
     pEM = pGF + lh*(sin(angle_e1))*F.x + lh*(cos(angle_e1))*F.y
@@ -183,16 +183,22 @@ ini0 = [initialvalues[item] for item in statevariables]
 # po1.calc(numpy.array([ini0,ini0]),[0,1])
 # po1.plot_time()
 
-def draw_skeleton(points1):
+def draw_skeleton(points1,linestyle='solid'):
     # points1 = [pGR,pFR,pER,pAB]
     po2 = PointsOutput(points1, constant_values=system.constant_values)
     po2.calc(numpy.array([ini0,ini0]),[0,1])
-    po2.plot_time(newPlot=False)
+    po2.plot_time(newPlot=False,linestyle=linestyle)
 
 draw_skeleton([pNG,pGM])
 draw_skeleton([pGM,pGF])
 
 draw_skeleton([pFM,pEM,pEM2,pFE])
+
+if nth==2:
+    draw_skeleton([pFM,pFE],linestyle='dashed')
+if nth==3:
+    draw_skeleton([pNG,pGF],linestyle='dashed')
+    draw_skeleton([pFM,pFE],linestyle='dashed')
 
 draw_skeleton([pGL,pGM,pGR])
 draw_skeleton([pFL,pFM,pFR])
