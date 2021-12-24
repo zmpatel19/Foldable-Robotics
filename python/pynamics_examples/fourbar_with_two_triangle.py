@@ -32,7 +32,7 @@ from scipy.optimize import differential_evolution
 from scipy.optimize import Bounds
 from scipy.optimize import LinearConstraint
 
-
+import math
 
 import sympy
 import numpy
@@ -47,13 +47,13 @@ pynamics.set_system(__name__,system)
 
 angle_d1 = pi/4
 angle_t1 = 0
-angle_t2 = pi/4
-angle_t3 = 0
-angle_t4 = pi/6
+angle_t2 = pi/10
+angle_t3 = -pi/5
+angle_t4 = pi/10
 l_d1 = 0.05
 l_t_w = 0.1
 l_t_h = 0.1
-nth=2
+nth=3
 
 lA = Constant(l_d1,'lA',system)
 lh = Constant(l_t_h,'lh',system)
@@ -82,7 +82,7 @@ qG,qG_d,qG_dd = Differentiable('qG',system)
 
 # [angle_d1,angle_t4,angle_t1,angle_t2,angle_t3,l_d1,l_t_w,l_t_h,nth] = inputStates
 
-l_d_h = 2*l_d1*cos(angle_d1)
+l_d_h = 2*l_d1*cos(angle_d1/2)
 
 T1_x = l_t_h*sin(angle_t1)
 T1_y = l_t_h*cos(angle_t1)
@@ -112,7 +112,7 @@ elif nth==2:
     L_a = l_t_h
     L_b = sqrt((D1_x-T1_x)**2+ (D1_y-T1_y)**2)
     initialvalues[qG] = (angle_t1)
-    initialvalues[qF] = (angle_t3+angle_t2+angle_t4)
+    initialvalues[qF] = math.atan2((D1_x-T1_x),(D1_y-T1_y))
 elif nth==3:
     L_a = sqrt(T2_x**2+ T2_y**2)
     L_b = sqrt((D1_x-T2_x)**2+ (D1_y-T2_y)**2)
@@ -145,7 +145,10 @@ if nth==1:
     pGL = pNG - 0.5*lT*G.x
 elif nth==2:
     pFM = pNG +lh*G.y
+    
     pEM = pFM -lh*(sin(angle_t2))*G.x + lh*(cos(angle_t2))*G.y
+    pEM2 = pEM -lh*(sin(angle_t2+angle_t3))*G.x + lh*(cos(angle_t2+angle_t3))*G.y
+    
     pFR = pFM + 0.5*cos(angle_t2)*lT*G.x + 0.5*sin(angle_t2)*lT*G.y
     pFL = pFM - 0.5*cos(angle_t2)*lT*G.x - 0.5*sin(angle_t2)*lT*G.y
     # pFR = pFM + 0.5*cos(angle_t3/2)*lT*F.x - 0.5*sin(angle_t3/2)*lT*F.y
@@ -159,6 +162,7 @@ elif nth==3:
     pFM = pGF
     angle_e1 = (angle_t4)/2
     pEM = pGF + lh*(sin(angle_e1))*F.x + lh*(cos(angle_e1))*F.y
+    pEM2 = pGF + lh*(sin(angle_e1))*F.x + lh*(cos(angle_e1))*F.y
     
     pFR = pFM + 0.5*lT*F.x + 0.5*lT*(1-cos(angle_e1))*F.x - 0.5*lT*sin(angle_e1)*F.y
     pFL = pFM - 0.5*lT*F.x - 0.5*lT*(1-cos(angle_e1))*F.x + 0.5*lT*sin(angle_e1)*F.y
@@ -188,7 +192,7 @@ def draw_skeleton(points1):
 draw_skeleton([pNG,pGM])
 draw_skeleton([pGM,pGF])
 
-draw_skeleton([pFM,pEM,pFE])
+draw_skeleton([pFM,pEM,pEM2,pFE])
 
 draw_skeleton([pGL,pGM,pGR])
 draw_skeleton([pFL,pFM,pFR])
