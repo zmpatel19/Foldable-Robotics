@@ -43,12 +43,12 @@ pynamics.set_system(__name__,system)
 angle_d1 = 2*pi/3
 angle_t1 = 0
 angle_t2 = pi/8
-angle_t3 = -pi/7
-angle_t4 = pi/6
-l_d1 = 0.1
+angle_t3 = pi/3
+angle_t4 = -pi/6
+l_d1 = 0.01
 l_t_w = 0.06
 l_t_h = 0.1
-nth=3
+nth=2
 
 lA = Constant(l_d1,'lA',system)
 lh = Constant(l_t_h,'lh',system)
@@ -145,15 +145,19 @@ if nth==2:
     # pEM = pFM + lh*(sin(angle_t2))*N.x + lh*(cos(angle_t2))*N.y
     # pEM2 = pEM +lh*(sin(angle_t2+angle_t3))*N.x + lh*(cos(angle_t2+angle_t3))*N.y
     
-    pFR = pFM + 0.5*cos(angle_t2)*lT*N.x - 0.5*sin(angle_t2)*lT*N.y
-    pFL = pFM - 0.5*cos(angle_t2)*lT*N.x + 0.5*sin(angle_t2)*lT*N.y
+    pFR1 = pFM + 0.5*cos(angle_t2)*lT*N.x - 0.5*sin(angle_t2)*lT*N.y
+    pFL1 = pFM - 0.5*cos(angle_t2)*lT*N.x + 0.5*sin(angle_t2)*lT*N.y
     
     L_s1 = 2*l_t_h*cos(angle_t3/2)
     angle_e1 = acos((L_s1**2 + L_b**2-l_d_h**2)/(2*L_b*L_s1))
-    angle_e2 = angle_e1+ angle_t3/2
+    if angle_t3 <0:
+        angle_e2 = -angle_e1 + angle_t3/2
+    else:
+        angle_e2 = angle_e1 + angle_t3/2
     
-    pFR1 = pFM  + 0.5*lT*cos(angle_e2)*F.x + 0.5*lT*sin(angle_e2)*F.y
-    pFL1 = pFM  - 0.5*lT*cos(angle_e2)*F.x - 0.5*lT*sin(angle_e2)*F.y
+    
+    pFR = pFM  + 0.5*lT*cos(angle_e2)*F.x + 0.5*lT*sin(angle_e2)*F.y
+    pFL = pFM  - 0.5*lT*cos(angle_e2)*F.x - 0.5*lT*sin(angle_e2)*F.y
 
     pGM= pNG
     pGR = pGM + 0.5*lT*N.x
@@ -170,7 +174,10 @@ elif nth==3:
     pFR1 = pFM + 0.5*lT*cos(angle_t3+angle_t2)*N.x - 0.5*lT*sin(angle_t3+angle_t2)*N.y
     pFL1 = pFM - 0.5*lT*cos(angle_t3+angle_t2)*N.x + 0.5*lT*sin(angle_t3+angle_t2)*N.y
     
-    angle_e1 = acos((l_t_h**2 + L_b**2-l_d_h**2)/(2*L_b*l_t_h))
+    if angle_t4<0:
+        angle_e1 = -acos((l_t_h**2 + L_b**2-l_d_h**2)/(2*L_b*l_t_h))
+    else:
+        angle_e1 = acos((l_t_h**2 + L_b**2-l_d_h**2)/(2*L_b*l_t_h)) 
     pFM = pGF
     pFR = pFM + 0.5*lT*cos(angle_e1)*F.x + 0.5*lT*sin(angle_e1)*F.y
     pFL = pFM - 0.5*lT*cos(angle_e1)*F.x - 0.5*lT*sin(angle_e1)*F.y
@@ -219,9 +226,8 @@ draw_skeleton([pGM,pGR])
 draw_skeleton([pFM,pFR])
 
 
-draw_skeleton([pGL,pGM],linestyle='dashdot')
+
 draw_skeleton([pFL1,pFM],linestyle='dashdot')
-draw_skeleton([pGM,pGR],linestyle='dashdot')
 draw_skeleton([pFM,pFR1],linestyle='dashdot')
 
 plt.grid()
@@ -298,7 +304,7 @@ def calculate_force_angle(angle):
     cond1[lA] = l_d1
     cond1[lh] = l_t_h
     cond1[lT] = l_t_w
-    cond1[Fx_tip] = 50
+    cond1[Fx_tip] = -10
     cond1[Fy_tip] = 0
     cond1[T_tip] = 0
     tol=1e-4
