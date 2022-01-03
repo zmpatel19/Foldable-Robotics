@@ -19,7 +19,7 @@ from pynamics.particle import Particle
 import pynamics.integration
 from pynamics.constraint import AccelerationConstraint,KinematicConstraint
 
-from sympy import sin,cos,tan,sqrt
+from sympy import sin,cos,tan,sqrt,acos
 
 from scipy.optimize import minimize
 from scipy.optimize import shgo
@@ -42,9 +42,9 @@ pynamics.set_system(__name__,system)
 
 angle_d1 = 2*pi/3
 angle_t1 = 0
-angle_t2 = pi/6
-angle_t3 = -pi/3
-angle_t4 = pi/3
+angle_t2 = pi/8
+angle_t3 = -pi/7
+angle_t4 = pi/6
 l_d1 = 0.1
 l_t_w = 0.06
 l_t_h = 0.1
@@ -91,6 +91,9 @@ T3_x = -l_t_h*(sin(angle_t2 + angle_t3) + sin(angle_t2))
 T3_y =  l_t_h*(cos(angle_t2 + angle_t3) + cos(angle_t2) + 1)
 D1_x =  - l_t_h*sin(angle_t2 + angle_t3) - l_t_h*sin(angle_t2) - l_d_h*sin(angle_t2 + angle_t3 + angle_t4)
 D1_y =   l_t_h + l_t_h*cos(angle_t2 + angle_t3) + l_t_h*cos(angle_t2) + l_d_h*cos(angle_t2 + angle_t3 + angle_t4)
+
+
+
 initialvalues = {}
 
 # initialvalues[qG_d] = 0
@@ -142,11 +145,15 @@ if nth==2:
     # pEM = pFM + lh*(sin(angle_t2))*N.x + lh*(cos(angle_t2))*N.y
     # pEM2 = pEM +lh*(sin(angle_t2+angle_t3))*N.x + lh*(cos(angle_t2+angle_t3))*N.y
     
-    # pFR = pFM + 0.5*cos(angle_t2)*lT*N.x - 0.5*sin(angle_t2)*lT*N.y
-    # pFL = pFM - 0.5*cos(angle_t2)*lT*N.x + 0.5*sin(angle_t2)*lT*N.y
-
     pFR = pFM + 0.5*cos(angle_t2)*lT*N.x - 0.5*sin(angle_t2)*lT*N.y
-    pFL = pFM - 0.5*cos(angle_t2)*lT*N.x + 0.5*sin(angle_t2)*lT*N.y    
+    pFL = pFM - 0.5*cos(angle_t2)*lT*N.x + 0.5*sin(angle_t2)*lT*N.y
+    
+    L_s1 = 2*l_t_h*cos(angle_t3/2)
+    angle_e1 = acos((L_s1**2 + L_b**2-l_d_h**2)/(2*L_b*L_s1))
+    angle_e2 = angle_e1+ angle_t3/2
+    
+    pFR1 = pFM  + 0.5*lT*cos(angle_e2)*F.x + 0.5*lT*sin(angle_e2)*F.y
+    pFL1 = pFM  - 0.5*lT*cos(angle_e2)*F.x - 0.5*lT*sin(angle_e2)*F.y
 
     pGM= pNG
     pGR = pGM + 0.5*lT*N.x
@@ -158,12 +165,17 @@ elif nth==3:
     pFE = pGF + L_b*F.y
     
     pFM = pGF
-    angle_e1 = angle_t2/2
     pEM = pGF + lh*(sin(angle_t3+angle_t2))*N.x + lh*(cos(angle_t3+angle_t2))*N.y
     pEM2=pFE
-    pFR = pGF + 0.5*lT*cos(angle_t3+angle_t2)*N.x - 0.5*lT*sin(angle_t3+angle_t2)*N.y
-    pFL = pFM - 0.5*lT*cos(angle_t3+angle_t2)*N.x + 0.5*lT*sin(angle_t3+angle_t2)*N.y
-
+    pFR1 = pFM + 0.5*lT*cos(angle_t3+angle_t2)*N.x - 0.5*lT*sin(angle_t3+angle_t2)*N.y
+    pFL1 = pFM - 0.5*lT*cos(angle_t3+angle_t2)*N.x + 0.5*lT*sin(angle_t3+angle_t2)*N.y
+    
+    angle_e1 = acos((l_t_h**2 + L_b**2-l_d_h**2)/(2*L_b*l_t_h))
+    pFM = pGF
+    pFR = pFM + 0.5*lT*cos(angle_e1)*F.x + 0.5*lT*sin(angle_e1)*F.y
+    pFL = pFM - 0.5*lT*cos(angle_e1)*F.x - 0.5*lT*sin(angle_e1)*F.y
+    
+    
     # pEM = pGF + lh*(sin(angle_t2/2 + angle_t3) )*N.x +lh*(cos( angle_t2/2+ angle_t3))*N.y
     # pEM2 = pFE
     # pFR = pGF + 0.5*lT*cos(angle_t4)*F.x - 0.5*lT*sin(angle_t4)*F.y
@@ -203,9 +215,14 @@ if nth==3:
 
 draw_skeleton([pGL,pGM],linestyle='dashed')
 draw_skeleton([pFL,pFM],linestyle='dashed')
-
 draw_skeleton([pGM,pGR])
 draw_skeleton([pFM,pFR])
+
+
+draw_skeleton([pGL,pGM],linestyle='dashdot')
+draw_skeleton([pFL1,pFM],linestyle='dashdot')
+draw_skeleton([pGM,pGR],linestyle='dashdot')
+draw_skeleton([pFM,pFR1],linestyle='dashdot')
 
 plt.grid()
 
@@ -266,7 +283,7 @@ cond1[lA] = l_d1
 cond1[lh] = l_t_h
 cond1[lT] = l_t_w
 cond1[Fx_tip] = -10
-cond1[Fy_tip] = 10
+cond1[Fy_tip] = 0
 cond1[T_tip] = 0
 
 
@@ -281,7 +298,7 @@ def calculate_force_angle(angle):
     cond1[lA] = l_d1
     cond1[lh] = l_t_h
     cond1[lT] = l_t_w
-    cond1[Fx_tip] = 10
+    cond1[Fx_tip] = 50
     cond1[Fy_tip] = 0
     cond1[T_tip] = 0
     tol=1e-4
