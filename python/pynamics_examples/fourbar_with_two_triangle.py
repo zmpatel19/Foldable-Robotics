@@ -37,9 +37,6 @@ plt.ion()
 
 from math import pi
 
-system = System()
-pynamics.set_system(__name__,system)
-
 def draw_skeleton(ini0,points1,linestyle='solid'):
     # points1 = [pGR,pFR,pER,pAB]
     po2 = PointsOutput(points1, constant_values=system.constant_values)
@@ -111,7 +108,7 @@ def gen_system(para):
     D1_x =  - l_t_h*sin(angle_t2 + angle_t3) - l_t_h*sin(angle_t2) - l_d_h*sin(angle_t2 + angle_t3 + angle_t4)
     D1_y =   l_t_h + l_t_h*cos(angle_t2 + angle_t3) + l_t_h*cos(angle_t2) + l_d_h*cos(angle_t2 + angle_t3 + angle_t4)
     
-    
+    L_tip = sqrt(D1_x**2+D1_y**2)
     
     initialvalues = {}
     
@@ -160,21 +157,33 @@ def gen_system(para):
     
         pEM = pFM + lh*(sin(angle_t2))*N.x + lh*(cos(angle_t2))*N.y
         pEM2 = pEM +lh*(sin(angle_t2+angle_t3))*N.x + lh*(cos(angle_t2+angle_t3))*N.y    
-    
-        # pEM = pFM + lh*(sin(angle_t2))*N.x + lh*(cos(angle_t2))*N.y
-        # pEM2 = pEM +lh*(sin(angle_t2+angle_t3))*N.x + lh*(cos(angle_t2+angle_t3))*N.y
         
+        pDL = pEM2 + l_d_h*sin(-angle_d1/2+angle_t2+angle_t3+angle_t4)/2*N.x +l_d_h*cos(-angle_d1/2+angle_t2+angle_t3+angle_t4)/2*N.y
+        pDR = pEM2 + l_d_h*sin(angle_d1/2+angle_t2+angle_t3+angle_t4)/2*N.x +l_d_h*cos(angle_d1/2+angle_t2+angle_t3+angle_t4)/2*N.y        
+        
+        pXR =  pEM + 0.5*cos(angle_t2+angle_t3)*lT*N.x - 0.5*sin(angle_t2+angle_t3)*lT*N.y
+        pXL =  pEM - 0.5*cos(angle_t2+angle_t3)*lT*N.x + 0.5*sin(angle_t2+angle_t3)*lT*N.y
+        
+        # pDM = pEM2 - 0.5*sin(angle_t2+angle_t3+angle_t4)*l_d_h*N.x + 0.5*cos(angle_t2+angle_t3+angle_t4)*l_d_h*N.y
+        # pDR = pDM + l_d_h*(sin(angle_t2-angle_d1/2+angle_t3+angle_t4)-sin(angle_d1/2+angle_t2+angle_t3+angle_t4))/4*N.x
+        # pDR = pDR - l_d_h*(cos(angle_t2-angle_d1/2+angle_t3+angle_t4)-cos(angle_d1/2+angle_t2+angle_t3+angle_t4))/4*N.y
+        # pDL = pDM - l_d_h*(sin(angle_t2-angle_d1/2+angle_t3+angle_t4)-sin(angle_d1/2+angle_t2+angle_t3+angle_t4))/4*N.x
+        # pDL = pDL - l_d_h*(cos(angle_t2-angle_d1/2+angle_t3+angle_t4)-cos(angle_d1/2+angle_t2+angle_t3+angle_t4))/4*N.y
+        # pEM = pFM + lh*(sin(angle_t2))*N.x + lh*(cos(angle_t2))*N.y
+        # pEM2 = pEM +lh*(sin(angle_t2+angle_t3))*N.x + lh*(cos(angle_t2+angle_t3))*N.y        
         pFR1 = pFM + 0.5*cos(angle_t2)*lT*N.x - 0.5*sin(angle_t2)*lT*N.y
         pFL1 = pFM - 0.5*cos(angle_t2)*lT*N.x + 0.5*sin(angle_t2)*lT*N.y
         
         L_s1 = 2*l_t_h*cos(angle_t3/2)
-        angle_e1 = acos((L_s1**2 + L_b**2-l_d_h**2)/(2*L_b*L_s1))
+        if round(L_s1**2 + L_b**2-l_d_h**2,6) == round(2*L_b*L_s1,6):
+            angle_e1=0
+        else:
+            angle_e1 = acos((L_s1**2 + L_b**2-l_d_h**2)/(2*L_b*L_s1))
         if angle_t3 <0:
             angle_e2 = -angle_e1 + angle_t3/2
         else:
             angle_e2 = angle_e1 + angle_t3/2
-        
-        
+               
         pFR = pFM  + 0.5*lT*cos(angle_e2)*F.x + 0.5*lT*sin(angle_e2)*F.y
         pFL = pFM  - 0.5*lT*cos(angle_e2)*F.x - 0.5*lT*sin(angle_e2)*F.y
     
@@ -186,17 +195,27 @@ def gen_system(para):
         
         pGF = pNG + L_a*cos(0.5*(angle_t2))*N.y + L_a*sin(0.5*(angle_t2))*N.x
         pFE = pGF + L_b*F.y
-        
+                        
         pFM = pGF
         pEM = pGF + lh*(sin(angle_t3+angle_t2))*N.x + lh*(cos(angle_t3+angle_t2))*N.y
+
+        pDL = pEM + l_d_h*sin(-angle_d1/2+angle_t2+angle_t3+angle_t4)/2*N.x +l_d_h*cos(-angle_d1/2+angle_t2+angle_t3+angle_t4)/2*N.y
+        pDR = pEM + l_d_h*sin(angle_d1/2+angle_t2+angle_t3+angle_t4)/2*N.x +l_d_h*cos(angle_d1/2+angle_t2+angle_t3+angle_t4)/2*N.y        
+
+
         pEM2=pFE
         pFR1 = pFM + 0.5*lT*cos(angle_t3+angle_t2)*N.x - 0.5*lT*sin(angle_t3+angle_t2)*N.y
         pFL1 = pFM - 0.5*lT*cos(angle_t3+angle_t2)*N.x + 0.5*lT*sin(angle_t3+angle_t2)*N.y
         
-        if angle_t4<0:
-            angle_e1 = -acos((l_t_h**2 + L_b**2-l_d_h**2)/(2*L_b*l_t_h))
+        if round(l_t_h**2 + L_b**2-l_d_h**2,6) == round(2*L_b*l_t_h,6):
+            angle_e0=0
         else:
-            angle_e1 = acos((l_t_h**2 + L_b**2-l_d_h**2)/(2*L_b*l_t_h)) 
+            angle_e0 = acos((l_t_h**2 + L_b**2-l_d_h**2)/(2*L_b*l_t_h))
+        
+        if angle_t4<0:
+            angle_e1 = -angle_e0
+        else:
+            angle_e1 = angle_e0
         pFM = pGF
         pFR = pFM + 0.5*lT*cos(angle_e1)*F.x + 0.5*lT*sin(angle_e1)*F.y
         pFL = pFM - 0.5*lT*cos(angle_e1)*F.x - 0.5*lT*sin(angle_e1)*F.y
@@ -210,6 +229,11 @@ def gen_system(para):
         pGM = pNG + lh*(cos(angle_t1))*N.y + lh*(sin(angle_t1))*N.x
         pGR = pGM + 0.5*lT*cos(angle_t2)*N.x - 0.5*lT*sin(angle_t2)*N.y
         pGL = pGM - 0.5*lT*cos(angle_t2)*N.x + 0.5*lT*sin(angle_t2)*N.y
+        
+        pXR = pNG + 0.5*lT*N.x
+        pXL = pNG - 0.5*lT*N.x
+    
+
     
     points = [pNG,pGF,pFE]
     statevariables = system.get_state_variables()
@@ -221,13 +245,18 @@ def gen_system(para):
     
     draw_skeleton(ini0,[pNG,pGM])
     draw_skeleton(ini0,[pGM,pGF])
-    draw_skeleton(ini0,[pFM,pEM,pEM2,pFE])
-    
+    draw_skeleton(ini0,[pFM,pEM,pEM2,pFE])   
     if nth==2:
         draw_skeleton(ini0,[pFM,pFE],linestyle='dashed')
+        draw_skeleton(ini0,[pXR,pEM,pXL])
+        draw_skeleton(ini0,[pEM2,pDR,pFE])
+        draw_skeleton(ini0,[pEM2,pDL,pFE],linestyle='dashed')
     if nth==3:
         draw_skeleton(ini0,[pNG,pGF],linestyle='dashed')
         draw_skeleton(ini0,[pGF,pFE],linestyle='dashed')
+        draw_skeleton(ini0,[pXR,pNG,pXL])
+        draw_skeleton(ini0,[pEM,pDR,pFE])
+        draw_skeleton(ini0,[pEM,pDL,pFE],linestyle='dashed')
     
     # draw_skeleton([pGL,pGM,pGR])
     # draw_skeleton([pFL,pFM,pFR])
@@ -264,7 +293,11 @@ def gen_system(para):
     
     vx = vFE.dot(N.x)
     vy = vFE.dot(N.y)
-    wNB_scalar = wNB.dot(N.z)
+    
+    sympy.Matrix([pFE.dot(N.x),pFE.dot(N.y)]) 
+    # sympy.Matrix([vx,vy])
+    
+    wNB_scalar = sympy.Matrix([pFE.dot(N.x),pFE.dot(N.y)]).dot(sympy.Matrix([vx,vy]))/(L_tip**2)
     
     v = sympy.Matrix([vx,vy,wNB_scalar])
     
@@ -295,7 +328,8 @@ def gen_system(para):
     f_t_T1_sym = sympy.Matrix([fR,fL])
     ft1_T1 = (J_t_ind_T1.T)*f_t_T1_sym
     ft_error_T1 = (T_ind-ft1_T1).subs(initialvalues).subs(system.constant_values)
-    return ft_error_T1,fR,fL
+    T_ind_sym = T_ind.subs(initialvalues).subs(system.constant_values)
+    return ft_error_T1,fR,fL,T_ind_sym
 # cond1 = {}
 # cond1[lA] = l_d1
 # cond1[lh] = l_t_h
@@ -311,7 +345,7 @@ def calculate_f_dump(x1):
     return value3
 
 # bounds1 = [(-1e3,1e3),(-1e3,1e3)]
-def calculate_force_angle(angle,load):
+def calculate_force_angle(load):
 
     cond1 = {}
     # cond1[lA] = l_d1
@@ -325,12 +359,13 @@ def calculate_force_angle(angle,load):
     cond1[T_tip] = load[2]
     tol=1e-4
     ft_error_sym_T1 = ft_error_T1.subs(cond1)
+    T_ind_value = T_ind_sym.subs(cond1)
     # print(ft_error_sym_T1)
     # bounds1 = [(-1e3,1e3),(-1e3,1e3)]    
     bounds1 = [(0,1e3),(0,1e3)]
     # bounds1 = [(-1e3,0)]
     
-    A_eq  = numpy.array (ft_error_sym_T1.jacobian(sympy.Matrix([fR,fL]))).astype(numpy.float64)
+    A_eq  = numpy.array(ft_error_sym_T1.jacobian(sympy.Matrix([fR,fL]))).astype(numpy.float64)
     lb1 = -numpy.array(ft_error_sym_T1.subs({fR:0,fL:0})).astype(numpy.float64)
     ub1 = -numpy.array(ft_error_sym_T1.subs({fR:0,fL:0})).astype(numpy.float64)
     lb = numpy.transpose(lb1).reshape(1) - tol
@@ -342,9 +377,39 @@ def calculate_force_angle(angle,load):
     # print(T_ind.subs(initialvalues).subs(cond1))
     # print("T_ind value2")
     # print(((J_t_ind_T1.T).subs(initialvalues).subs(cond1)).dot(res.x))
-    return [res.x,ft_error_sym_T1]
+    return [res.x,ft_error_sym_T1,T_ind_value]
 
-para = [2*pi/3,0,pi/8,pi/3,pi/6,0.01,0.06,0.1,2]   
-ft_error_T1,fR,fL = gen_system(para)
-aa = calculate_force_angle(0,[10,0,0])
-print(aa)
+# para = [1*pi/3,0,pi/6,pi/6,pi/6,0.01,0.06,0.1,2]   
+
+para = [1*pi/3,0,0,0,0,0.05,0.1,0.08,2]  
+ 
+# system = System()
+# pynamics.set_system(__name__,system)
+# ft_error_T1,fR,fL,T_ind_sym = gen_system(para)
+# aa = calculate_force_angle([1,0,0])
+
+angle_range = pi/2-math.atan2(para[6]/2,para[7])
+math.degrees(angle_range)
+
+num = 50
+for item in numpy.linspace(-angle_range,angle_range,num):
+    print(item)
+    # print(calculate_force_angle(item))
+    para[3] = item
+    system = System()
+    pynamics.set_system(__name__,system)
+    ft_error_T1,fR,fL,T_ind_sym = gen_system(para)
+    aa = calculate_force_angle([0,0,1])
+    if item == -angle_range:
+        values = aa[0]
+        T_values = aa[-1]
+    else:
+        values = numpy.vstack([values,aa[0]])
+        T_values = numpy.vstack([T_values,aa[-1]])
+plt.figure()
+plt.plot(numpy.rad2deg(numpy.linspace(-angle_range,angle_range,num)),values)
+
+
+# plt.figure()
+plt.plot(numpy.rad2deg(numpy.linspace(-angle_range,angle_range,num)),T_values*10)
+plt.legend([r"$f_R$",r"$f_L$",r"$T$"])
