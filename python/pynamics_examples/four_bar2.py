@@ -330,30 +330,30 @@ l_BE_L = pCD - pEL
 # # l_FG_R_length = (l_FG_R.dot(l_FG_R))**0.5
 # # l_FG_L_length = (l_FG_L.dot(l_FG_L))**0.5
 
-# u_L_BE_R = (1/l_BE_R.length())*l_BE_R
-# u_L_BE_L = (1/l_BE_L.length())*l_BE_L
+u_L_BE_R = (1/l_BE_R.length())*l_BE_R
+u_L_BE_L = (1/l_BE_L.length())*l_BE_L
 
 # Vertical version
-pV1_0 = pAB - 5*lA*N.y
-pV2_0 = pCD - 5*lA*N.y
-pV3_0 = pAB - 5*lA*N.y + l_3_length*N.y
-pV4_0 = pCD - 5*lA*N.y + l_3_length*N.y
+# pV1_0 = pAB - 5*lA*N.y
+# pV2_0 = pCD - 5*lA*N.y
+# pV3_0 = pAB - 5*lA*N.y + l_3_length*N.y
+# pV4_0 = pCD - 5*lA*N.y + l_3_length*N.y
 
-v_l1 = pV1_0.time_derivative().dot(N.y)
-v_l2 = pV2_0.time_derivative().dot(N.y)
-v_l3 = pV3_0.time_derivative().dot(N.y)
-v_l4 = pV4_0.time_derivative().dot(N.y)
+# v_l1 = pV1_0.time_derivative().dot(N.y)
+# v_l2 = pV2_0.time_derivative().dot(N.y)
+# v_l3 = pV3_0.time_derivative().dot(N.y)
+# v_l4 = pV4_0.time_derivative().dot(N.y)
 
 # with triangle version
-# pV1_0 = pAB - 5*lA*u_L_BE_R
-# pV2_0 = pCD - 5*lA*u_L_BE_L
-# pV3_0 = pAB - 5*lA*u_L_BE_L + l_3_length*u_L_BE_L
-# pV4_0 = pCD - 5*lA*u_L_BE_R + l_3_length*u_L_BE_R
+pV1_0 = pAB - 5*lA*u_L_BE_R
+pV2_0 = pCD - 5*lA*u_L_BE_L
+pV3_0 = pAB - 5*lA*u_L_BE_L + l_3_length*u_L_BE_L
+pV4_0 = pCD - 5*lA*u_L_BE_R + l_3_length*u_L_BE_R
 
-# v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
-# v_l2 = pV2_0.time_derivative().dot(u_L_BE_L)
-# v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
-# v_l4 = pV4_0.time_derivative().dot(u_L_BE_R)
+v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
+v_l2 = pV2_0.time_derivative().dot(u_L_BE_L)
+v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
+v_l4 = pV4_0.time_derivative().dot(u_L_BE_R)
 
 v_t = sympy.Matrix([v_l1,v_l2,v_l3,v_l4])
 
@@ -445,16 +445,17 @@ def calculate_force_angle(angle):
 
 # calculate_force_angle(30)
 
-values =[[0,0,0,0]]
-num = 50
-for item in numpy.linspace(0,89,num):
+num = 10
+for item in numpy.linspace(30,75,num):
     print(item)
+    if item ==0:
+        value = calculate_force_angle(item)
     # print(calculate_force_angle(item))
-    value = calculate_force_angle(item)
-    values = numpy.vstack([values,value])
+    else:
+        value = numpy.vstack([value,calculate_force_angle(item)])
     
 plt.figure()
-plt.plot(numpy.linspace(0,89,num),values[1::,:])
+plt.plot(numpy.linspace(0,89,num),value)
 plt.legend(["f1","f2","f3","f4"])
 plt.grid()
 plt

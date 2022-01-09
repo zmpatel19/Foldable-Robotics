@@ -16,6 +16,8 @@ from pynamics.particle import Particle
 import pynamics.integration
 from pynamics.constraint import AccelerationConstraint,KinematicConstraint
 
+from scipy.optimize import minimize
+
 import sympy
 import numpy
 import matplotlib.pyplot as plt
@@ -33,7 +35,11 @@ from math import pi
 system = System()
 pynamics.set_system(__name__,system)
 
-lA = Constant(0.05,'lA',system)
+
+para = []
+
+
+lA = Constant(0.04,'lA',system)
 lh = Constant(0,'lh',system)
 lT = Constant(0.03,'lT',system)
 # lA = Constant(1,'lA',system)
@@ -88,7 +94,7 @@ qE,qE_d,qE_dd = Differentiable('qE',system)
 
 
 initialvalues = {}
-angle_value = 55
+angle_value = 75
 initialvalues[qA]   =(angle_value)*pi/180
 initialvalues[qA_d] =0*pi/180
 initialvalues[qB]   =pi-2*(angle_value)*pi/180
@@ -177,11 +183,11 @@ vAB=pAB.time_derivative()
 statevariables = system.get_state_variables()
 ini0 = [initialvalues[item] for item in statevariables]
 
-draw_skeleton(ini0, [pBD,pNA,pNE],linestyle='solid')
-draw_skeleton(ini0, [pDB,pAB,pNA,pER,pNE],linestyle='dashed')
-draw_skeleton(ini0, [pBD,pCD,pNA,pEL,pNE],linestyle='solid')
-draw_skeleton(ini0, [pCD,pEL],linestyle='dashdot')
-draw_skeleton(ini0, [pAB,pER],linestyle='dashdot')
+# draw_skeleton(ini0, [pBD,pNA,pNE],linestyle='solid')
+# draw_skeleton(ini0, [pDB,pAB,pNA,pER,pNE],linestyle='dashed')
+# draw_skeleton(ini0, [pBD,pCD,pNA,pEL,pNE],linestyle='solid')
+# draw_skeleton(ini0, [pCD,pEL],linestyle='dashdot')
+# draw_skeleton(ini0, [pAB,pER],linestyle='dashdot')
 
 eq = []
 eq.append((pBD-pDB).dot(N.x))
@@ -241,7 +247,6 @@ BodyD = Particle(pDcm,m,'ParticleD',system)
 
 system.addforce(-b*wNA,wNA)
 system.addforce(-b*wNC,wNC)
-
 
 system.addforce(T2*uCD_AB,vCD)
 system.addforce(-T2*uCD_AB,vAB)
@@ -333,12 +338,6 @@ l_BE_L = pCD - pEL
 # l_FG_R = pFR - pGR
 # l_FG_L = pFL - pGL
 
-# l_BE_R_length = (l_BE_R.dot(l_BE_R))**0.5
-# l_BE_L_length = (l_BE_L.dot(l_BE_L))**0.5
-# # l_EF_R_length = (l_EF_R.dot(l_EF_R))**0.5
-# # l_EF_L_length = (l_EF_L.dot(l_EF_L))**0.5
-# # l_FG_R_length = (l_FG_R.dot(l_FG_R))**0.5
-# # l_FG_L_length = (l_FG_L.dot(l_FG_L))**0.5
 
 u_L_BE_R = (1/l_BE_R.length())*l_BE_R
 u_L_BE_L = (1/l_BE_L.length())*l_BE_L
@@ -367,7 +366,7 @@ v_l4 = pV4_0.time_derivative().dot(u_L_BE_R)
 
 v_t = sympy.Matrix([v_l1,v_l2,v_l3,v_l4])
 
-J_t  = v_t.jacobian(q_d)
+J_t_dep = v_t.jacobian(q_d)
 J_t_ind = v_t.jacobian(q_ind)
 
 f_tip = sympy.Matrix([Fx_tip,Fy_tip])
@@ -381,12 +380,16 @@ f4 = sympy.Symbol('f4')
 
 
 cond1 = {}
-cond1[lA] = 0.05
-cond1[lh] = 0.005
+cond1[lA] = 0.04
+cond1[lh] = 0.01
 cond1[lT] = 0.03
 cond1[Fx_tip] = 0
-cond1[Fy_tip] = 10
-cond1[T_tip] = 0
+cond1[Fy_tip] = 0
+cond1[T_tip] = -1
+
+f_t_sym = sympy.Matrix([f1,f2,f3,f4])
+ft1 = (J_t_ind.T)*f_t_sym
+
 
 def calculate_f_dump(x1):
     # cond2 = {}
@@ -404,7 +407,7 @@ def calculate_f_dump(x1):
     return value3
 
 
-def calculate_force_angle(angle):
+def calculate_force_angle(angle,plot=False,max_fric=3):
     initialvalues = {}
     angle_value = angle
     initialvalues[qA]   =(angle_value)*pi/180
@@ -418,9 +421,16 @@ def calculate_force_angle(angle):
     initialvalues[qE]   = 0*pi/180
     initialvalues[qE_d] = 0
     
-    f_t_sym = sympy.Matrix([f1,f2,f3,f4])
-    
-    ft1 = (J_t_ind.T)*f_t_sym
+    if plot==True:
+        statevariables = system.get_state_variables()
+        ini0 = [initialvalues[item] for item in statevariables]
+        
+        draw_skeleton(ini0, [pBD,pNA,pNE],linestyle='solid')
+        draw_skeleton(ini0, [pDB,pAB,pNA,pER,pNE],linestyle='dashed')
+        draw_skeleton(ini0, [pBD,pCD,pNA,pEL,pNE],linestyle='solid')
+        draw_skeleton(ini0, [pCD,pEL],linestyle='dashdot')
+        draw_skeleton(ini0, [pAB,pER],linestyle='dashdot')
+   
     ft_error = T_ind-ft1
     ft_error_sym = ft_error.subs(initialvalues).subs(cond1)
     
@@ -444,45 +454,81 @@ def calculate_force_angle(angle):
     con1 = LinearConstraint(A_eq, lb, ub)
     
     # res = dual_annealing(calculate_f_dump,bounds1)
-    res = minimize(calculate_f_dump,[1,1,-1,-1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':False})
-    
-    cal1 = (J_t_ind.subs(initialvalues).subs(cond1).T).dot(res.x)
+    res = minimize(calculate_f_dump,[1,1,1,1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':False})
+    print(res.x)
+    cal1 = (J_t_ind.subs(initialvalues).subs(cond1).T)*sympy.Matrix([res.x]).T
     cal2 = T_ind.subs(initialvalues).subs(cond1)
     # error = cal1-cal2
     print(cal1)
     print(cal2)
-    return res.x
+    
+    
+    max_T1 = ft1.subs(initialvalues).subs(cond1).subs({f2:0,f3:0})[0]
+    max_T2 = ft1.subs(initialvalues).subs(cond1).subs({f1:0,f4:0})[1]
+    # max_fric = 1
+    bounds1 = [(0,max_fric),(0,max_fric)]
+    
+    obj1=lambda f_input:numpy.array(max_T1.subs({f1:f_input[0],f4:f_input[1]})).astype(numpy.float64)
+    res1 = minimize(obj1,[0,0],bounds=bounds1,options={'disp':False})
+    max_T1_value = obj1(res1.x)    
+    
+    obj2=lambda f_input:numpy.array(max_T2.subs({f2:f_input[0],f3:f_input[1]})).astype(numpy.float64)
+    res2 = minimize(obj2,[0,0],bounds=bounds1,options={'disp':False})
+    max_T2_value = obj2(res2.x)  
+    
+    max_T_value = [max_T1_value,max_T2_value]
+    
+    return [res.x,max_T_value]
 
 # calculate_force_angle(30)
 
-num = 2
+num = 4
 angle1 = 30
 angle2 = 75
+maxf=5
 for item in numpy.linspace(angle1,angle2,num):
     print(item)
     if item ==angle1:
-        value = calculate_force_angle(item)
+        value = calculate_force_angle(item,max_fric=maxf)[0]
+        max_T = calculate_force_angle(item,max_fric=maxf)[1]
     # print(calculate_force_angle(item))
     else:
-        value = numpy.vstack([value,calculate_force_angle(item)])   
-plt.figure()
-plt.plot(numpy.linspace(angle1,angle2,num),value)
-plt.legend(["f1","f2","f3","f4"])
-plt.grid()
-
+        value = numpy.vstack([value,calculate_force_angle(item,max_fric=maxf)[0]])   
+        max_T = numpy.vstack([max_T,calculate_force_angle(item,max_fric=maxf)[1]])   
 # plt.figure()
-# plt.plot(numpy.linspace(0,89,num),values[1::,2])
+# plt.plot(numpy.linspace(angle1,angle2,num),value)
 # plt.legend(["f1","f2","f3","f4"])
 # plt.grid()
 
+max_T_values = max_T
 
-# print((J_t_ind.subs(initialvalues).subs(cond1).T).dot(res.x))
-# print(T_ind.subs(initialvalues).subs(cond1))
+fig, ax1 = plt.subplots()
+ln1=ax1.plot((numpy.linspace(angle1,angle2,num)),value[:,0],'-',label=("$f_R$"))
+ln2=ax1.plot((numpy.linspace(angle1,angle2,num)),value[:,1],'-',label=("$f_L$"))
+ax1.set_xlabel('Angle ($^{\circ}$)')
+ax1.set_ylabel('Tendon Force (N)')
+ax2 = ax1.twinx()
+ln3=ax2.plot(numpy.linspace(angle1,angle2,num),max_T_values,color='r',linestyle='dashed',label=(r"$T$"))
+ax2.set_ylabel('Max Holding Torque (Nm)')
+lns = ln1+ln2+ln3
+labs = [l.get_label() for l in lns]
+ax1.legend(lns, labs, loc=0)
 
-# print(ft_error_sym)
+# numpy.savetxt("max_T.csv",max_T)
 
-# a = ft_error_sym.subs({f1:0,f3:0})
-# print(sympy.solve(a))
+fig, ax1 = plt.subplots()
+x = numpy.array([30,45,60,75])
+y = -(numpy.array([6.572307692,4.483636364,3.092,2.176]))*0.02
+# 
+stds = numpy.array([1.064347639,0.311232155,0.228268847,0.324934181])*0.02
+# ax1.errorbar(x, y, stds, linestyle='None', marker='o')
+from scipy import interpolate
+ft_fit = interpolate.interp1d(x,y,fill_value = 'extrapolate', kind='quadratic')
+y1 = ft_fit(numpy.linspace(angle1,angle2,num))
+ax1.plot(x,y)
+# ax2 = ax1.twinx()
+ax2=ax1
+# ln3=ax2.plot(numpy.linspace(angle1,angle2,num),-max_T[:,0],color='r',linestyle='dashed',label=(r"$T$"))
+ln4=ax2.plot(numpy.linspace(angle1,angle2,num),max_T[:,1]*3,color='b',linestyle='dashed',label=(r"$T$"))
 
-# b = ft_error_sym.subs({f2:0,f4:0})
-# print(sympy.solve(b))
+# ln4=ax1.plot(numpy.linspace(angle1,angle2,num),y1-0.3)

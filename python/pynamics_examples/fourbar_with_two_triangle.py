@@ -293,12 +293,11 @@ def gen_system(para):
     
     vx = vFE.dot(N.x)
     vy = vFE.dot(N.y)
-    
-    sympy.Matrix([pFE.dot(N.x),pFE.dot(N.y)]) 
+
     # sympy.Matrix([vx,vy])
     
-    wNB_scalar = sympy.Matrix([pFE.dot(N.x),pFE.dot(N.y)]).dot(sympy.Matrix([vx,vy]))/(L_tip**2)
-    
+    # wNB_scalar = sympy.Matrix([pFE.dot(N.x),pFE.dot(N.y)]).dot(sympy.Matrix([vx,vy]))/(L_tip**2)
+    wNB_scalar = wNB.dot(N.z)
     v = sympy.Matrix([vx,vy,wNB_scalar])
     
     l_FG_R = pFR - pGR
@@ -307,8 +306,8 @@ def gen_system(para):
     u_L_FG_R = (1/l_FG_R.length())*l_FG_R
     u_L_FG_L = (1/l_FG_L.length())*l_FG_L
     
-    pV5_0 = pFR - 1*lA*u_L_FG_R
-    pV6_0 = pFL - 1*lA*u_L_FG_L
+    pV5_0 = pFR - 0.05*lA*u_L_FG_R
+    pV6_0 = pFL - 0.05*lA*u_L_FG_L
     
     v_R = pV5_0.time_derivative().dot(u_L_FG_R)
     v_L = pV6_0.time_derivative().dot(u_L_FG_L)
@@ -329,7 +328,22 @@ def gen_system(para):
     ft1_T1 = (J_t_ind_T1.T)*f_t_T1_sym
     ft_error_T1 = (T_ind-ft1_T1).subs(initialvalues).subs(system.constant_values)
     T_ind_sym = T_ind.subs(initialvalues).subs(system.constant_values)
-    return ft_error_T1,fR,fL,T_ind_sym
+    max_T = ft1_T1.subs(initialvalues).subs(system.constant_values)
+    
+    # A_eq1 = numpy.array(max_T.jacobian(sympy.Matrix([fR,fL]))).astype(numpy.float64)
+    max_fric = 5
+    bounds1 = [(0,max_fric),(0,max_fric)]
+    
+    from scipy.optimize import minimize_scalar
+    
+    obj1=lambda f_input:-numpy.array(max_T.subs({fR:f_input[0],fL:f_input[1]})).astype(numpy.float64)[0][0]
+    
+    res = minimize(obj1,[0,0],bounds=bounds1,options={'disp':False})
+    max_T_value = -obj1(res.x)
+    # res = minimize(obj1,[0,0],bounds=bounds1,options={'disp':False})
+    # max_T_value = obj1(res.x)
+    
+    return ft_error_T1,fR,fL,T_ind_sym,max_T_value
 # cond1 = {}
 # cond1[lA] = l_d1
 # cond1[lh] = l_t_h
@@ -338,7 +352,10 @@ def gen_system(para):
 # cond1[Fy_tip] = 0
 # cond1[T_tip] = 0
 
-
+def obj1(f_input):
+    y=numpy.array(max_T.subs({fR:f_input[0],fL:f_input[1]})).astype(numpy.float64)[0][0]
+    # y1 = y[0][0]
+    return y
 
 def calculate_f_dump(x1):
     value3 = numpy.sum(numpy.asanyarray(x1)**2)*1
@@ -373,6 +390,9 @@ def calculate_force_angle(load):
     con1 = LinearConstraint(A_eq, lb, ub)
     
     res = minimize(calculate_f_dump,[0,0],bounds=bounds1,constraints=con1,options={'disp':True})
+    
+    # max_T_value = max_T.subs({fR:1,fL:1})
+    
     # print("T_ind value1")
     # print(T_ind.subs(initialvalues).subs(cond1))
     # print("T_ind value2")
@@ -381,35 +401,50 @@ def calculate_force_angle(load):
 
 # para = [1*pi/3,0,pi/6,pi/6,pi/6,0.01,0.06,0.1,2]   
 
-para = [1*pi/3,0,0,0,0,0.05,0.1,0.08,2]  
+para = [1*pi/3,0,pi/6,-pi/3,pi/6,0.05,0.1,0.08,3]  
  
-# system = System()
-# pynamics.set_system(__name__,system)
-# ft_error_T1,fR,fL,T_ind_sym = gen_system(para)
-# aa = calculate_force_angle([1,0,0])
+system = System()
+pynamics.set_system(__name__,system)
+ft_error_T1,fR,fL,T_ind_sym,max_T = gen_system(para)
+aa = calculate_force_angle([1,0,0])
 
-angle_range = pi/2-math.atan2(para[6]/2,para[7])
+angle_range = pi/2-(math.atan2(para[6]/2,para[7])+pi/36)
 math.degrees(angle_range)
-
-num = 50
+# 
+num = 2
 for item in numpy.linspace(-angle_range,angle_range,num):
     print(item)
     # print(calculate_force_angle(item))
     para[3] = item
     system = System()
     pynamics.set_system(__name__,system)
-    ft_error_T1,fR,fL,T_ind_sym = gen_system(para)
+    ft_error_T1,fR,fL,T_ind_sym,max_T = gen_system(para)
     aa = calculate_force_angle([0,0,1])
     if item == -angle_range:
         values = aa[0]
         T_values = aa[-1]
+        max_T_values = max_T
     else:
         values = numpy.vstack([values,aa[0]])
         T_values = numpy.vstack([T_values,aa[-1]])
-plt.figure()
-plt.plot(numpy.rad2deg(numpy.linspace(-angle_range,angle_range,num)),values)
+        max_T_values = numpy.vstack([max_T_values,max_T])
 
+
+
+fig, ax1 = plt.subplots()
+ln1=ax1.plot(numpy.rad2deg(numpy.linspace(-angle_range,angle_range,num)),values,'-',label=(r"$f_R$",r"$f_L$"))
+ax1.set_xlabel('Angle ($^{\circ}$)')
+ax1.set_ylabel('Tendon Force (N)')
+ax2 = ax1.twinx()
+ln2=ax2.plot(numpy.rad2deg(numpy.linspace(-angle_range,angle_range,num)),max_T_values,color='r',linestyle='dashed',label=(r"$T$"))
+ax2.set_ylabel('Max Holding Torque (Nm)')
+lns = ln1+ln2
+labs = [l.get_label() for l in lns]
+ax1.legend(lns, labs, loc=0)
 
 # plt.figure()
-plt.plot(numpy.rad2deg(numpy.linspace(-angle_range,angle_range,num)),T_values*10)
-plt.legend([r"$f_R$",r"$f_L$",r"$T$"])
+# plt.plot(numpy.rad2deg(numpy.linspace(-angle_range,angle_range,num)),T_values)
+# ax1.legend([r"$f_R$",r"$f_L$"])
+# fig.legend([r"$f_R$",r"$f_L$",r"$T$"],loc='upper left')
+# fig.tight_layout()  # otherwise the right y-label is slightly clipped
+plt.show()
