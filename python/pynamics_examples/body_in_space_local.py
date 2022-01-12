@@ -99,7 +99,7 @@ eq2.append(eq0.dot(B.y))
 eq2.append(eq0.dot(B.z))
 k = KinematicConstraint(eq2)
 variables = [qA_d,qB_d,qC_d]
-result = k.solve_numeric(variables,[1,1,1],system.constant_values,initialvalues)
+result = k.solve_numeric(variables,[1,1,1],system.constant_values)
 initialvalues.update(result)
 
 # for constraint in system.constraints:
