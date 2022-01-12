@@ -29,7 +29,7 @@ lB = Constant(1,'lB',system)
 lC = Constant(1,'lC',system)
 lD = Constant(1,'lD',system)
 
-# mA = Constant(1,'mA',system)
+m = Constant(1,'m',system)
 # mB = Constant(1,'mB',system)
 # mC = Constant(1,'mC',system)
 
@@ -37,10 +37,10 @@ lD = Constant(1,'lD',system)
 # b = Constant(1e0,'b',system)
 # k = Constant(1e1,'k',system)
 
-# tinitial = 0
-# tfinal = 5
-# tstep = 1/30
-# t = numpy.r_[tinitial:tfinal:tstep]
+tinitial = 0
+tfinal = 5
+tstep = 1/30
+t = numpy.r_[tinitial:tfinal:tstep]
 
 # preload1 = Constant(0*pi/180,'preload1',system)
 # preload2 = Constant(0*pi/180,'preload2',system)
@@ -107,9 +107,14 @@ eq_scalar.append(eq[0].dot(N.y))
 
 c=KinematicConstraint(eq_scalar)
 variables = [qB,qD]
+constant_states = list(set(system.get_q(0))-set(variables))
 
+constants = system.constant_values.copy()
+for key in constant_states:
+    constants[key] = initialvalues[key] 
 guess = [initialvalues[item] for item in variables]
-result = c.solve_numeric(variables,guess,system.constant_values)
+result = c.solve_numeric(variables,guess,constants)
+
 
 ini = []
 for item in system.get_state_variables():
@@ -138,13 +143,15 @@ points.plot_time()
 # subs = dict([(ii,jj) for ii,jj in zip(qd,qd2)])
 
 
-# # pAcm=pNA+lA/2*A.x
-# # pBcm=pAB+lB/2*B.x
-# # pCcm=pBC+lC/2*C.x
+pAcm=pNA+lA/2*A.x
+pBcm=pAB+lB/2*B.x
+pCcm=pNA+lC/2*C.x
+pDcm=pCD+lD/2*D.x
 
 # # wNA = N.get_w_to(A)
 # # wAB = A.get_w_to(B)
 # # wBC = B.get_w_to(C)
+wND = N.get_w_to(D)
 
 # # IA = Dyadic.build(A,Ixx_A,Iyy_A,Izz_A)
 # # IB = Dyadic.build(B,Ixx_B,Iyy_B,Izz_B)
@@ -153,7 +160,10 @@ points.plot_time()
 # # BodyA = Body('BodyA',A,pAcm,mA,IA,system)
 # # BodyB = Body('BodyB',B,pBcm,mB,IB,system)
 # # #BodyC = Body('BodyC',C,pCcm,mC,IC,system)
-# # BodyC = Particle(pCcm,mC,'ParticleC',system)
+BodyA = Particle(pAcm,m,'ParticleA',system)
+BodyB = Particle(pBcm,m,'ParticleB',system)
+BodyC = Particle(pCcm,m,'ParticleC',system)
+BodyD = Particle(pDcm,m,'ParticleD',system)
 
 # # system.addforce(-b*wNA,wNA)
 # # system.addforce(-b*wAB,wAB)
