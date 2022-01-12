@@ -325,44 +325,26 @@ T_dep = C_m.inv().T*T_ind
 
 
 l_3 = (pAB-pCD)
-# l_4 = (pCD-pAB)
-
 l_3_length = (l_3.dot(l_3))**0.5
 # l_4_length = (l_4.dot(l_4))**0.5
 
 
 l_BE_R = pAB - pER
 l_BE_L = pCD - pEL
-# l_EF_R = pER - pFR
-# l_EF_L = pEL - pFL
-# l_FG_R = pFR - pGR
-# l_FG_L = pFL - pGL
-
-
 u_L_BE_R = (1/l_BE_R.length())*l_BE_R
 u_L_BE_L = (1/l_BE_L.length())*l_BE_L
 
-# Vertical version
-# pV1_0 = pAB - 5*lA*N.y
-# pV2_0 = pCD - 5*lA*N.y
-# pV3_0 = pAB - 5*lA*N.y + l_3_length*N.y
-# pV4_0 = pCD - 5*lA*N.y + l_3_length*N.y
-
-# v_l1 = pV1_0.time_derivative().dot(N.y)
-# v_l2 = pV2_0.time_derivative().dot(N.y)
-# v_l3 = pV3_0.time_derivative().dot(N.y)
-# v_l4 = pV4_0.time_derivative().dot(N.y)
 
 # with triangle version
-pV1_0 = pAB - 5*lA*u_L_BE_R
-pV2_0 = pCD - 5*lA*u_L_BE_L
-pV3_0 = pAB - 5*lA*u_L_BE_L + l_3_length*u_L_BE_L
-pV4_0 = pCD - 5*lA*u_L_BE_R + l_3_length*u_L_BE_R
+pV1_0 = pAB - 1*lA*u_L_BE_R
+pV2_0 = pCD - 1*lA*u_L_BE_L
+pV3_0 = pAB - 1*lA*u_L_BE_R - l_3_length*u_L_BE_R
+pV4_0 = pCD - 1*lA*u_L_BE_L - l_3_length*u_L_BE_L
 
 v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
 v_l2 = pV2_0.time_derivative().dot(u_L_BE_L)
-v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
-v_l4 = pV4_0.time_derivative().dot(u_L_BE_R)
+v_l3 = pV3_0.time_derivative().dot(u_L_BE_R)
+v_l4 = pV4_0.time_derivative().dot(u_L_BE_L)
 
 v_t = sympy.Matrix([v_l1,v_l2,v_l3,v_l4])
 
@@ -382,8 +364,8 @@ cond1 = {}
 cond1[lA] = 0.04
 cond1[lh] = 0.01
 cond1[lT] = 0.06
-cond1[Fx_tip] = 10
-cond1[Fy_tip] = -10
+cond1[Fx_tip] = 0
+cond1[Fy_tip] = 0
 # cond1[T_tip] = -1
 
 f_t_sym = sympy.Matrix([f1,f2,f3,f4])
@@ -412,11 +394,13 @@ def calculate_force_angle(angle,plot=False,max_fric=100,cond=cond1):
         draw_skeleton(ini0, [pBD,pNA,pNE],linestyle='solid')
         draw_skeleton(ini0, [pDB,pAB,pNA,pNE],linestyle='dashed')
         draw_skeleton(ini0, [pBD,pCD,pNA,pNE],linestyle='solid')
-        draw_skeleton(ini0, [pER,pEL],linestyle='solid')
-        draw_skeleton(ini0, [pAB,pCD],linestyle='solid')
-        draw_skeleton(ini0, [pCD,pEL],linestyle='dashdot')
-        draw_skeleton(ini0, [pAB,pER],linestyle='dashdot')
-   
+        # draw_skeleton(ini0, [pER,pEL],linestyle='solid')
+        # draw_skeleton(ini0, [pAB,pCD],linestyle='solid')
+        draw_skeleton(ini0, [pCD,pV4_0],linestyle='solid')
+        draw_skeleton(ini0, [pAB,pV3_0],linestyle='solid')
+        draw_skeleton(ini0, [pCD,pV2_0],linestyle='dashdot')
+        draw_skeleton(ini0, [pAB,pV1_0],linestyle='dashdot')
+      
     ft_error = T_ind-ft1
     ft_error_sym = ft_error.subs(initialvalues).subs(cond1)
     # ft_error_sym = ft_error_sym.subs({f1:0,f4:0})
@@ -427,12 +411,13 @@ def calculate_force_angle(angle,plot=False,max_fric=100,cond=cond1):
     from scipy.optimize import LinearConstraint
        
     bounds1 = [(0,max_fric),(0,max_fric),(0,max_fric),(0,max_fric)]
+    # bounds1 = [(-max_fric,0),(-max_fric,0),(-max_fric,0),(-max_fric,0)]
     
     A_eq  =numpy.array (ft_error_sym.jacobian(sympy.Matrix([f1,f2,f3,f4]))).astype(numpy.float64)
     lb1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
     ub1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
-    lb = numpy.transpose(lb1).reshape(2) - 1e-3
-    ub = numpy.transpose(ub1).reshape(2) + 1e-3
+    lb = numpy.transpose(lb1).reshape(2) - 1e-5
+    ub = numpy.transpose(ub1).reshape(2) + 1e-5
     con1 = LinearConstraint(A_eq, lb, ub)
     
     # res = dual_annealing(calculate_f_dump,bounds1)
@@ -465,12 +450,12 @@ def calculate_force_angle(angle,plot=False,max_fric=100,cond=cond1):
 
 # calculate_force_angle(30)
 
-num = 1
+num = 4
 angle1 = 30
 angle2 = 75
-maxf=100
+maxf=3.5
 # y = (numpy.array([6.572307692,4.483636364,3.092,2.176]))*-0.03
-y = (numpy.array([5.68,3.918,2.39,2.244]))*-0.03
+y = (numpy.array([5.68,3.918,2.39,2.244]))*0.03
 # y = numpy.flip(y1)
 angles = numpy.linspace(angle1,angle2,num)
 tendon_fs=[]
@@ -478,16 +463,14 @@ T_inds =[]
 T_ind_syms=[]
 max_T=[]
 for item in range(0,num):
-    # cond1[T_tip]=y[item]
-    cond1[T_tip]=0
+    cond1[T_tip]=y[item]
+    # cond1[T_tip]=0
     angle_c = angles[item]
     values = calculate_force_angle(angle_c,max_fric=maxf,plot=True,cond=cond1)
     tendon_fs = numpy.append(tendon_fs,values[0])
     T_inds = numpy.append(T_inds,values[1])
     T_ind_syms = numpy.append(T_ind_syms,values[2])
     max_T = numpy.append(max_T,values[-1])
-
-
 
 # max_T_values = max_T
 # fig, ax1 = plt.subplots()
