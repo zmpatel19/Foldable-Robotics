@@ -22,6 +22,13 @@ import matplotlib.pyplot as plt
 plt.close('all')
 plt.ion()
 
+def draw_skeleton(ini0,points1,linestyle='solid'):
+    # points1 = [pGR,pFR,pER,pAB]
+    po2 = PointsOutput(points1, constant_values=system.constant_values)
+    po2.calc(numpy.array([ini0,ini0]),[0,1])
+    po2.plot_time(newPlot=False,linestyle=linestyle)
+
+
 from math import pi
 system = System()
 pynamics.set_system(__name__,system)
@@ -164,13 +171,15 @@ vAB=pAB.time_derivative()
 
 # points = [pDB,pCD,pNC,pER,pEL,pNA,pNE,pFR,pFL,pNE,pEF,pGL,pGR,pEF,pNE,pNA,pAB,pBD]
 # points = [pDB,pCD,pNC,pER,pEL,pNA,pNE,pNA,pAB,pBD]
-points = [pDB,pCD,pNC,pER,pNA,pNE,pNA,pAB,pBD]
+# points = [pDB,pCD,pNA,pAB,pBD]
 # points = [pDB,pCD,pNC,pNA,pAB,pBD]
-
 
 statevariables = system.get_state_variables()
 ini0 = [initialvalues[item] for item in statevariables]
 
+draw_skeleton(ini0, [pBD,pNA,pNE],linestyle='solid')
+draw_skeleton(ini0, [pDB,pAB,pNA,pER,pNE],linestyle='dashed')
+draw_skeleton(ini0, [pBD,pCD,pNA,pEL,pNE],linestyle='solid')
 
 eq = []
 eq.append((pBD-pDB).dot(N.x))
@@ -191,10 +200,9 @@ for item in system.get_state_variables():
     else:
         ini.append(initialvalues[item])
         
-po1 = PointsOutput(points, constant_values=system.constant_values)
-po1.calc(numpy.array([ini0,ini]),[0,1])
-po1.plot_time()
-
+# po1 = PointsOutput(points, constant_values=system.constant_values)
+# po1.calc(numpy.array([ini0,ini]),[0,1])
+# po1.plot_time()
 # po1.calc(numpy.array([ini,ini]),[0,1])
 # po1.plot_time()
 
@@ -446,7 +454,9 @@ def calculate_force_angle(angle):
 # calculate_force_angle(30)
 
 num = 10
-for item in numpy.linspace(30,75,num):
+angle1 = 30
+angle2 = 75
+for item in numpy.linspace(angle1,angle2,num):
     print(item)
     if item ==0:
         value = calculate_force_angle(item)
@@ -458,7 +468,6 @@ plt.figure()
 plt.plot(numpy.linspace(0,89,num),value)
 plt.legend(["f1","f2","f3","f4"])
 plt.grid()
-plt
 
 # plt.figure()
 # plt.plot(numpy.linspace(0,89,num),values[1::,2])
