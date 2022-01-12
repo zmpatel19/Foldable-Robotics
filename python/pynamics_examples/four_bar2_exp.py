@@ -40,8 +40,8 @@ para = []
 
 
 lA = Constant(0.04,'lA',system)
-lh = Constant(0,'lh',system)
-lT = Constant(0.03,'lT',system)
+lh = Constant(0.003,'lh',system)
+lT = Constant(0.06,'lT',system)
 # lA = Constant(1,'lA',system)
 # lA = Constant(1,'lA',system)
 # lA = Constant(1,'lA',system)
@@ -228,7 +228,7 @@ wAB = A.get_w_to(B)
 wNC = N.get_w_to(C)
 wCD = C.get_w_to(D)
 
-wNB = N.get_w_to(B)
+wND = N.get_w_to(D)
 
 uBD = 1/(vBD.length())*vBD
 uDB = 1/(vDB.length())*vDB
@@ -290,14 +290,14 @@ result = sympy.solve(fm[:], [T1,T2,T3,T4])
 
 vx = vBD.dot(N.x)
 vy = vBD.dot(N.y)
-wNB_scalar = wNB.dot(N.z)
+wND_scalar = wND.dot(N.z)
 
 q_d = sympy.Matrix([qA_d,qB_d,qC_d,qD_d])
 q_ind = sympy.Matrix([qA_d,qC_d])
 q_dep = sympy.Matrix([qB_d,qD_d])
 
 
-v = sympy.Matrix([vx,vy,wNB_scalar])
+v = sympy.Matrix([vx,vy,wND_scalar])
 J = v.jacobian(q_d)
 J_ind = v.jacobian(q_ind)
 J_dep = v.jacobian(q_dep)
@@ -325,53 +325,34 @@ T_dep = C_m.inv().T*T_ind
 
 
 l_3 = (pAB-pCD)
-# l_4 = (pCD-pAB)
-
 l_3_length = (l_3.dot(l_3))**0.5
 # l_4_length = (l_4.dot(l_4))**0.5
 
 
 l_BE_R = pAB - pER
 l_BE_L = pCD - pEL
-# l_EF_R = pER - pFR
-# l_EF_L = pEL - pFL
-# l_FG_R = pFR - pGR
-# l_FG_L = pFL - pGL
-
-
 u_L_BE_R = (1/l_BE_R.length())*l_BE_R
 u_L_BE_L = (1/l_BE_L.length())*l_BE_L
 
-# Vertical version
-# pV1_0 = pAB - 5*lA*N.y
-# pV2_0 = pCD - 5*lA*N.y
-# pV3_0 = pAB - 5*lA*N.y + l_3_length*N.y
-# pV4_0 = pCD - 5*lA*N.y + l_3_length*N.y
-
-# v_l1 = pV1_0.time_derivative().dot(N.y)
-# v_l2 = pV2_0.time_derivative().dot(N.y)
-# v_l3 = pV3_0.time_derivative().dot(N.y)
-# v_l4 = pV4_0.time_derivative().dot(N.y)
 
 # with triangle version
-pV1_0 = pAB - 5*lA*u_L_BE_R
-pV2_0 = pCD - 5*lA*u_L_BE_L
-pV3_0 = pAB - 5*lA*u_L_BE_L + l_3_length*u_L_BE_L
-pV4_0 = pCD - 5*lA*u_L_BE_R + l_3_length*u_L_BE_R
+pV1_0 = pAB - 1*lA*u_L_BE_R
+pV2_0 = pCD - 1*lA*u_L_BE_L
+pV3_0 = pAB - 1*lA*u_L_BE_R - l_3_length*u_L_BE_R
+pV4_0 = pCD - 1*lA*u_L_BE_L - l_3_length*u_L_BE_L
 
 v_l1 = pV1_0.time_derivative().dot(u_L_BE_R)
 v_l2 = pV2_0.time_derivative().dot(u_L_BE_L)
-v_l3 = pV3_0.time_derivative().dot(u_L_BE_L)
-v_l4 = pV4_0.time_derivative().dot(u_L_BE_R)
+v_l3 = pV3_0.time_derivative().dot(u_L_BE_R)
+v_l4 = pV4_0.time_derivative().dot(u_L_BE_L)
 
 v_t = sympy.Matrix([v_l1,v_l2,v_l3,v_l4])
 
 J_t_dep = v_t.jacobian(q_d)
 J_t_ind = v_t.jacobian(q_ind)
 
-f_tip = sympy.Matrix([Fx_tip,Fy_tip])
-
-f_t = (J_t_ind)*f_tip
+# f_tip = sympy.Matrix([Fx_tip,Fy_tip])
+# f_t = (J_t_ind)*f_tip
 
 f1 = sympy.Symbol('f1')
 f2 = sympy.Symbol('f2')
@@ -382,32 +363,17 @@ f4 = sympy.Symbol('f4')
 cond1 = {}
 cond1[lA] = 0.04
 cond1[lh] = 0.01
-cond1[lT] = 0.03
+cond1[lT] = 0.06
 cond1[Fx_tip] = 0
 cond1[Fy_tip] = 0
-cond1[T_tip] = -1
+# cond1[T_tip] = -1
 
 f_t_sym = sympy.Matrix([f1,f2,f3,f4])
 ft1 = (J_t_ind.T)*f_t_sym
 
 
-def calculate_f_dump(x1):
-    # cond2 = {}
-    # cond2[f1]=x1[0]
-    # cond2[f2]=x1[1] 
-    # cond2[f3]=x1[2]    
-    # cond2[f4]=x1[3]        
-    # value1 = ft_error_sym.subs(cond2)    
-    # value1 = numpy.array(value1)
-    # value2 = numpy.sum(value1**2)*0
-    value3 = numpy.sum(numpy.asanyarray(x1)**2)*1
-    # value4 = numpy.sum((abs(x1)+x1)**2)*0
-    # return value2+value3+value4
-    # print(value2)
-    return value3
-
-
-def calculate_force_angle(angle,plot=False,max_fric=3):
+def calculate_force_angle(angle,plot=False,max_fric=100,cond=cond1):
+    print(angle)
     initialvalues = {}
     angle_value = angle
     initialvalues[qA]   =(angle_value)*pi/180
@@ -426,49 +392,50 @@ def calculate_force_angle(angle,plot=False,max_fric=3):
         ini0 = [initialvalues[item] for item in statevariables]
         
         draw_skeleton(ini0, [pBD,pNA,pNE],linestyle='solid')
-        draw_skeleton(ini0, [pDB,pAB,pNA,pER,pNE],linestyle='dashed')
-        draw_skeleton(ini0, [pBD,pCD,pNA,pEL,pNE],linestyle='solid')
-        draw_skeleton(ini0, [pCD,pEL],linestyle='dashdot')
-        draw_skeleton(ini0, [pAB,pER],linestyle='dashdot')
-   
+        draw_skeleton(ini0, [pDB,pAB,pNA,pNE],linestyle='dashed')
+        draw_skeleton(ini0, [pBD,pCD,pNA,pNE],linestyle='solid')
+        # draw_skeleton(ini0, [pER,pEL],linestyle='solid')
+        # draw_skeleton(ini0, [pAB,pCD],linestyle='solid')
+        draw_skeleton(ini0, [pCD,pV4_0],linestyle='solid')
+        draw_skeleton(ini0, [pAB,pV3_0],linestyle='solid')
+        draw_skeleton(ini0, [pCD,pV2_0],linestyle='dashdot')
+        draw_skeleton(ini0, [pAB,pV1_0],linestyle='dashdot')
+      
     ft_error = T_ind-ft1
     ft_error_sym = ft_error.subs(initialvalues).subs(cond1)
-    
+    # ft_error_sym = ft_error_sym.subs({f1:0,f4:0})
     
     from scipy.optimize import minimize
     from scipy.optimize import differential_evolution
     from scipy.optimize import Bounds
     from scipy.optimize import LinearConstraint
        
-    # calculate_f_dump([0.001,0.001,0.11,0.001])
+    bounds1 = [(0,max_fric),(0,max_fric),(0,max_fric),(0,max_fric)]
+    # bounds1 = [(-max_fric,0),(-max_fric,0),(-max_fric,0),(-max_fric,0)]
     
-    # bounds1 = [(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4),(-1e-5,1e4)]
-    # bounds1 = [(-1e3,1e3),(-1e3,1e3),(-1e3,1e3),(-1e3,1e3)]
-    bounds1 = [(0,1e3),(0,1e3),(0,1e3),(0,1e3)]
-    
-    A_eq  =numpy.array ( ft_error_sym.jacobian(sympy.Matrix([f1,f2,f3,f4]))).astype(numpy.float64)
+    A_eq  =numpy.array (ft_error_sym.jacobian(sympy.Matrix([f1,f2,f3,f4]))).astype(numpy.float64)
     lb1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
     ub1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
-    lb = numpy.transpose(lb1).reshape(2) - 1e-4
-    ub = numpy.transpose(ub1).reshape(2) + 1e-4
+    lb = numpy.transpose(lb1).reshape(2) - 1e-5
+    ub = numpy.transpose(ub1).reshape(2) + 1e-5
     con1 = LinearConstraint(A_eq, lb, ub)
     
     # res = dual_annealing(calculate_f_dump,bounds1)
-    res = minimize(calculate_f_dump,[1,1,1,1],bounds=bounds1,constraints=con1,method='SLSQP',options={'disp':False})
+    res = minimize(lambda x:numpy.sum(x**2),[1,1,1,1],bounds=bounds1,constraints=con1,options={'disp':False})
     print(res.x)
     cal1 = (J_t_ind.subs(initialvalues).subs(cond1).T)*sympy.Matrix([res.x]).T
     cal2 = T_ind.subs(initialvalues).subs(cond1)
     # error = cal1-cal2
     print(cal1)
     print(cal2)
-    
-    
+        
     max_T1 = ft1.subs(initialvalues).subs(cond1).subs({f2:0,f3:0})[0]
     max_T2 = ft1.subs(initialvalues).subs(cond1).subs({f1:0,f4:0})[1]
+    print(ft1.subs(initialvalues).subs(cond1))
     # max_fric = 1
     bounds1 = [(0,max_fric),(0,max_fric)]
     
-    obj1=lambda f_input:numpy.array(max_T1.subs({f1:f_input[0],f4:f_input[1]})).astype(numpy.float64)
+    obj1=lambda f_input:-numpy.array(max_T2.subs({f2:f_input[0],f3:f_input[1]})).astype(numpy.float64)
     res1 = minimize(obj1,[0,0],bounds=bounds1,options={'disp':False})
     max_T1_value = obj1(res1.x)    
     
@@ -477,58 +444,93 @@ def calculate_force_angle(angle,plot=False,max_fric=3):
     max_T2_value = obj2(res2.x)  
     
     max_T_value = [max_T1_value,max_T2_value]
+    T_ind_sym = ft1.subs(initialvalues).subs(cond1).T
     
-    return [res.x,max_T_value]
+    return [res.x,cal1.T,T_ind_sym,max_T_value]
 
 # calculate_force_angle(30)
 
 num = 4
 angle1 = 30
 angle2 = 75
-maxf=5
-for item in numpy.linspace(angle1,angle2,num):
-    print(item)
-    if item ==angle1:
-        value = calculate_force_angle(item,max_fric=maxf)[0]
-        max_T = calculate_force_angle(item,max_fric=maxf)[1]
-    # print(calculate_force_angle(item))
-    else:
-        value = numpy.vstack([value,calculate_force_angle(item,max_fric=maxf)[0]])   
-        max_T = numpy.vstack([max_T,calculate_force_angle(item,max_fric=maxf)[1]])   
-# plt.figure()
-# plt.plot(numpy.linspace(angle1,angle2,num),value)
-# plt.legend(["f1","f2","f3","f4"])
-# plt.grid()
+maxf=3.5
+# y = (numpy.array([6.572307692,4.483636364,3.092,2.176]))*-0.03
+y = (numpy.array([5.68,3.918,2.39,2.244]))*0.03
+# y = numpy.flip(y1)
+angles = numpy.linspace(angle1,angle2,num)
+tendon_fs=[]
+T_inds =[]
+T_ind_syms=[]
+max_T=[]
+for item in range(0,num):
+    cond1[T_tip]=y[item]
+    # cond1[T_tip]=0
+    angle_c = angles[item]
+    values = calculate_force_angle(angle_c,max_fric=maxf,plot=True,cond=cond1)
+    tendon_fs = numpy.append(tendon_fs,values[0])
+    T_inds = numpy.append(T_inds,values[1])
+    T_ind_syms = numpy.append(T_ind_syms,values[2])
+    max_T = numpy.append(max_T,values[-1])
 
-max_T_values = max_T
-
-fig, ax1 = plt.subplots()
-ln1=ax1.plot((numpy.linspace(angle1,angle2,num)),value[:,0],'-',label=("$f_R$"))
-ln2=ax1.plot((numpy.linspace(angle1,angle2,num)),value[:,1],'-',label=("$f_L$"))
-ax1.set_xlabel('Angle ($^{\circ}$)')
-ax1.set_ylabel('Tendon Force (N)')
-ax2 = ax1.twinx()
-ln3=ax2.plot(numpy.linspace(angle1,angle2,num),max_T_values,color='r',linestyle='dashed',label=(r"$T$"))
-ax2.set_ylabel('Max Holding Torque (Nm)')
-lns = ln1+ln2+ln3
-labs = [l.get_label() for l in lns]
-ax1.legend(lns, labs, loc=0)
-
-# numpy.savetxt("max_T.csv",max_T)
-
-fig, ax1 = plt.subplots()
-x = numpy.array([30,45,60,75])
-y = -(numpy.array([6.572307692,4.483636364,3.092,2.176]))*0.02
-# 
-stds = numpy.array([1.064347639,0.311232155,0.228268847,0.324934181])*0.02
-# ax1.errorbar(x, y, stds, linestyle='None', marker='o')
-from scipy import interpolate
-ft_fit = interpolate.interp1d(x,y,fill_value = 'extrapolate', kind='quadratic')
-y1 = ft_fit(numpy.linspace(angle1,angle2,num))
-ax1.plot(x,y)
+# max_T_values = max_T
+# fig, ax1 = plt.subplots()
+# ln1=ax1.plot((numpy.linspace(angle1,angle2,num)),tendon_fs,'-')
+# ax1.legend(["f1","f2","f3","f4"])
+# ax1.set_xlabel('Angle ($^{\circ}$)')
+# ax1.set_ylabel('Tendon Force (N)')
 # ax2 = ax1.twinx()
-ax2=ax1
-# ln3=ax2.plot(numpy.linspace(angle1,angle2,num),-max_T[:,0],color='r',linestyle='dashed',label=(r"$T$"))
-ln4=ax2.plot(numpy.linspace(angle1,angle2,num),max_T[:,1]*3,color='b',linestyle='dashed',label=(r"$T$"))
+# ln2=ax2.plot((numpy.linspace(angle1,angle2,num)),T_inds,'-')
+# ln3=ax2.plot(numpy.linspace(angle1,angle2,num),max_T_values,linestyle='dashed')
+# ax2.legend(["T1","T2"])
+# ax2.set_ylabel('Max Holding Torque (Nm)')
 
-# ln4=ax1.plot(numpy.linspace(angle1,angle2,num),y1-0.3)
+# fig, ax1 = plt.subplots()
+# x = numpy.array([30,45,60,75])
+# y = (numpy.array([6.572307692,4.483636364,3.092,2.176]))*-0.02
+# # 
+# stds = numpy.array([1.064347639,0.311232155,0.228268847,0.324934181])
+# # ax1.errorbar(x, y, stds, linestyle='None', marker='o')
+# from scipy import interpolate
+# ft_fit = interpolate.interp1d(x,y,fill_value = 'extrapolate', kind='quadratic')
+# y1 = ft_fit(numpy.linspace(angle1,angle2,num))
+# ax1.plot(x,y1)
+# # ax2 = ax1.twinx()
+# ax2=ax1
+# ln3=ax2.plot(numpy.linspace(angle1,angle2,num),-max_T[:,0],linestyle='dashed')
+# ln4=ax2.plot(numpy.linspace(angle1,angle2,num),max_T[:,1],linestyle='dashed')
+# # ln3=ax2.plot(numpy.linspace(angle1,angle2,num),numpy.sum(max_T,axis=1),linestyle='dashed')
+
+
+
+# import cma
+
+# plt.close('all')
+# ts = []
+# maxf = 3
+# bounds1 = ((0,maxf),(0,maxf))
+# aa = [item.subs({f1:0,f4:0}) for item in T_ind_syms[:,1]]
+
+# for item in aa-y:
+#     res1 = minimize(lambda x:(item.subs({f2:x[0],f3:x[1]}))**2,[0.1,0.1],bounds=bounds1 )
+#     print( (lambda x:(item.subs({f2:x[0],f3:x[1]})))(res1.x) ) 
+#     # print((lambda x:(item.subs({f2:x[0],f3:x[1]})) ) )
+#     print(res1)
+
+
+# for item in aa:
+#     h=lambda x:-item.subs({f2:x[0],f3:x[1]})
+#     res = minimize(h,[1,1],bounds=bounds1,options={'disp':True})
+#     ts.append(-res.fun)
+# plt.figure()
+# plt.plot(y)
+# plt.plot(ts)
+# plt.show()
+
+# res2 = minimize(lambda x:numpy.sum((y-ts-x)**2),[1])
+# # res2.x
+# plt.figure()
+# plt.plot(y,'r--')
+# # plt.errorbar(x, y, stds, linestyle='None', marker='o')
+# plt.plot(ts+res2.x)
+# plt.plot(ts)
+# plt.show()
