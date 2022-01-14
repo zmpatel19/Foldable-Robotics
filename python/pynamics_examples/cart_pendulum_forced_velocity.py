@@ -16,7 +16,7 @@ from pynamics.particle import Particle
 from pynamics.constraint import AccelerationConstraint
 import pynamics.integration
 
-#import sympy
+import sympy
 import numpy
 import matplotlib.pyplot as plt
 plt.ion()
@@ -50,8 +50,8 @@ x,x_d,x_dd = Differentiable('x',system)
 q,q_d,q_dd = Differentiable('q',system)
 
 initialvalues = {}
-initialvalues[x]=0
-initialvalues[x_d]=.2
+initialvalues[x]=1
+initialvalues[x_d]=0
 
 initialvalues[q]=30*pi/180
 initialvalues[q_d]=0*pi/180
@@ -85,13 +85,22 @@ system.add_spring_force1(k,(stretch)*N.z,wNA)
 system.addforce(-b*v2,v2)
 system.addforcegravity(-g*N.y)
 
-system.add_constraint(AccelerationConstraint([x_dd]))
+pos = sympy.cos(system.t*2*pi/2)
+eq = pos*N.x-p1
+eq_d = eq.time_derivative()
+eq_dd = eq_d.time_derivative()
+eq_dd_scalar = []
+eq_dd_scalar.append(eq_dd.dot(N.x))
+
+system.add_constraint(AccelerationConstraint(eq_dd_scalar))
 
 f,ma = system.getdynamics()
 func1,lambda1 = system.state_space_post_invert(f,ma,constants = system.constant_values,return_lambda=True)
 states=pynamics.integration.integrate_odeint(func1,ini,t,rtol=tol,atol=tol,args=({'constants':{},'alpha':1e2,'beta':1e1},))
 
-lambda1_n = [lambda1(tt,ss) for tt,ss in zip(t,states)]
+lambda1_n = numpy.array([lambda1(tt,ss) for tt,ss in zip(t,states)])
+plt.figure()
+plt.plot(t, lambda1_n)
 
 # =============================================================================
 KE = system.get_KE()
@@ -121,5 +130,5 @@ plt.plot(states[:,1])
 points2 = PointsOutput(points_list)
 points2.calc(states,t)
 #points2.plot_time()
-#points2.animate(fps = 30, movie_name='cart_pendulum.mp4',lw=2)
+points2.animate(fps = 30, movie_name='cart_pendulum.mp4',lw=2)
 
