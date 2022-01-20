@@ -369,7 +369,7 @@ if constrain_base:
     variables = [qA1_d,qA2_d,qA3_d,qB1_d,qB2_d,qB3_d,qC1_d,qC2_d,qC3_d,wBx,wBy,wCx,wCy,x2_d,y2_d,z2_d,x2,y2,z2,x3_d,y3_d,z3_d,x3,y3,z3,x,y,z,x_d,y_d,z_d]
 else:
     variables = [qA1_d,qA2_d,qA3_d,qB1_d,qB2_d,qB3_d,qC1_d,qC2_d,qC3_d,wBx,wBy,wCx,wCy,x2_d,y2_d,z2_d,x2,y2,z2,x3_d,y3_d,z3_d,x3,y3,z3]
-result = kinematic_constraint.solve_numeric(variables,[1]*len(variables),system.constant_values,initialvalues)
+result = kinematic_constraint.solve_numeric(variables,[1]*len(variables),system.constant_values)
 initialvalues.update(result)
 
 f,ma = system.getdynamics()
