@@ -54,18 +54,42 @@ class PointsOutput(Output):
             self.anim.save(movie_name, fps=fps,writer='ffmpeg')
         return ax
             
-    def plot_time(self,stepsize=1,newPlot=True,linestyle='solid'):
+    def plot_time(self,stepsize=1):
         import matplotlib.pyplot as plt
-        if newPlot==True:
-            fig = plt.figure()
-            ax = fig.add_subplot()
-        else:
-            ax = plt.subplot()
+        fig = plt.figure()
+        ax = fig.add_subplot()
         try:
             self.y
         except AttributeError:
             self.calc()
 
-        ax.plot(self.y[::stepsize,:,0].T,self.y[::stepsize,:,1].T,linestyle=linestyle)
-        ax.axis('equal')
+        ax.plot(self.y[::stepsize,:,0].T,self.y[::stepsize,:,1].T)
+        ax.axis('equal')     
+        return ax
+    
+    def plot_time_c(self,stepsize=1,newPlot=True,linestyle='solid',color=[],displacement=[0,0],amplify=1,ax1=[]):
+        import matplotlib.pyplot as plt
+        if newPlot==True:
+            fig = plt.figure()
+            ax = fig.add_subplot()
+        elif ax1==[]:
+            ax = plt.subplot()
+        else :
+            ax=ax1   
+        if color ==[]:
+            try:
+                self.y
+            except AttributeError:
+                self.calc()
+    
+            ax.plot(self.y[::stepsize,:,0].T*amplify+displacement[0],self.y[::stepsize,:,1].T*amplify+displacement[1],linestyle=linestyle)
+            ax.axis('equal')
+        else:
+            try:
+                self.y
+            except AttributeError:
+                self.calc()
+    
+            ax.plot(self.y[::stepsize,:,0].T*amplify+displacement[0],self.y[::stepsize,:,1].T*amplify+displacement[1],linestyle=linestyle,color=color)
+            ax.axis('equal')        
         return ax

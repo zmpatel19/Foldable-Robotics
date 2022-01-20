@@ -24,13 +24,6 @@ import matplotlib.pyplot as plt
 plt.close('all')
 plt.ion()
 
-def draw_skeleton(ini0,points1,linestyle='solid'):
-    # points1 = [pGR,pFR,pER,pAB]
-    po2 = PointsOutput(points1, constant_values=system.constant_values)
-    po2.calc(numpy.array([ini0,ini0]),[0,1])
-    po2.plot_time(newPlot=False,linestyle=linestyle)
-
-
 from math import pi
 system = System()
 pynamics.set_system(__name__,system)
@@ -94,12 +87,13 @@ qE,qE_d,qE_dd = Differentiable('qE',system)
 
 
 initialvalues = {}
-angle_value = 75
-initialvalues[qA]   =(angle_value)*pi/180
+angle_value = 45
+angle_tilt = -10
+initialvalues[qA]   =(angle_value+angle_tilt)*pi/180
 initialvalues[qA_d] =0*pi/180
 initialvalues[qB]   =pi-2*(angle_value)*pi/180
 initialvalues[qB_d] =0*pi/180
-initialvalues[qC]   =pi - (angle_value)*pi/180
+initialvalues[qC]   =pi - (angle_value-angle_tilt)*pi/180
 initialvalues[qC_d] =0*pi/180
 initialvalues[qD]   =2*angle_value*pi/180 -pi
 initialvalues[qD_d] =0*pi/180
@@ -208,11 +202,9 @@ for item in system.get_state_variables():
     else:
         ini.append(initialvalues[item])
         
-# po1 = PointsOutput(points, constant_values=system.constant_values)
-# po1.calc(numpy.array([ini0,ini]),[0,1])
-# po1.plot_time()
-# po1.calc(numpy.array([ini,ini]),[0,1])
-# po1.plot_time()
+statevariables = system.get_state_variables()
+ini0 = [initialvalues[item] for item in statevariables]
+
 
 
 pAcm = pNA+lA/2*A.x
@@ -366,24 +358,37 @@ cond1[lh] = 0.01
 cond1[lT] = 0.06
 cond1[Fx_tip] = 0
 cond1[Fy_tip] = 0
-# cond1[T_tip] = -1
+cond1[T_tip] = 0
 
 f_t_sym = sympy.Matrix([f1,f2,f3,f4])
 ft1 = (J_t_ind.T)*f_t_sym
 
 
-def calculate_force_angle(angle,plot=False,max_fric=100,cond=cond1):
-    print(angle)
+# draw_skeleton(ini0, [pBD,pNA,pNE],linestyle='solid')
+# draw_skeleton(ini0, [pDB,pAB,pNA,pNE],linestyle='dashed')
+# draw_skeleton(ini0, [pBD,pCD,pNA,pNE],linestyle='solid')
+# # draw_skeleton(ini0, [pER,pEL],linestyle='solid')
+# # draw_skeleton(ini0, [pAB,pCD],linestyle='solid')
+# draw_skeleton(ini0, [pCD,pV4_0],linestyle='solid')
+# draw_skeleton(ini0, [pAB,pV3_0],linestyle='solid')
+# draw_skeleton(ini0, [pCD,pV2_0],linestyle='dashdot')
+# draw_skeleton(ini0, [pAB,pV1_0],linestyle='dashdot')
+
+
+
+def calculate_force_angle(angle,angle_tilt,plot=False,max_fric=100,cond=cond1):
+    print(f'current angle: {angle}')
+    print(f'external load: {cond1}')
     initialvalues = {}
     angle_value = angle
-    initialvalues[qA]   =(angle_value)*pi/180
-    initialvalues[qA_d] =0*pi/180
-    initialvalues[qB]   =pi-2*(angle_value)*pi/180
-    initialvalues[qB_d] =0*pi/180
-    initialvalues[qC]   =pi - (angle_value)*pi/180
-    initialvalues[qC_d] =0*pi/180
-    initialvalues[qD]   =2*angle_value*pi/180 -pi
-    initialvalues[qD_d] =0*pi/180    
+    initialvalues[qA]   = (angle_value+angle_tilt)*pi/180
+    initialvalues[qA_d] = 0*pi/180
+    initialvalues[qB]   = pi-2*(angle_value)*pi/180
+    initialvalues[qB_d] = 0*pi/180
+    initialvalues[qC]   = pi - (angle_value-angle_tilt)*pi/180
+    initialvalues[qC_d] = 0*pi/180
+    initialvalues[qD]   = 2*angle_value*pi/180 -pi
+    initialvalues[qD_d] = 0*pi/180    
     initialvalues[qE]   = 0*pi/180
     initialvalues[qE_d] = 0
     
@@ -403,15 +408,15 @@ def calculate_force_angle(angle,plot=False,max_fric=100,cond=cond1):
       
     ft_error = T_ind-ft1
     ft_error_sym = ft_error.subs(initialvalues).subs(cond1)
-    # ft_error_sym = ft_error_sym.subs({f1:0,f4:0})
+    ft_error_sym = ft_error_sym.subs({f1:0,f4:0})
     
     from scipy.optimize import minimize
     from scipy.optimize import differential_evolution
     from scipy.optimize import Bounds
     from scipy.optimize import LinearConstraint
        
-    bounds1 = [(0,max_fric),(0,max_fric),(0,max_fric),(0,max_fric)]
-    # bounds1 = [(-max_fric,0),(-max_fric,0),(-max_fric,0),(-max_fric,0)]
+    # bounds1 = [(0,max_fric),(0,max_fric),(0,max_fric),(0,max_fric)]
+    bounds1 = [(-max_fric,0),(-max_fric,0),(-max_fric,0),(-max_fric,0)]
     
     A_eq  =numpy.array (ft_error_sym.jacobian(sympy.Matrix([f1,f2,f3,f4]))).astype(numpy.float64)
     lb1 = -numpy.array(ft_error_sym.subs({f1:0,f2:0,f3:0,f4:0})).astype(numpy.float64)
@@ -422,115 +427,233 @@ def calculate_force_angle(angle,plot=False,max_fric=100,cond=cond1):
     
     # res = dual_annealing(calculate_f_dump,bounds1)
     res = minimize(lambda x:numpy.sum(x**2),[1,1,1,1],bounds=bounds1,constraints=con1,options={'disp':False})
-    print(res.x)
+    print(f'tendon force: {res.x}')
     cal1 = (J_t_ind.subs(initialvalues).subs(cond1).T)*sympy.Matrix([res.x]).T
     cal2 = T_ind.subs(initialvalues).subs(cond1)
     # error = cal1-cal2
-    print(cal1)
-    print(cal2)
-        
-    max_T1 = ft1.subs(initialvalues).subs(cond1).subs({f2:0,f3:0})[0]
-    max_T2 = ft1.subs(initialvalues).subs(cond1).subs({f1:0,f4:0})[1]
-    print(ft1.subs(initialvalues).subs(cond1))
-    # max_fric = 1
-    bounds1 = [(0,max_fric),(0,max_fric)]
+    print(f'T_ind from tendon_force {cal1}')
+    print(f' sum of tendon_force T_ind {cal1[0]+cal1[1]}')
+    print(f'T_ind from tip force {cal2}')
+    print(f' sum of tip force T_ind {cal2[0]+cal2[1]}')
+    # max_T1 = ft1.subs(initialvalues).subs(cond1).subs({f2:0,f3:0})[0]
+    # max_T2 = ft1.subs(initialvalues).subs(cond1).subs({f1:0,f4:0})[1]
+    # print(ft1.subs(initialvalues).subs(cond1))
+    # # max_fric = 1
+    # bounds1 = [(0,max_fric),(0,max_fric)]
     
-    obj1=lambda f_input:-numpy.array(max_T2.subs({f2:f_input[0],f3:f_input[1]})).astype(numpy.float64)
-    res1 = minimize(obj1,[0,0],bounds=bounds1,options={'disp':False})
-    max_T1_value = obj1(res1.x)    
+    # obj1=lambda f_input:-numpy.array(max_T2.subs({f2:f_input[0],f3:f_input[1]})).astype(numpy.float64)
+    # res1 = minimize(obj1,[0,0],bounds=bounds1,options={'disp':False})
+    # max_T1_value = obj1(res1.x)    
     
-    obj2=lambda f_input:numpy.array(max_T2.subs({f2:f_input[0],f3:f_input[1]})).astype(numpy.float64)
-    res2 = minimize(obj2,[0,0],bounds=bounds1,options={'disp':False})
-    max_T2_value = obj2(res2.x)  
+    # obj2=lambda f_input:numpy.array(max_T2.subs({f2:f_input[0],f3:f_input[1]})).astype(numpy.float64)
+    # res2 = minimize(obj2,[0,0],bounds=bounds1,options={'disp':False})
+    # max_T2_value = obj2(res2.x)  
     
-    max_T_value = [max_T1_value,max_T2_value]
+    # max_T_value = [max_T1_value,max_T2_value]
     T_ind_sym = ft1.subs(initialvalues).subs(cond1).T
-    
-    return [res.x,cal1.T,T_ind_sym,max_T_value]
+
+    return [res.x,cal1.T,T_ind_sym,initialvalues]
 
 # calculate_force_angle(30)
+
+### Calculate tendon forces
+# num = 4
+# angle1 = 30
+# angle2 = 75
+# maxf=1.65
+
+# y = (numpy.array([1.64,1.56,1.216,1.13]))*-0.03
+# stds=numpy.asarray([0.188119884,0.163267909,0.22627417,0.176594039])*-0.03
+# # y = numpy.flip(y1)
+# angles = numpy.linspace(angle1,angle2,num)
+# tendon_fs = []
+# T_inds = []
+# T_ind_syms = []
+# max_T = []
+# for item in range(0,num):
+#     cond1[T_tip]=y[item]
+#     # cond1[T_tip]=0
+#     angle_c = angles[item]
+#     values = calculate_force_angle(angle_c,max_fric=maxf,plot=True,cond=cond1)
+#     tendon_fs = numpy.append(tendon_fs,values[0])
+#     T_inds = numpy.append(T_inds,values[1])
+#     T_ind_syms = numpy.append(T_ind_syms,values[2])
+#     max_T = numpy.append(max_T,values[-1])
+
+# max_T = max_T.reshape(4,2)
+
+## End calcualte tendon forces
+
+#### Calculate max holding torque
+
+# t_maxs_2d = []
+# for item1 in angle_tilt_s:
+#     t_maxs = []
+#     for item in angles:
+#         initialvalues = {}
+#         angle_value = item
+#         initialvalues[qA]   =(angle_value+item1)*pi/180
+#         initialvalues[qA_d] =0*pi/180
+#         initialvalues[qB]   =pi-2*(angle_value)*pi/180
+#         initialvalues[qB_d] =0*pi/180
+#         initialvalues[qC]   =pi - (angle_value-item1)*pi/180
+#         initialvalues[qC_d] =0*pi/180
+#         initialvalues[qD]   =2*angle_value*pi/180 -pi
+#         initialvalues[qD_d] =0*pi/180    
+#         initialvalues[qE]   = 0*pi/180
+#         initialvalues[qE_d] = 0
+        
+#         T_ind_sym = ft1.subs(initialvalues).subs(cond1).T
+#         T_s = T_ind_sym.subs({f1:0,f4:0})
+#         T1 = T_s[0]+T_s[1]
+#         max_fric  = 1.56
+#         # bounds1 = [(0,max_fric),(0,max_fric)]
+#         bounds1 = [(-max_fric,0),(-max_fric,0)]
+#         t_max = minimize(lambda x:T1.subs({f2:x[0],f3:x[1]}),[0,0],bounds=bounds1)
+#         print(f'tendon force: {t_max.x}')
+#         t_maxs = numpy.append(t_maxs,t_max.fun)
+    
+#     if item1 ==angle_tilt_s[0]:
+#         t_maxs_2d = t_maxs
+#     else:
+#         t_maxs_2d = numpy.vstack((t_maxs_2d,t_maxs))
+
+# plt.close('all')
+# fig,ax=plt.subplots()
+# # ax.plot([30,45,60,75],t_maxs)
+# # ax.errorbar([30,45,60,75],y, stds)
+
+# angle_2d1,angle_2d2=numpy.meshgrid(angles,angle_tilt_s)
+
+# fig = plt.figure()
+# plt.contour(angle_2d1,angle_2d2,t_maxs_2d)
+# plt.colorbar()
+# plt.legend(["max can hold",'exp slip'])
+
+
+#### End Calculate max holding torque
+
+
+def draw_skeleton(ini0,points1,linestyle='solid',color=[],displacement=[0,0],amplify=1):
+    # points1 = [pGR,pFR,pER,pAB]
+    po2 = PointsOutput(points1, constant_values=system.constant_values)
+    po2.calc(numpy.array([ini0,ini0]),[0,1])
+    ax = po2.plot_time_c(newPlot=False,linestyle=linestyle,color=color,displacement=displacement,amplify=amplify)
+    return ax
+
+
+def plot_one_config(angle_value,angle_tilt,displacement=[0,0],amplify=1):
+    initialvalues = {}   
+    initialvalues[qA]   =(angle_value+angle_tilt)*pi/180
+    initialvalues[qA_d] =0*pi/180
+    initialvalues[qB]   =pi-2*(angle_value)*pi/180
+    initialvalues[qB_d] =0*pi/180
+    initialvalues[qC]   =pi - (angle_value-angle_tilt)*pi/180
+    initialvalues[qC_d] =0*pi/180
+    initialvalues[qD]   =2*angle_value*pi/180 -pi
+    initialvalues[qD_d] =0*pi/180
+    
+    initialvalues[qE]   = 0*pi/180
+    initialvalues[qE_d] = 0     
+    statevariables = system.get_state_variables()
+    ini0 = [initialvalues[item] for item in statevariables]  
+    ax2 = draw_skeleton(ini0, [pNA,pAB,pBD,pCD,pNA],linestyle='-',color='k',displacement=displacement,amplify=amplify)
+    return ax2,initialvalues
+
+# ax1 = plot_one_config(75,0,[0,0])
+# ax1 = plot_one_config(75,0,[0.05,0])
+# ax1 = plot_one_config(75,0,[0.05,0.05])
+plt.close('all')
 
 num = 4
 angle1 = 30
 angle2 = 75
-maxf=3.5
-# y = (numpy.array([6.572307692,4.483636364,3.092,2.176]))*-0.03
-y = (numpy.array([5.68,3.918,2.39,2.244]))*0.03
-# y = numpy.flip(y1)
+
+angle_tilt_s = numpy.linspace(30, -30,5)
 angles = numpy.linspace(angle1,angle2,num)
-tendon_fs=[]
-T_inds =[]
-T_ind_syms=[]
-max_T=[]
-for item in range(0,num):
-    cond1[T_tip]=y[item]
-    # cond1[T_tip]=0
-    angle_c = angles[item]
-    values = calculate_force_angle(angle_c,max_fric=maxf,plot=True,cond=cond1)
-    tendon_fs = numpy.append(tendon_fs,values[0])
-    T_inds = numpy.append(T_inds,values[1])
-    T_ind_syms = numpy.append(T_ind_syms,values[2])
-    max_T = numpy.append(max_T,values[-1])
 
-# max_T_values = max_T
-# fig, ax1 = plt.subplots()
-# ln1=ax1.plot((numpy.linspace(angle1,angle2,num)),tendon_fs,'-')
-# ax1.legend(["f1","f2","f3","f4"])
-# ax1.set_xlabel('Angle ($^{\circ}$)')
-# ax1.set_ylabel('Tendon Force (N)')
-# ax2 = ax1.twinx()
-# ln2=ax2.plot((numpy.linspace(angle1,angle2,num)),T_inds,'-')
-# ln3=ax2.plot(numpy.linspace(angle1,angle2,num),max_T_values,linestyle='dashed')
-# ax2.legend(["T1","T2"])
-# ax2.set_ylabel('Max Holding Torque (Nm)')
+angle_tilt_s1 = numpy.linspace(30, -30,5)
+angles1 = numpy.linspace(30, 75,4)
+angle_2d1,angle_2d2=numpy.meshgrid(angles1,angle_tilt_s1)
 
-# fig, ax1 = plt.subplots()
-# x = numpy.array([30,45,60,75])
-# y = (numpy.array([6.572307692,4.483636364,3.092,2.176]))*-0.02
-# # 
-# stds = numpy.array([1.064347639,0.311232155,0.228268847,0.324934181])
-# # ax1.errorbar(x, y, stds, linestyle='None', marker='o')
-# from scipy import interpolate
-# ft_fit = interpolate.interp1d(x,y,fill_value = 'extrapolate', kind='quadratic')
-# y1 = ft_fit(numpy.linspace(angle1,angle2,num))
-# ax1.plot(x,y1)
-# # ax2 = ax1.twinx()
-# ax2=ax1
-# ln3=ax2.plot(numpy.linspace(angle1,angle2,num),-max_T[:,0],linestyle='dashed')
-# ln4=ax2.plot(numpy.linspace(angle1,angle2,num),max_T[:,1],linestyle='dashed')
-# # ln3=ax2.plot(numpy.linspace(angle1,angle2,num),numpy.sum(max_T,axis=1),linestyle='dashed')
+t_maxs_2d = []
+
+fig, (ax1, ax2) = plt.subplots(2)
+# ax2 = plt.subplot(222)
+# ax3 = plt.subplot(223)
+import random
+# for item in angle_tilt_s:
+#     t_maxs = []
+#     for item1 in angles:
+for item in range(0,5):
+    t_maxs = []
+    for item1 in range(0,4):
+        # t_max = (item1**2-item**3)/10000 +10*random.random()
+        #Draw config
+        x_dis = angle_tilt_s1[item]
+        y_dis = angles1[item1]
+        
+        q1_value = angles[item1]
+        ori_value = angle_tilt_s[item]
+        # print("%.0f" %(q1_value))
+        # print("%.0f" %(ori_value))
+        ax1,initialvalues1 = plot_one_config(q1_value,ori_value,[x_dis,y_dis],amplify=100)
+        #calcualte max torque
+        T_ind_sym = ft1.subs(initialvalues1).subs(cond1).T
+        T_s = T_ind_sym.subs({f1:0,f4:0})
+        T1 = T_s[0]+T_s[1]
+        max_fric  = 1.56
+        # bounds1 = [(0,max_fric),(0,max_fric)]
+        bounds1 = [(-max_fric,0),(-max_fric,0)]
+        # t_max = minimize(lambda x:T1.subs({f2:x[0],f3:x[1]}),[0,0],bounds=bounds1)
+        t_max = T1.subs({f2:0,f3:-1.56})
+        # print(f'tendon force: {t_max.x}')
+        # t_maxs = numpy.append(t_maxs,t_max.fun)  
+        t_maxs = numpy.append(t_maxs,t_max)  
+        #add text
+        error_string = "%.4f" % (t_max) +", " +'%.4f' % (t_max)+ ",\n "+"0.01"   
+        error_string = "%.4f" % (t_max/0.03)
+        # plt.text(item,item1,error_string)
+        plt.text(x_dis,y_dis-4,error_string,ha='center',va='top')        
+        plt.plot(x_dis,y_dis,'o', color='k',markersize=abs(t_max*500),alpha=0.5)
+    if ori_value == angle_tilt_s[0]:
+        t_maxs_2d = t_maxs
+    else:
+        t_maxs_2d = numpy.vstack((t_maxs_2d,t_maxs))
+  
+        
+#generate cmap
+import matplotlib.colors
+ax2=plt.subplot(111)
+# fig=plt.figure()
+# plt.ioff()
+# ax1,initialvalues1 = plot_one_config(item,item1,[item,item1],amplify=100)
+# ax2 = fig.add_subplot()
+# cmap = matplotlib.colors.LinearSegmentedColormap.from_list("cdict1", ["blue1","pink1","red1"])
+# ax2 = fig.add_subplot()     
+   
+im = ax2.pcolormesh(angle_2d2,angle_2d1,t_maxs_2d.astype('float'),shading='gouraud',cmap='coolwarm')
+# fig.colorbar(im)
+# ax1.gca().invert_yaxis()
+# plt.gca().invert_xaxis()
+plt.rcParams["font.family"] = "Times New Roman"
+ax1.axis('equal')
+ax1.set_ylabel("Inner angle $q_{AC}$($^{\circ}$)",fontsize=10)
+ax1.set_xlabel("Orientation $q_a$($^{\circ}$)",fontsize=10)
+plt.title("Max torque $T_{tip}$($Nm$)",fontsize=10)
+
+# ax1.set_xlim([-35,30])
+# ax1.set_ylim([20,130])
+# ax1.set_xbound([-35,30])
+# ax1.set_ybound([20,130])
+# ax1.set_aspect(1)
+ax2.set_xlim([40,40])
+ax2.set_ylim([130,2])
 
 
-
-# import cma
-
-# plt.close('all')
-# ts = []
-# maxf = 3
-# bounds1 = ((0,maxf),(0,maxf))
-# aa = [item.subs({f1:0,f4:0}) for item in T_ind_syms[:,1]]
-
-# for item in aa-y:
-#     res1 = minimize(lambda x:(item.subs({f2:x[0],f3:x[1]}))**2,[0.1,0.1],bounds=bounds1 )
-#     print( (lambda x:(item.subs({f2:x[0],f3:x[1]})))(res1.x) ) 
-#     # print((lambda x:(item.subs({f2:x[0],f3:x[1]})) ) )
-#     print(res1)
+# ax1.set_xticks([30,15,0,15,-30])
+# ax1.set_yticks([120,90,60,30])
+ax2.grid('on')
+plt.show()
 
 
-# for item in aa:
-#     h=lambda x:-item.subs({f2:x[0],f3:x[1]})
-#     res = minimize(h,[1,1],bounds=bounds1,options={'disp':True})
-#     ts.append(-res.fun)
-# plt.figure()
-# plt.plot(y)
-# plt.plot(ts)
-# plt.show()
-
-# res2 = minimize(lambda x:numpy.sum((y-ts-x)**2),[1])
-# # res2.x
-# plt.figure()
-# plt.plot(y,'r--')
-# # plt.errorbar(x, y, stds, linestyle='None', marker='o')
-# plt.plot(ts+res2.x)
-# plt.plot(ts)
-# plt.show()
