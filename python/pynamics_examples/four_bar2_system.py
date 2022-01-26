@@ -22,11 +22,11 @@ import matplotlib.pyplot as plt
 plt.close('all')
 plt.ion()
 
-def draw_skeleton(ini0,points1,linestyle='solid'):
+def draw_skeleton(ini0,points1,fig,linestyle='solid'):
     # points1 = [pGR,pFR,pER,pAB]
     po2 = PointsOutput(points1, constant_values=system.constant_values)
     po2.calc(numpy.array([ini0,ini0]),[0,1])
-    po2.plot_time(newPlot=False,linestyle=linestyle)
+    po2.plot_time(linestyle=linestyle,fig=fig)
 
 
 from math import pi
@@ -177,9 +177,11 @@ vAB=pAB.time_derivative()
 statevariables = system.get_state_variables()
 ini0 = [initialvalues[item] for item in statevariables]
 
-draw_skeleton(ini0, [pBD,pNA,pNE],linestyle='solid')
-draw_skeleton(ini0, [pDB,pAB,pNA,pER,pNE],linestyle='dashed')
-draw_skeleton(ini0, [pBD,pCD,pNA,pEL,pNE],linestyle='solid')
+fig1 = plt.figure()
+
+draw_skeleton(ini0, [pBD,pNA,pNE],fig1,linestyle='solid')
+draw_skeleton(ini0, [pDB,pAB,pNA,pER,pNE],fig1,linestyle='dashed')
+draw_skeleton(ini0, [pBD,pCD,pNA,pEL,pNE],fig1,linestyle='solid')
 
 eq = []
 eq.append((pBD-pDB).dot(N.x))
