@@ -7,7 +7,7 @@ Written by Daniel M. Aukes and Dongting Li
 Email: danaukes<at>gmail.com
 Please see LICENSE for full license.
 """
-
+import os
 import pynamics
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
@@ -228,7 +228,9 @@ t_max1 = []
 t_max2 = []
 
 from scipy import interpolate
-t_forces1 = numpy.genfromtxt('triangle_force_exp_forplot.csv',delimiter=',')
+
+data_dir = os.path.join(os.getcwd(),'exp_data')
+t_forces1 = numpy.genfromtxt(os.path.join(data_dir,'triangle_force_exp_forplot.csv'),delimiter=',')
 t_forces = t_forces1*-0.035
 # t_force_temp = t_forces[:,0]
 t_force_temp_max = numpy.amax(t_forces,axis=0)

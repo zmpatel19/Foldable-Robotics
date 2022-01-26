@@ -5,6 +5,7 @@ Email: danaukes<at>gmail.com
 Please see LICENSE for full license.
 """
 import PyQt5
+import os
 import pynamics
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
@@ -588,10 +589,12 @@ t_maxs_2d = []
 import random
 
 from scipy import interpolate
-exp_30= numpy.genfromtxt('inner30.csv',delimiter=',')
-exp_60 = numpy.genfromtxt('inner60.csv',delimiter=',')
-exp_90 = numpy.genfromtxt('inner90.csv',delimiter=',')
-exp_120 = numpy.genfromtxt('inner120.csv',delimiter=',')
+data_dir = os.path.join(os.getcwd(),'exp_data')
+exp_30= numpy.genfromtxt(os.path.join(data_dir,'inner30.csv'),delimiter=',')
+exp_30= numpy.genfromtxt(os.path.join(data_dir,'inner30.csv'),delimiter=',')
+exp_60 = numpy.genfromtxt(os.path.join(data_dir,'inner60.csv'),delimiter=',')
+exp_90 = numpy.genfromtxt(os.path.join(data_dir,'inner90.csv'),delimiter=',')
+exp_120 = numpy.genfromtxt(os.path.join(data_dir,'inner120.csv'),delimiter=',')
 exp_30_t = -0.03*numpy.average(exp_30,axis=0)
 exp_60_t = -0.03*numpy.average(exp_60,axis=0)
 exp_90_t = -0.03*numpy.average(exp_90,axis=0)
@@ -717,6 +720,7 @@ t_forces = exp_90*-0.03*1000
 # t_force_temp = t_forces[:,0]
 t_force_temp_max = numpy.amax(t_forces,axis=0)
 t_force_temp_min = numpy.amin(t_forces,axis=0)
+t_force_temp_avg = numpy.average(t_forces,axis=0)
 exp_angles = numpy.linspace(30,-30,5)
 ft0 = interpolate.interp1d(exp_angles,t_forces,fill_value = 'extrapolate', kind='quadratic')
 
@@ -728,10 +732,9 @@ sim_angles = numpy.linspace(30,-30,50)
 ax3.fill_between(sim_angles,ft_max(sim_angles),ft_min(sim_angles),color='b',alpha=0.25)
 # ax3.fill_between(sim_angles,ft_max(numpy.flip(sim_angles))*1000,ft_min(numpy.flip(sim_angles))*1000,color='r',alpha=0.25)
 
-
 t_max1 = ft0(sim_angles)
-
 ax3.plot(exp_angles, t_maxs_2d[:,2]*1000,'b')
+ax3.plot(exp_angles, t_force_temp_avg,'r')
 
 for item in range(0,5):
     x_dis = angle_tilt_plot[item]
