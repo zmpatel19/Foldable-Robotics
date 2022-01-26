@@ -56,17 +56,17 @@ def plot_one_config(angle_value,displacement=[0,0],amplify=1,side='r'):
     ax2 = draw_skeleton(ini0,[pGF,pNR,pNL,pGF,pGL,pFE,pGR,pGF],linestyle='-',color='k',displacement=displacement,amplify=amplify)
     
     if side=='r':
-        ax2 = draw_skeleton(ini0,[pNR,pGR],linestyle='--',color='k',displacement=displacement,amplify=amplify)
-        ax2 = draw_skeleton(ini0,[pNL,pGL],linestyle='-',color='b',displacement=displacement,amplify=amplify)
-        ax2 = draw_skeleton(ini0,[pFE,p_tip_L],linestyle='-',color=[0.5,0.5,0.5],displacement=displacement,amplify=amplify)
+        draw_skeleton(ini0,[pNR,pGR],linestyle='--',color='k',displacement=displacement,amplify=amplify)
+        draw_skeleton(ini0,[pNL,pGL],linestyle='-',color='b',displacement=displacement,amplify=amplify)
+        draw_skeleton(ini0,[pFE,p_tip_L],linestyle='-',color=[0.5,0.5,0.5],displacement=displacement,amplify=amplify)
     if side=='l':
-        ax2 = draw_skeleton(ini0,[pNR,pGR],linestyle='-',color='r',displacement=displacement,amplify=amplify)
-        ax2 = draw_skeleton(ini0,[pNL,pGL],linestyle='--',color='k',displacement=displacement,amplify=amplify)
-        ax2 = draw_skeleton(ini0,[pFE,p_tip_R],linestyle='-',color=[0.5,0.5,0.5],displacement=displacement,amplify=amplify)
+        draw_skeleton(ini0,[pNR,pGR],linestyle='-',color='r',displacement=displacement,amplify=amplify)
+        draw_skeleton(ini0,[pNL,pGL],linestyle='--',color='k',displacement=displacement,amplify=amplify)
+        draw_skeleton(ini0,[pFE,p_tip_R],linestyle='-',color=[0.5,0.5,0.5],displacement=displacement,amplify=amplify)
 
     # draw_skeleton(ini0, [pGR,pV5_0],linestyle='dashed')
     # draw_skeleton(ini0, [pGL,pV6_0],linestyle='dashed')    
-    return ax2,initialvalues
+    return initialvalues
 
 
 system = System()
@@ -210,21 +210,20 @@ ft1_T1 = (J_t_ind_T1.T)*f_t_T1_sym
 ft_error_T1 = (T_ind-ft1_T1).subs(initialvalues).subs(system.constant_values)
 T_ind_sym = T_ind.subs(initialvalues).subs(system.constant_values)
 max_T_halftway = ft1_T1.subs(system.constant_values)
-
+plt.close('all')
 # A_eq1 = numpy.array(max_T.jacobian(sympy.Matrix([fR,fL]))).astype(numpy.float64)
-max_fric =3.0
+max_fric =1.56
 bounds1 = [(0,max_fric),(0,max_fric)]
 
 from scipy.optimize import minimize_scalar
 
-fig,ax2 = plt.subplots(111)
+# fig,ax2 = plt.subplots(111)
 # ax2.set_xlim(([-60,60]))
-fig3,ax3 = plt.subplots(111)
-
+# fig3,ax3 = plt.subplots(111)
 angle_start = -45
 angle_end = 45
 num = 30
-plt.close('all')
+
 t_max1 = []
 t_max2 = []
 
@@ -247,29 +246,28 @@ for item in numpy.linspace(angle_start,angle_end,num):
     max_T = max_T_halftway.subs(initialvalues)
     obj1=lambda f_input:(max_T.subs({fR:f_input[0],fL:f_input[1]}))[0]
     obj2=lambda f_input:(-max_T.subs({fR:f_input[0],fL:f_input[1]}))[0]
-    # res1 = minimize(obj1,[0,0],bounds=bounds1,options={'disp':False})
-    # res2 = minimize(obj2,[0,0],bounds=bounds1,options={'disp':False})    
-    max_T_value1 = -(max_T.subs({fR:0,fL:3.2}))[0]
-    max_T_value2 = (max_T.subs({fR:3.2,fL:0}))[0]
+    res1 = minimize(obj1,[0,0],bounds=bounds1,options={'disp':False})
+    res2 = minimize(obj2,[0,0],bounds=bounds1,options={'disp':False}) 
+    max_T_value1 = res1.fun
+    max_T_value2 = res2.fun
+    print( res1.x)
+    # max_T_value1 = -(max_T.subs({fR:0,fL:max_fric}))[0]
+    # max_T_value2 = (max_T.subs({fR:max_fric,fL:0}))[0]
     t_max1 = numpy.append(t_max1,max_T_value1)
     t_max2 = numpy.append(t_max2,max_T_value2)
 
-# fig, ax = plt.subplots()
+# fig, ax1 = plt.subplots(111)
 plt.plot(numpy.linspace(angle_start,angle_end,num),t_max1*1000,'b')
 plt.plot(numpy.linspace(angle_start,angle_end,num),t_max2*1000,'r')
-plt.ylabel("Max Torque")
-plt.xlabel("Joint angle")
+
 # plt.ylim([5,51])
-plt.show()
+# plt.show()
 
 sim_angles = numpy.linspace(angle_start,angle_end,num)
 plt.fill_between(sim_angles,ft_max(sim_angles)*1000,ft_min(sim_angles)*1000,color='b',alpha=0.25)
 plt.fill_between(sim_angles,ft_max(numpy.flip(sim_angles))*1000,ft_min(numpy.flip(sim_angles))*1000,color='r',alpha=0.25)
 
-
-
 T_loc = (t_max1+t_max2)/2
-
 ft0 = interpolate.interp1d(numpy.linspace(angle_start,angle_end,num),T_loc,fill_value = 'extrapolate', kind='quadratic')
 ft1 = interpolate.interp1d(numpy.linspace(angle_start,angle_end,num),t_max1,fill_value = 'extrapolate', kind='quadratic')
 
@@ -285,10 +283,10 @@ for item in numpy.linspace(angle_start,angle_end,7):
    
     dis_x = item
     dis_y = ft0(angle_start+angle_end)/2
-    plot_one_config(item,displacement=[dis_x,dis_y*1000-100],amplify=100,side='l') 
+    plot_one_config(item,displacement=[dis_x,dis_y*1000-60],amplify=100,side='l') 
     
-    error_string1 = "%.7f" % (ft1(item)/0.035)
-    plt.text(dis_x,dis_y*1000,error_string1,ha='center',va='top') 
+    # error_string1 = "%.7f" % (ft1(item)/0.035)
+    # plt.text(dis_x,dis_y*1000,error_string1,ha='center',va='top') 
     
     # plot_one_config(item,displacement=[dis_x,dis_y*1000-0],amplify=100,ax=[]) 
     # t_max = numpy.append(t_max,max_T_value)
@@ -298,8 +296,8 @@ for item in numpy.linspace(angle_start,angle_end,7):
     initialvalues[qF]   =(item)*pi/180
     initialvalues[qF_d] =0*pi/180
     dis_x = item
-    dis_y = ft1(item)/2    
-    plot_one_config(item,displacement=[dis_x,dis_y*1000+20],amplify=100,side='r') 
+    dis_y =  ft0(angle_start+angle_end)/2
+    plot_one_config(item,displacement=[dis_x,dis_y*1000+15],amplify=100,side='r') 
     # error_string1 = "%.7f" % (dis_y/0.035)
     # plt.text(dis_x,dis_y*1000+60,error_string1,ha='center',va='top') 
     # t_max = numpy.append(t_max,max_T_value)
@@ -307,6 +305,19 @@ for item in numpy.linspace(angle_start,angle_end,7):
 plt.xlim([-60,60])
 plt.show()
 plt.xticks(exp_angles)
+
+ax1 = plt.gca()
+ax1.grid()
+ax1.set_ylabel("Max Torque")
+ax1.set_xlabel("Joint angle")
+
+ax1.set_yticks(numpy.linspace(-20,-75,11))
+ax1.set_xticks(numpy.linspace(-45,45,7))
+
+ax1.set_yticklabels( [(item/1000) for item in numpy.linspace(-20,-75,11)])
+ax1.set_xticklabels([(item) for item in numpy.linspace(45,-45,7)])
+
+
 # def calculate_f_dump(x1):
 #     value3 = numpy.sum(numpy.asanyarray(x1)**2)*1
 #     return value3

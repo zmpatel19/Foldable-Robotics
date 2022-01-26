@@ -4,7 +4,7 @@ Written by Daniel M. Aukes
 Email: danaukes<at>gmail.com
 Please see LICENSE for full license.
 """
-
+import PyQt5
 import pynamics
 from pynamics.frame import Frame
 from pynamics.variable_types import Differentiable,Constant
@@ -23,6 +23,10 @@ import numpy
 import matplotlib.pyplot as plt
 plt.close('all')
 plt.ion()
+
+# import pylustrator
+# pylustrator.start()
+
 
 from math import pi
 system = System()
@@ -543,7 +547,7 @@ def draw_skeleton(ini0,points1,linestyle='solid',color=[],displacement=[0,0],amp
 
 
 def plot_one_config(angle_value,angle_tilt,displacement=[0,0],amplify=1):
-    initialvalues = {}   
+    initialvalues = {}  
     initialvalues[qA]   =(angle_value+angle_tilt)*pi/180
     initialvalues[qA_d] =0*pi/180
     initialvalues[qB]   =pi-2*(angle_value)*pi/180
@@ -569,32 +573,50 @@ num = 4
 angle1 = 30
 angle2 = 75
 
-angle_tilt_s = numpy.linspace(30, -30,5)
-angles = numpy.linspace(angle1,angle2,num)
+angle_tilt_plot = numpy.linspace(30, -30,5)
+angle_plot = numpy.linspace(120,30,4)
 
-angle_tilt_s1 = numpy.linspace(30, -30,5)
-angles1 = numpy.linspace(30, 75,4)
-angle_2d1,angle_2d2=numpy.meshgrid(angles1,angle_tilt_s1)
+angle_tilt_s1 = numpy.linspace(-30,30,5)
+angles1 = numpy.linspace(75, 30,4)
+angle_2d1,angle_2d2=numpy.meshgrid(angle_plot,angle_tilt_plot)
 
 t_maxs_2d = []
 
-fig, (ax1, ax2) = plt.subplots(2)
+# fig, (ax1, ax2) = plt.subplots(2)
 # ax2 = plt.subplot(222)
 # ax3 = plt.subplot(223)
 import random
-# for item in angle_tilt_s:
-#     t_maxs = []
-#     for item1 in angles:
+
+from scipy import interpolate
+exp_30= numpy.genfromtxt('inner30.csv',delimiter=',')
+exp_60 = numpy.genfromtxt('inner60.csv',delimiter=',')
+exp_90 = numpy.genfromtxt('inner90.csv',delimiter=',')
+exp_120 = numpy.genfromtxt('inner120.csv',delimiter=',')
+exp_30_t = -0.03*numpy.average(exp_30,axis=0)
+exp_60_t = -0.03*numpy.average(exp_60,axis=0)
+exp_90_t = -0.03*numpy.average(exp_90,axis=0)
+exp_120_t = -0.03*numpy.average(exp_120,axis=0)
+exp_torques = [[exp_30_t],[exp_60_t],[exp_90_t],[exp_120_t]]
+exp_torques = numpy.array([exp_30_t,exp_60_t,exp_90_t,exp_120_t])
+# t_force_temp = t_forces[:,0]
+# t_force_temp_max = numpy.amax(t_forces,axis=0)
+# t_force_temp_min = numpy.amin(t_forces,axis=0)
+# exp_angles = numpy.linspace(angle_start,angle_end,7)
+# ft_max = interpolate.interp1d(exp_angles,t_force_temp_max,fill_value = 'extrapolate', kind='quadratic')
+# ft_min = interpolate.interp1d(exp_angles,t_force_temp_min,fill_value = 'extrapolate', kind='quadratic')
+from decimal import Decimal
+
 for item in range(0,5):
     t_maxs = []
     for item1 in range(0,4):
         # t_max = (item1**2-item**3)/10000 +10*random.random()
         #Draw config
-        x_dis = angle_tilt_s1[item]
-        y_dis = angles1[item1]
+        x_dis = angle_tilt_plot[item]
+        y_dis = angle_plot[item1]
         
-        q1_value = angles[item1]
-        ori_value = angle_tilt_s[item]
+        q1_value = angles1[item1]
+        ori_value = angle_tilt_s1[item]
+
         # print("%.0f" %(q1_value))
         # print("%.0f" %(ori_value))
         ax1,initialvalues1 = plot_one_config(q1_value,ori_value,[x_dis,y_dis],amplify=100)
@@ -611,12 +633,23 @@ for item in range(0,5):
         # t_maxs = numpy.append(t_maxs,t_max.fun)  
         t_maxs = numpy.append(t_maxs,t_max)  
         #add text
-        error_string = "%.4f" % (t_max) +", " +'%.4f' % (t_max)+ ",\n "+"0.01"   
-        error_string = "%.4f" % (t_max/0.03)
+        t_max_exp = exp_torques[item1,item]
+        rmse_temp = (t_max-t_max_exp)**2
+        if (item==4 and item1==3) or (item==0 and item1==3):
+            error_string = "%.4f" % (t_max)
+            rmse_temp=0
+        else:   
+            error_string = "%.4f" % (t_max) +",\n " +'%.4f' % (t_max_exp)+ ",\n "+ '%.3e' % rmse_temp         
+            
+        plt.text(x_dis,y_dis,error_string,ha='center',va='top')        
+        plt.plot(x_dis,y_dis,'o', color='k',markersize=abs(rmse_temp*3e5),alpha=0.5) 
+        # error_string = "%.4f" % (t_max/0.03)
         # plt.text(item,item1,error_string)
-        plt.text(x_dis,y_dis-4,error_string,ha='center',va='top')        
-        plt.plot(x_dis,y_dis,'o', color='k',markersize=abs(t_max*500),alpha=0.5)
-    if ori_value == angle_tilt_s[0]:
+        print(ori_value)
+        print(q1_value)
+        print(error_string)    
+
+    if ori_value == angle_tilt_s1[0]:
         t_maxs_2d = t_maxs
     else:
         t_maxs_2d = numpy.vstack((t_maxs_2d,t_maxs))
@@ -633,27 +666,83 @@ ax2=plt.subplot(111)
 # ax2 = fig.add_subplot()     
    
 im = ax2.pcolormesh(angle_2d2,angle_2d1,t_maxs_2d.astype('float'),shading='gouraud',cmap='coolwarm')
-# fig.colorbar(im)
-# ax1.gca().invert_yaxis()
+plt.colorbar(im)
+# plt.gca().invert_yaxis()
 # plt.gca().invert_xaxis()
 plt.rcParams["font.family"] = "Times New Roman"
-ax1.axis('equal')
+# ax1.axis('equal')
 ax1.set_ylabel("Inner angle $q_{AC}$($^{\circ}$)",fontsize=10)
 ax1.set_xlabel("Orientation $q_a$($^{\circ}$)",fontsize=10)
-plt.title("Max torque $T_{tip}$($Nm$)",fontsize=10)
-
-# ax1.set_xlim([-35,30])
-# ax1.set_ylim([20,130])
-# ax1.set_xbound([-35,30])
-# ax1.set_ybound([20,130])
-# ax1.set_aspect(1)
-ax2.set_xlim([40,40])
-ax2.set_ylim([130,2])
+plt.title("(a) Max torque $T_{tip}$($Nm$)",fontsize=10)
 
 
-# ax1.set_xticks([30,15,0,15,-30])
-# ax1.set_yticks([120,90,60,30])
+ax2.set_xticks([30,15,0,-15,-30])
+ax2.set_yticks([120,90,60,30])
+
 ax2.grid('on')
+ax2.set_xticklabels(['30','-15','0','15','30'])
+ax2.set_yticklabels(['30','60','90','120'])
+plt.xlim([-40,40])
+ax1.set_aspect('equal')
+# ax2.set_aspect('equal')
+ax2.set_xlim([-40,40])
+ax2.set_xbound([-40,40])
+ax2.set_ybound([20,130])
 plt.show()
 
+
+# Generate horizona change for inner 90
+
+import matplotlib.colors
+plt.figure()
+ax3=plt.subplot(111)
+
+ax3.set_ylabel("Max torque (Nm)",fontsize=10)
+ax3.set_xlabel("Orientation $q_a$($^{\circ}$)",fontsize=10)
+ax3.set_title("(b) Torque change according to orientation for 90$^{\circ}$ inner angle ",fontsize=10)
+ax3.set_xticks([30,15,0,-15,-30])
+ax3.set_xticklabels(['30','-15','0','15','30'])
+ax3.set_yticks(numpy.linspace(-35,-50,4))
+ax3.set_yticklabels(numpy.linspace(-35,-50,4)/1000)
+# ax.xlim([-40,40])
+ax3.set_aspect('equal')
+# ax2.set_aspect('equal')
+ax3.set_xlim([-40,40])
+ax3.set_xbound([-40,40])
+ax3.set_ylim([-56,-35])
+ax3.set_ybound([-56,-35])
+ax3.grid()
+from scipy import interpolate
+t_forces = exp_90*-0.03*1000
+# t_force_temp = t_forces[:,0]
+t_force_temp_max = numpy.amax(t_forces,axis=0)
+t_force_temp_min = numpy.amin(t_forces,axis=0)
+exp_angles = numpy.linspace(30,-30,5)
+ft0 = interpolate.interp1d(exp_angles,t_forces,fill_value = 'extrapolate', kind='quadratic')
+
+ft_max = interpolate.interp1d(exp_angles,t_force_temp_max,fill_value = 'extrapolate', kind='quadratic')
+ft_min = interpolate.interp1d(exp_angles,t_force_temp_min,fill_value = 'extrapolate', kind='quadratic')
+
+sim_angles = numpy.linspace(30,-30,50)
+
+ax3.fill_between(sim_angles,ft_max(sim_angles),ft_min(sim_angles),color='b',alpha=0.25)
+# ax3.fill_between(sim_angles,ft_max(numpy.flip(sim_angles))*1000,ft_min(numpy.flip(sim_angles))*1000,color='r',alpha=0.25)
+
+
+t_max1 = ft0(sim_angles)
+
+ax3.plot(exp_angles, t_maxs_2d[:,2]*1000,'b')
+
+for item in range(0,5):
+    x_dis = angle_tilt_plot[item]
+    y_dis = -65
+    q1_value = 45
+    ori_value = angle_tilt_s1[item]
+    # print("%.0f" %(q1_value))
+    # print("%.0f" %(ori_value))
+    ax1,initialvalues1 = plot_one_config(q1_value,ori_value,[x_dis,y_dis],amplify=100)
+
+
+
+#generate vertical change for ori 0
 
