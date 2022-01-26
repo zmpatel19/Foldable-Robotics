@@ -209,14 +209,15 @@ po1 = PointsOutput(points, constant_values=system.constant_values)
 po1.calc(numpy.array([ini0,ini0]),[0,1])
 po1.plot_time()
 
-def draw_skeleton(points1):
+def draw_skeleton(points1,fig):
     # points1 = [pGR,pFR,pER,pAB]
     po2 = PointsOutput(points1, constant_values=system.constant_values)
     po2.calc(numpy.array([ini0,ini]),[0,1])
-    po2.plot_time(newPlot=False)
+    po2.plot_time(fig=fig)
 
-draw_skeleton([pGR,pFR,pER,pAB])
-draw_skeleton([pGL,pFL,pEL,pCD])
+fig1 = plt.figure()
+draw_skeleton([pGR,pFR,pER,pAB],fig1)
+draw_skeleton([pGL,pFL,pEL,pCD],fig1)
 
 
 pAcm = pEA+lA/2*A.x

@@ -37,11 +37,11 @@ plt.ion()
 
 from math import pi
 
-def draw_skeleton(ini0,points1,linestyle='solid'):
+def draw_skeleton(ini0,points1,fig,linestyle='solid'):
     # points1 = [pGR,pFR,pER,pAB]
     po2 = PointsOutput(points1, constant_values=system.constant_values)
     po2.calc(numpy.array([ini0,ini0]),[0,1])
-    po2.plot_time(newPlot=False,linestyle=linestyle)
+    po2.plot_time(fig=fig,linestyle=linestyle)
 
 
 def gen_system(para):
@@ -243,33 +243,35 @@ def gen_system(para):
     # po1.calc(numpy.array([ini0,ini0]),[0,1])
     # po1.plot_time()
     
-    draw_skeleton(ini0,[pNG,pGM])
-    draw_skeleton(ini0,[pGM,pGF])
-    draw_skeleton(ini0,[pFM,pEM,pEM2,pFE])   
+    fig1 = plt.figure()
+    
+    draw_skeleton(ini0,[pNG,pGM],fig1)
+    draw_skeleton(ini0,[pGM,pGF],fig1)
+    draw_skeleton(ini0,[pFM,pEM,pEM2,pFE],fig1)   
     if nth==2:
-        draw_skeleton(ini0,[pFM,pFE],linestyle='dashed')
-        draw_skeleton(ini0,[pXR,pEM,pXL])
-        draw_skeleton(ini0,[pEM2,pDR,pFE])
-        draw_skeleton(ini0,[pEM2,pDL,pFE],linestyle='dashed')
+        draw_skeleton(ini0,[pFM,pFE],fig1,linestyle='dashed')
+        draw_skeleton(ini0,[pXR,pEM,pXL],fig1)
+        draw_skeleton(ini0,[pEM2,pDR,pFE],fig1)
+        draw_skeleton(ini0,[pEM2,pDL,pFE],fig1,linestyle='dashed')
     if nth==3:
-        draw_skeleton(ini0,[pNG,pGF],linestyle='dashed')
-        draw_skeleton(ini0,[pGF,pFE],linestyle='dashed')
-        draw_skeleton(ini0,[pXR,pNG,pXL])
-        draw_skeleton(ini0,[pEM,pDR,pFE])
-        draw_skeleton(ini0,[pEM,pDL,pFE],linestyle='dashed')
+        draw_skeleton(ini0,[pNG,pGF],fig1,linestyle='dashed')
+        draw_skeleton(ini0,[pGF,pFE],fig1,linestyle='dashed')
+        draw_skeleton(ini0,[pXR,pNG,pXL],fig1)
+        draw_skeleton(ini0,[pEM,pDR,pFE],fig1)
+        draw_skeleton(ini0,[pEM,pDL,pFE],fig1,linestyle='dashed')
     
     # draw_skeleton([pGL,pGM,pGR])
     # draw_skeleton([pFL,pFM,pFR])
     
-    draw_skeleton(ini0,[pGL,pGM],linestyle='dashed')
-    draw_skeleton(ini0,[pFL,pFM],linestyle='dashed')
-    draw_skeleton(ini0,[pGM,pGR])
-    draw_skeleton(ini0,[pFM,pFR])
+    draw_skeleton(ini0,[pGL,pGM],fig1,linestyle='dashed')
+    draw_skeleton(ini0,[pFL,pFM],fig1,linestyle='dashed')
+    draw_skeleton(ini0,[pGM,pGR],fig1)
+    draw_skeleton(ini0,[pFM,pFR],fig1)
     
     
     
-    draw_skeleton(ini0,[pFL1,pFM],linestyle='dashdot')
-    draw_skeleton(ini0,[pFM,pFR1],linestyle='dashdot')
+    draw_skeleton(ini0,[pFL1,pFM],fig1,linestyle='dashdot')
+    draw_skeleton(ini0,[pFM,pFR1],fig1,linestyle='dashdot')
     
     plt.grid()
     
