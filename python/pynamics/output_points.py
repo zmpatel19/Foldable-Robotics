@@ -75,7 +75,10 @@ class PointsOutput(Output):
             self.y
         except AttributeError:
             self.calc()
-        ax.plot(self.y[::stepsize,:,0].T*amplify+displacement[0],self.y[::stepsize,:,1].T*amplify+displacement[1],linestyle=linestyle)
-        ax.axis('equal')
-      
+        if color = '':
+            ax.plot(self.y[::stepsize,:,0].T*amplify+displacement[0],self.y[::stepsize,:,1].T*amplify+displacement[1],linestyle=linestyle)
+            ax.axis('equal')
+        else:
+            ax.plot(self.y[::stepsize,:,0].T*amplify+displacement[0],self.y[::stepsize,:,1].T*amplify+displacement[1],linestyle=linestyle,color=color)
+            ax.axis('equal')
         return ax
