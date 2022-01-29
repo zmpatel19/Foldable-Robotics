@@ -67,29 +67,15 @@ class PointsOutput(Output):
         ax.axis('equal')     
         return ax
     
-    def plot_time_c(self,stepsize=1,newPlot=True,linestyle='solid',color=[],displacement=[0,0],amplify=1,ax1=[]):
+    def plot_time_c(self,stepsize=1,fig = None,linestyle='solid',color='',displacement=[0,0],amplify=1,ax1=[]):
         import matplotlib.pyplot as plt
-        if newPlot==True:
-            fig = plt.figure()
-            ax = fig.add_subplot()
-        elif ax1==[]:
-            ax = plt.subplot()
-        else :
-            ax=ax1   
-        if color ==[]:
-            try:
-                self.y
-            except AttributeError:
-                self.calc()
-    
-            ax.plot(self.y[::stepsize,:,0].T*amplify+displacement[0],self.y[::stepsize,:,1].T*amplify+displacement[1],linestyle=linestyle)
-            ax.axis('equal')
-        else:
-            try:
-                self.y
-            except AttributeError:
-                self.calc()
-    
-            ax.plot(self.y[::stepsize,:,0].T*amplify+displacement[0],self.y[::stepsize,:,1].T*amplify+displacement[1],linestyle=linestyle,color=color)
-            ax.axis('equal')        
+        fig = fig or plt.figure()
+        ax = fig.add_subplot()
+        try:
+            self.y
+        except AttributeError:
+            self.calc()
+        ax.plot(self.y[::stepsize,:,0].T*amplify+displacement[0],self.y[::stepsize,:,1].T*amplify+displacement[1],linestyle=linestyle)
+        ax.axis('equal')
+      
         return ax
